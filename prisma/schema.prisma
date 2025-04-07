@@ -17,4 +17,16 @@ model Contact {
   company         String?
   notes           String?
   createdAt       DateTime  @default(now())
+  calls           Call[]
+}
+
+model Call {
+  id              String    @id @default(cuid())
+  contactId       String
+  contact         Contact   @relation(fields: [contactId], references: [id])
+  date            DateTime  @default(now())
+  duration        Int       // Duration in minutes
+  notes           String?
+  outcome         String    // e.g., "Interested", "Not interested", "Follow up"
+  createdAt       DateTime  @default(now())
 }
