@@ -1,7 +1,8 @@
+// Schema for Neon PostgreSQL
 datasource db {
-  provider = "postgresql"
-  url      = env("postgres://neondb_owner:npg_UxEtsN5ja3hq@ep-broad-bread-a6ddgibp-pooler.us-west-2.aws.neon.tech/neondb?connect_timeout=15&sslmode=require")
-  directUrl = env("postgres://neondb_owner:npg_UxEtsN5ja3hq@ep-broad-bread-a6ddgibp.us-west-2.aws.neon.tech/neondb?sslmode=require")
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // Primary connection string for Prisma
+  directUrl = env("POSTGRES_URL_NON_POOLING") // Direct connection for migrations
 }
 
 generator client {
@@ -9,11 +10,11 @@ generator client {
 }
 
 model Contact {
-  id        String   @id @default(cuid())
-  name      String
-  email     String?
-  phone     String
-  company   String?
-  notes     String?
-  createdAt DateTime @default(now())
+  id              String    @id @default(cuid())
+  name            String
+  email           String?
+  phone           String
+  company         String?
+  notes           String?
+  createdAt       DateTime  @default(now())
 }
