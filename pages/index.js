@@ -1,12 +1,22 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { 
+  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts'
 
 export default function Home() {
   const [dashboardData, setDashboardData] = useState({
     contactCount: 0,
     callCount: 0,
+    dealCount: 0,
     upcomingTasks: [],
     recentCalls: [],
+    callOutcomes: [],
+    weeklyActivity: {
+      calls: [],
+      contacts: []
+    },
     loading: true
   })
   
@@ -24,6 +34,13 @@ export default function Home() {
         const callCount = callsData.success ? callsData.data.length : 0
         const recentCalls = callsData.success ? callsData.data.slice(0, 5) : []
         
+        // Calculate deals count (calls with 'Deal Closed' or 'Interested' outcome)
+        const dealCount = callsData.success 
+          ? callsData.data.filter(call => 
+              ['Deal Closed', 'Interested'].includes(call.outcome)
+            ).length 
+          : 0
+        
         // Fetch upcoming tasks
         const tasksResponse = await fetch('/api/tasks')
         const tasksData = await tasksResponse.json()
@@ -35,11 +52,25 @@ export default function Home() {
           .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
           .slice(0, 5)
         
+        // Get call outcomes distribution
+        const callOutcomes = callsData.success ? getCallOutcomesDistribution(callsData.data) : []
+        
+        // Get weekly activity data
+        const weeklyActivity = callsData.success
+          ? {
+              calls: getWeeklyActivity(callsData.data, 'date'),
+              contacts: getWeeklyActivity(contactsData.data, 'createdAt')
+            }
+          : { calls: [], contacts: [] }
+        
         setDashboardData({
           contactCount,
           callCount,
+          dealCount,
           upcomingTasks,
           recentCalls,
+          callOutcomes,
+          weeklyActivity,
           loading: false
         })
       } catch (error) {
@@ -50,6 +81,47 @@ export default function Home() {
     
     fetchDashboardData()
   }, [])
+  
+  // Get call outcomes distribution
+  const getCallOutcomesDistribution = (calls) => {
+    const outcomes = {}
+    
+    calls.forEach(call => {
+      if (!outcomes[call.outcome]) {
+        outcomes[call.outcome] = 0
+      }
+      outcomes[call.outcome]++
+    })
+    
+    return Object.keys(outcomes).map(key => ({
+      name: key,
+      value: outcomes[key]
+    }))
+  }
+  
+  // Get weekly activity data
+  const getWeeklyActivity = (data, dateField) => {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    const weekActivity = Array(7).fill(0).map((_, i) => ({
+      name: days[i],
+      count: 0
+    }))
+    
+    // Only count activity from the last 30 days
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    
+    data.forEach(item => {
+      const date = new Date(item[dateField])
+      
+      if (date >= thirtyDaysAgo) {
+        const dayOfWeek = date.getDay()
+        weekActivity[dayOfWeek].count++
+      }
+    })
+    
+    return weekActivity
+  }
   
   // Format date for display
   const formatDate = (dateString) => {
@@ -71,7 +143,8 @@ export default function Home() {
       'Follow Up': { backgroundColor: '#fff3cd', color: '#856404' },
       'No Answer': { backgroundColor: '#e2e3e5', color: '#383d41' },
       'Left Message': { backgroundColor: '#cce5ff', color: '#004085' },
-      'Wrong Number': { backgroundColor: '#f8d7da', color: '#721c24' }
+      'Wrong Number': { backgroundColor: '#f8d7da', color: '#721c24' },
+      'Deal Closed': { backgroundColor: '#d4edda', color: '#155724' }
     }
     
     return styles[outcome] || {}
@@ -109,7 +182,13 @@ export default function Home() {
     }
   }
   
-  const { loading, contactCount, callCount, upcomingTasks, recentCalls } = dashboardData
+  // COLORS for charts
+  const COLORS = ['#4a69bd', '#78e08f', '#e58e26', '#60a3bc', '#b71540', '#ef5777']
+  
+  const { loading, contactCount, callCount, dealCount, upcomingTasks, recentCalls, callOutcomes, weeklyActivity } = dashboardData
+  
+  // Calculate conversion rate
+  const conversionRate = callCount > 0 ? Math.round((dealCount / callCount) * 100) : 0
   
   return (
     <div>
@@ -164,11 +243,99 @@ export default function Home() {
               backgroundColor: '#fff8e1',
               textAlign: 'center'
             }}>
+              <h3 style={{ marginTop: 0 }}>Conversion Rate</h3>
+              <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0' }}>{conversionRate}%</p>
+              <span style={{ color: '#ff8f00' }}>
+                {dealCount} deals from {callCount} calls
+              </span>
+            </div>
+            
+            <div style={{ 
+              flex: '1',
+              minWidth: '200px',
+              padding: '1.5rem',
+              borderRadius: '8px',
+              backgroundColor: '#f3e5f5',
+              textAlign: 'center'
+            }}>
               <h3 style={{ marginTop: 0 }}>Open Tasks</h3>
               <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0' }}>{upcomingTasks.length}</p>
-              <Link href="/tasks" style={{ color: '#ff8f00', textDecoration: 'none' }}>
+              <Link href="/tasks" style={{ color: '#8e24aa', textDecoration: 'none' }}>
                 View all tasks
               </Link>
+            </div>
+          </div>
+          
+          {/* Charts Section */}
+          <div style={{ marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h2 style={{ margin: 0 }}>Performance Metrics</h2>
+              <Link href="/stats" style={{ 
+                textDecoration: 'none',
+                padding: '0.5rem 1rem',
+                backgroundColor: '#4a69bd',
+                color: 'white',
+                borderRadius: '4px'
+              }}>
+                View Detailed Analytics
+              </Link>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+              {/* Weekly Activity Chart */}
+              <div style={{ 
+                flex: '1', 
+                minWidth: '300px',
+                backgroundColor: 'white',
+                padding: '1.5rem',
+                borderRadius: '8px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)'
+              }}>
+                <h3>Weekly Activity</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={weeklyActivity.calls} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="count" name="Calls" fill="#4a69bd" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              
+              {/* Call Outcomes Chart */}
+              <div style={{ 
+                flex: '1', 
+                minWidth: '300px',
+                backgroundColor: 'white',
+                padding: '1.5rem',
+                borderRadius: '8px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)'
+              }}>
+                <h3>Call Outcomes</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={callOutcomes}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={true}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      nameKey="name"
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {callOutcomes.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value, name) => [`${value} calls`, name]} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
           

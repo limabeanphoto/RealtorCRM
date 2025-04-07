@@ -5,7 +5,9 @@ export default function CallForm({ onSubmit, contact, onCancel }) {
     contactId: contact?.id || '',
     duration: 0,
     notes: '',
-    outcome: 'Interested' // Default value
+    outcome: 'Interested', // Default value
+    isDeal: false,
+    dealValue: ''
   })
   
   const [createFollowUp, setCreateFollowUp] = useState(false)
@@ -16,7 +18,11 @@ export default function CallForm({ onSubmit, contact, onCancel }) {
   })
   
   const handleChange = (e) => {
-    const value = e.target.name === 'duration' ? parseInt(e.target.value) || 0 : e.target.value
+    const value = e.target.name === 'duration' 
+      ? parseInt(e.target.value) || 0 
+      : e.target.name === 'dealValue'
+        ? parseFloat(e.target.value) || ''
+        : e.target.value
     
     setFormData({
       ...formData,
@@ -26,6 +32,14 @@ export default function CallForm({ onSubmit, contact, onCancel }) {
     // Auto-set follow up checkbox if outcome is 'Follow Up'
     if (e.target.name === 'outcome' && e.target.value === 'Follow Up') {
       setCreateFollowUp(true)
+    }
+    
+    // Auto-set isDeal if outcome is 'Deal Closed' or 'Interested'
+    if (e.target.name === 'outcome') {
+      setFormData(prev => ({
+        ...prev,
+        isDeal: ['Deal Closed', 'Interested'].includes(e.target.value)
+      }))
     }
   }
   
@@ -119,7 +133,40 @@ export default function CallForm({ onSubmit, contact, onCancel }) {
           <option value="No Answer">No Answer</option>
           <option value="Left Message">Left Message</option>
           <option value="Wrong Number">Wrong Number</option>
+          <option value="Deal Closed">Deal Closed</option>
         </select>
+      </div>
+      
+      <div style={{ marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+          <input
+            type="checkbox"
+            id="isDeal"
+            name="isDeal"
+            checked={formData.isDeal}
+            onChange={(e) => setFormData({...formData, isDeal: e.target.checked})}
+            style={{ marginRight: '0.5rem' }}
+          />
+          <label htmlFor="isDeal">Mark as Deal</label>
+        </div>
+        
+        {formData.isDeal && (
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+              Deal Value ($)
+            </label>
+            <input
+              type="number"
+              name="dealValue"
+              value={formData.dealValue}
+              onChange={handleChange}
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+              style={{ width: '100%', padding: '0.5rem' }}
+            />
+          </div>
+        )}
       </div>
       
       <div style={{ marginBottom: '1rem' }}>

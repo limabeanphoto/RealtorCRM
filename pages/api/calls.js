@@ -43,7 +43,7 @@ export default async function handler(req, res) {
   
   else if (req.method === 'POST') {
     try {
-      const { contactId, duration, notes, outcome } = req.body
+      const { contactId, duration, notes, outcome, isDeal, dealValue } = req.body
       
       // Validate required fields
       if (!contactId || !outcome) {
@@ -60,6 +60,8 @@ export default async function handler(req, res) {
           duration: duration || 0,
           notes: notes || null,
           outcome,
+          isDeal: isDeal || false,
+          dealValue: dealValue ? parseFloat(dealValue) : null,
           date: new Date()
         },
         include: {
