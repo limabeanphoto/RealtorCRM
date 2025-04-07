@@ -8,6 +8,13 @@ export default function CallForm({ onSubmit, contact, onCancel }) {
     outcome: 'Interested' // Default value
   })
   
+  const [createFollowUp, setCreateFollowUp] = useState(false)
+  const [followUpData, setFollowUpData] = useState({
+    title: `Follow up with ${contact?.name || ''}`,
+    priority: 'Medium',
+    dueDate: new Date(new Date().setHours(17, 0, 0, 0) + 86400000).toISOString().slice(0, 16), // Tomorrow at 5 PM
+  })
+  
   const handleChange = (e) => {
     const value = e.target.name === 'duration' ? parseInt(e.target.value) || 0 : e.target.value
     
@@ -15,11 +22,55 @@ export default function CallForm({ onSubmit, contact, onCancel }) {
       ...formData,
       [e.target.name]: value
     })
+    
+    // Auto-set follow up checkbox if outcome is 'Follow Up'
+    if (e.target.name === 'outcome' && e.target.value === 'Follow Up') {
+      setCreateFollowUp(true)
+    }
   }
   
-  const handleSubmit = (e) => {
+  const handleFollowUpChange = (e) => {
+    setFollowUpData({
+      ...followUpData,
+      [e.target.name]: e.target.value
+    })
+  }
+  
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    onSubmit(formData)
+    
+    // Submit call data first
+    const callResult = await onSubmit(formData)
+    
+    // If call was successful and follow-up is requested, create a task
+    if (callResult && callResult.success && createFollowUp) {
+      try {
+        // Create follow-up task
+        const taskResponse = await fetch('/api/tasks', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            title: followUpData.title,
+            description: `Follow-up from call on ${new Date().toLocaleDateString()}${formData.notes ? `: ${formData.notes}` : ''}`,
+            priority: followUpData.priority,
+            dueDate: followUpData.dueDate,
+            contactId: contact.id,
+            callId: callResult.data.id,
+            status: 'Open'
+          })
+        })
+        
+        const taskData = await taskResponse.json()
+        
+        if (!taskData.success) {
+          console.error('Failed to create follow-up task:', taskData.message)
+        }
+      } catch (error) {
+        console.error('Error creating follow-up task:', error)
+      }
+    }
   }
   
   return (
@@ -82,6 +133,78 @@ export default function CallForm({ onSubmit, contact, onCancel }) {
           style={{ width: '100%', padding: '0.5rem' }}
           rows="4"
         />
+      </div>
+      
+      {/* Follow-up Task Section */}
+      <div style={{ 
+        marginBottom: '1.5rem', 
+        padding: '1rem',
+        border: '1px solid #ddd',
+        borderRadius: '4px',
+        backgroundColor: '#f8f9fa'
+      }}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          marginBottom: '1rem'
+        }}>
+          <input
+            type="checkbox"
+            id="createFollowUp"
+            checked={createFollowUp}
+            onChange={(e) => setCreateFollowUp(e.target.checked)}
+            style={{ marginRight: '0.5rem' }}
+          />
+          <label htmlFor="createFollowUp" style={{ fontWeight: 'bold' }}>
+            Create Follow-up Task
+          </label>
+        </div>
+        
+        {createFollowUp && (
+          <div>
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                Task Title
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={followUpData.title}
+                onChange={handleFollowUpChange}
+                style={{ width: '100%', padding: '0.5rem' }}
+              />
+            </div>
+            
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                Priority
+              </label>
+              <select
+                name="priority"
+                value={followUpData.priority}
+                onChange={handleFollowUpChange}
+                style={{ width: '100%', padding: '0.5rem' }}
+              >
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+            
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                Due Date/Time
+              </label>
+              <input
+                type="datetime-local"
+                name="dueDate"
+                value={followUpData.dueDate}
+                onChange={handleFollowUpChange}
+                style={{ width: '100%', padding: '0.5rem' }}
+              />
+            </div>
+          </div>
+        )}
       </div>
       
       <div style={{ display: 'flex', gap: '0.5rem' }}>

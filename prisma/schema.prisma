@@ -18,6 +18,7 @@ model Contact {
   notes           String?
   createdAt       DateTime  @default(now())
   calls           Call[]
+  tasks           Task[]
 }
 
 model Call {
@@ -29,4 +30,23 @@ model Call {
   notes           String?
   outcome         String    // e.g., "Interested", "Not interested", "Follow up"
   createdAt       DateTime  @default(now())
+  tasks           Task[]
+
+}
+
+model Task {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  status          String    @default("Open") // Open, In Progress, Completed
+  priority        String    @default("Medium") // Low, Medium, High
+  dueDate         DateTime
+  completed       Boolean   @default(false)
+  completedAt     DateTime?
+  contactId       String?
+  contact         Contact?  @relation(fields: [contactId], references: [id])
+  callId          String?
+  call            Call?     @relation(fields: [callId], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
