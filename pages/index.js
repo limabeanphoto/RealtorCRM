@@ -4,6 +4,9 @@ import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts'
+import theme from '../styles/theme'
+import Button from '../components/common/Button'
+import Greeting from '../components/dashboard/Greeting'
 
 export default function Home() {
   const [dashboardData, setDashboardData] = useState({
@@ -135,19 +138,15 @@ export default function Home() {
     return new Date(dateString).toLocaleDateString(undefined, options)
   }
   
-  // Get color based on call outcome
-  const getOutcomeStyle = (outcome) => {
+  // Get color based on task priority
+  const getPriorityStyle = (priority) => {
     const styles = {
-      'Interested': { backgroundColor: '#d4edda', color: '#155724' },
-      'Not Interested': { backgroundColor: '#f8d7da', color: '#721c24' },
-      'Follow Up': { backgroundColor: '#fff3cd', color: '#856404' },
-      'No Answer': { backgroundColor: '#e2e3e5', color: '#383d41' },
-      'Left Message': { backgroundColor: '#cce5ff', color: '#004085' },
-      'Wrong Number': { backgroundColor: '#f8d7da', color: '#721c24' },
-      'Deal Closed': { backgroundColor: '#d4edda', color: '#155724' }
+      'High': { backgroundColor: '#f8d7da', color: '#721c24' },
+      'Medium': { backgroundColor: theme.colors.brand.highlight, color: theme.colors.brand.text },
+      'Low': { backgroundColor: theme.colors.brand.secondary, color: 'white' }
     }
     
-    return styles[outcome] || {}
+    return styles[priority] || {}
   }
   
   // Get color based on task priority
@@ -191,8 +190,8 @@ export default function Home() {
   const conversionRate = callCount > 0 ? Math.round((dealCount / callCount) * 100) : 0
   
   return (
-    <div>
-      <h1>Realtor CRM - Dashboard</h1>
+    <div className="page-transition">
+      <Greeting />
       
       {loading ? (
         <p>Loading dashboard data...</p>
@@ -209,13 +208,15 @@ export default function Home() {
               flex: '1',
               minWidth: '200px',
               padding: '1.5rem',
-              borderRadius: '8px',
-              backgroundColor: '#e3f2fd',
+              borderRadius: theme.borderRadius.md,
+              backgroundColor: 'white',
+              boxShadow: theme.shadows.sm,
+              borderTop: `4px solid ${theme.colors.brand.accent}`,
               textAlign: 'center'
             }}>
-              <h3 style={{ marginTop: 0 }}>Contacts</h3>
-              <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0' }}>{contactCount}</p>
-              <Link href="/contacts" style={{ color: '#0d6efd', textDecoration: 'none' }}>
+              <h3 style={{ marginTop: 0, color: theme.colors.brand.accent }}>Contacts</h3>
+              <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0', color: theme.colors.brand.accent }}>{contactCount}</p>
+              <Link href="/contacts" style={{ color: theme.colors.brand.accent, textDecoration: 'none' }}>
                 View all contacts
               </Link>
             </div>
@@ -224,13 +225,15 @@ export default function Home() {
               flex: '1',
               minWidth: '200px',
               padding: '1.5rem',
-              borderRadius: '8px',
-              backgroundColor: '#e8f5e9',
+              borderRadius: theme.borderRadius.md,
+              backgroundColor: 'white',
+              boxShadow: theme.shadows.sm,
+              borderTop: `4px solid ${theme.colors.brand.primary}`,
               textAlign: 'center'
             }}>
-              <h3 style={{ marginTop: 0 }}>Calls</h3>
-              <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0' }}>{callCount}</p>
-              <Link href="/calls" style={{ color: '#388e3c', textDecoration: 'none' }}>
+              <h3 style={{ marginTop: 0, color: theme.colors.brand.primary }}>Calls</h3>
+              <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0', color: theme.colors.brand.primary }}>{callCount}</p>
+              <Link href="/calls" style={{ color: theme.colors.brand.primary, textDecoration: 'none' }}>
                 View all calls
               </Link>
             </div>
@@ -239,13 +242,15 @@ export default function Home() {
               flex: '1',
               minWidth: '200px',
               padding: '1.5rem',
-              borderRadius: '8px',
-              backgroundColor: '#fff8e1',
+              borderRadius: theme.borderRadius.md,
+              backgroundColor: 'white',
+              boxShadow: theme.shadows.sm,
+              borderTop: `4px solid ${theme.colors.brand.secondary}`,
               textAlign: 'center'
             }}>
-              <h3 style={{ marginTop: 0 }}>Conversion Rate</h3>
-              <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0' }}>{conversionRate}%</p>
-              <span style={{ color: '#ff8f00' }}>
+              <h3 style={{ marginTop: 0, color: theme.colors.brand.secondary }}>Conversion Rate</h3>
+              <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0', color: theme.colors.brand.secondary }}>{conversionRate}%</p>
+              <span style={{ color: theme.colors.brand.text }}>
                 {dealCount} deals from {callCount} calls
               </span>
             </div>
@@ -254,13 +259,15 @@ export default function Home() {
               flex: '1',
               minWidth: '200px',
               padding: '1.5rem',
-              borderRadius: '8px',
-              backgroundColor: '#f3e5f5',
+              borderRadius: theme.borderRadius.md,
+              backgroundColor: 'white',
+              boxShadow: theme.shadows.sm,
+              borderTop: `4px solid ${theme.colors.brand.highlight}`,
               textAlign: 'center'
             }}>
-              <h3 style={{ marginTop: 0 }}>Open Tasks</h3>
-              <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0' }}>{upcomingTasks.length}</p>
-              <Link href="/tasks" style={{ color: '#8e24aa', textDecoration: 'none' }}>
+              <h3 style={{ marginTop: 0, color: theme.colors.brand.text }}>Open Tasks</h3>
+              <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0', color: theme.colors.brand.text }}>{upcomingTasks.length}</p>
+              <Link href="/tasks" style={{ color: theme.colors.brand.text, textDecoration: 'none' }}>
                 View all tasks
               </Link>
             </div>
@@ -269,15 +276,9 @@ export default function Home() {
           {/* Charts Section */}
           <div style={{ marginBottom: '2rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h2 style={{ margin: 0 }}>Performance Metrics</h2>
-              <Link href="/stats" style={{ 
-                textDecoration: 'none',
-                padding: '0.5rem 1rem',
-                backgroundColor: '#4a69bd',
-                color: 'white',
-                borderRadius: '4px'
-              }}>
-                View Detailed Analytics
+              <h2 style={{ margin: 0, color: theme.colors.brand.primary }}>Performance Metrics</h2>
+              <Link href="/stats">
+                <Button variant="accent">View Detailed Analytics</Button>
               </Link>
             </div>
             
@@ -288,10 +289,10 @@ export default function Home() {
                 minWidth: '300px',
                 backgroundColor: 'white',
                 padding: '1.5rem',
-                borderRadius: '8px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)'
+                borderRadius: theme.borderRadius.md,
+                boxShadow: theme.shadows.sm
               }}>
-                <h3>Weekly Activity</h3>
+                <h3 style={{ color: theme.colors.brand.primary }}>Weekly Activity</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={weeklyActivity.calls} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -299,7 +300,7 @@ export default function Home() {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="count" name="Calls" fill="#4a69bd" />
+                    <Bar dataKey="count" name="Calls" fill={theme.colors.brand.primary} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -310,10 +311,10 @@ export default function Home() {
                 minWidth: '300px',
                 backgroundColor: 'white',
                 padding: '1.5rem',
-                borderRadius: '8px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)'
+                borderRadius: theme.borderRadius.md,
+                boxShadow: theme.shadows.sm
               }}>
-                <h3>Call Outcomes</h3>
+                <h3 style={{ color: theme.colors.brand.primary }}>Call Outcomes</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
@@ -328,7 +329,14 @@ export default function Home() {
                       label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                     >
                       {callOutcomes.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-${index}`} fill={[
+                          theme.colors.brand.primary,
+                          theme.colors.brand.secondary,
+                          theme.colors.brand.accent,
+                          theme.colors.brand.highlight,
+                          '#e74c3c',
+                          '#3498db'
+                        ][index % 6]} />
                       ))}
                     </Pie>
                     <Tooltip formatter={(value, name) => [`${value} calls`, name]} />
@@ -343,9 +351,9 @@ export default function Home() {
             {/* Upcoming Tasks */}
             <div style={{ flex: '1', minWidth: '300px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h2 style={{ margin: 0 }}>Upcoming Tasks</h2>
-                <Link href="/tasks" style={{ textDecoration: 'none' }}>
-                  View all
+                <h2 style={{ margin: 0, color: theme.colors.brand.primary }}>Upcoming Tasks</h2>
+                <Link href="/tasks">
+                  <Button variant="outline" size="small">View all</Button>
                 </Link>
               </div>
               
@@ -360,17 +368,24 @@ export default function Home() {
                         style={{
                           padding: '1rem',
                           marginBottom: '1rem',
-                          borderRadius: '8px',
+                          borderRadius: theme.borderRadius.md,
                           border: '1px solid #e2e8f0',
-                          backgroundColor: 'white'
+                          backgroundColor: 'white',
+                          boxShadow: theme.shadows.sm,
+                          transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                          cursor: 'pointer',
+                          ":hover": {
+                            transform: 'translateY(-2px)',
+                            boxShadow: theme.shadows.md
+                          }
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                          <h3 style={{ margin: 0, fontSize: '1rem' }}>{task.title}</h3>
+                          <h3 style={{ margin: 0, fontSize: '1rem', color: theme.colors.brand.primary }}>{task.title}</h3>
                           <span style={{ 
                             display: 'inline-block',
                             padding: '0.2rem 0.5rem',
-                            borderRadius: '4px',
+                            borderRadius: theme.borderRadius.sm,
                             fontSize: '0.7rem',
                             ...getPriorityStyle(task.priority)
                           }}>
@@ -378,7 +393,7 @@ export default function Home() {
                           </span>
                         </div>
                         
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#4a5568' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: theme.colors.brand.text }}>
                           <div>
                             {task.contact && `For: ${task.contact.name}`}
                           </div>
@@ -398,9 +413,9 @@ export default function Home() {
             {/* Recent Calls */}
             <div style={{ flex: '1', minWidth: '300px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h2 style={{ margin: 0 }}>Recent Calls</h2>
-                <Link href="/calls" style={{ textDecoration: 'none' }}>
-                  View all
+                <h2 style={{ margin: 0, color: theme.colors.brand.primary }}>Recent Calls</h2>
+                <Link href="/calls">
+                  <Button variant="outline" size="small">View all</Button>
                 </Link>
               </div>
               
@@ -412,17 +427,24 @@ export default function Home() {
                       style={{
                         padding: '1rem',
                         marginBottom: '1rem',
-                        borderRadius: '8px',
+                        borderRadius: theme.borderRadius.md,
                         border: '1px solid #e2e8f0',
-                        backgroundColor: 'white'
+                        backgroundColor: 'white',
+                        boxShadow: theme.shadows.sm,
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                        cursor: 'pointer',
+                        ":hover": {
+                          transform: 'translateY(-2px)',
+                          boxShadow: theme.shadows.md
+                        }
                       }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                        <h3 style={{ margin: 0, fontSize: '1rem' }}>{call.contact.name}</h3>
+                        <h3 style={{ margin: 0, fontSize: '1rem', color: theme.colors.brand.primary }}>{call.contact.name}</h3>
                         <span style={{ 
                           display: 'inline-block',
                           padding: '0.2rem 0.5rem',
-                          borderRadius: '4px',
+                          borderRadius: theme.borderRadius.sm,
                           fontSize: '0.7rem',
                           ...getOutcomeStyle(call.outcome)
                         }}>
@@ -430,7 +452,7 @@ export default function Home() {
                         </span>
                       </div>
                       
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#4a5568' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: theme.colors.brand.text }}>
                         <div>
                           {call.duration} minutes
                         </div>
@@ -449,5 +471,5 @@ export default function Home() {
         </div>
       )}
     </div>
-  )
+  );
 }
