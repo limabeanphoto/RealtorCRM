@@ -149,17 +149,6 @@ export default function Home() {
     return styles[priority] || {}
   }
   
-  // Get color based on task priority
-  const getPriorityStyle = (priority) => {
-    const styles = {
-      'High': { backgroundColor: '#f8d7da', color: '#721c24' },
-      'Medium': { backgroundColor: '#fff3cd', color: '#856404' },
-      'Low': { backgroundColor: '#d1ecf1', color: '#0c5460' }
-    }
-    
-    return styles[priority] || {}
-  }
-  
   // Calculate time remaining
   const getTimeRemaining = (dueDate) => {
     const now = new Date()
