@@ -19,6 +19,8 @@ model Contact {
   createdAt       DateTime  @default(now())
   calls           Call[]
   tasks           Task[]
+  assignedTo      String?
+  assignedToUser  User?     @relation("AssignedContacts", fields: [assignedTo], references: [id])
 }
 
 model Call {
@@ -33,7 +35,8 @@ model Call {
   dealValue       Float?    // Optional field for tracking monetary value of deals
   createdAt       DateTime  @default(now())
   tasks           Task[]
-  userId          String?   // For future multi-user support
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id])
 }
 
 model Task {
@@ -51,5 +54,22 @@ model Task {
   call            Call?     @relation(fields: [callId], references: [id])
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  userId          String?   // For future multi-user support
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  passwordHash      String
+  firstName         String
+  lastName          String
+  cellPhone         String?
+  assignedCallNumber String?
+  role              String    @default("member")
+  createdAt         DateTime  @default(now())
+  lastLoginAt       DateTime?
+  calls             Call[]
+  tasks             Task[]
+  contacts          Contact[] @relation("AssignedContacts")
 }
