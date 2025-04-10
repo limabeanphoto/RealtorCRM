@@ -49,6 +49,7 @@ export default function AdminDashboard() {
       boxShadow: theme.shadows.sm,
       padding: '1.5rem',
       height: '100%',
+      width: '100%', // Ensure full width within grid cell
     }}>
       <h3 style={{ margin: '0 0 1rem 0' }}>{title}</h3>
       <p style={{ fontSize: '1.2rem', marginBottom: '1.5rem' }}>
@@ -75,38 +76,44 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div>
-      {/* Metrics Row - Updated to be responsive */}
+    <div style={{ width: '100%', maxWidth: '100%' }}>
+      {/* Metrics Row */}
       <div style={{ 
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
         gap: '1.5rem',
         marginBottom: '1.5rem',
+        width: '100%',
       }}>
         <MetricCard title="Weekly Team Calls" value="0" />
         <MetricCard title="Weekly Team Deals" value="0" />
         <MetricCard title="Team Conversion Rate" value="0%" />
       </div>
       
-      {/* Contacts Row - Updated to be responsive */}
+      {/* Contacts Row - Fixed to ensure proper spacing */}
       <div style={{ 
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '1.5rem',
         marginBottom: '1.5rem',
+        width: '100%',
       }}>
-        <ContactCard 
-          title="Open Contacts" 
-          count="0" 
-          buttonText="Manage Open Contacts" 
-          onClick={() => router.push('/admin/contacts?status=Open')}
-        />
-        <ContactCard 
-          title="Assigned Contacts" 
-          count="0" 
-          buttonText="Manage Assigned Contacts" 
-          onClick={() => router.push('/admin/contacts?status=Assigned')}
-        />
+        <div style={{ width: '100%' }}>
+          <ContactCard 
+            title="Open Contacts" 
+            count="0" 
+            buttonText="Manage Open Contacts" 
+            onClick={() => router.push('/admin/contacts?status=Open')}
+          />
+        </div>
+        <div style={{ width: '100%' }}>
+          <ContactCard 
+            title="Assigned Contacts" 
+            count="0" 
+            buttonText="Manage Assigned Contacts" 
+            onClick={() => router.push('/admin/contacts?status=Assigned')}
+          />
+        </div>
       </div>
       
       {/* Team Performance */}
@@ -116,6 +123,7 @@ export default function AdminDashboard() {
         boxShadow: theme.shadows.sm,
         padding: '1.5rem',
         marginBottom: '1.5rem',
+        width: '100%',
       }}>
         <div style={{ 
           display: 'flex', 
@@ -139,7 +147,7 @@ export default function AdminDashboard() {
           </button>
         </div>
         
-        <div style={{ overflowX: 'auto' }}>
+        <div style={{ overflowX: 'auto', width: '100%' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
@@ -189,6 +197,7 @@ export default function AdminDashboard() {
         borderRadius: theme.borderRadius.md,
         boxShadow: theme.shadows.sm,
         padding: '1.5rem',
+        width: '100%',
       }}>
         <h2 style={{ marginTop: 0, marginBottom: '1rem' }}>Admin Actions</h2>
         <div style={{ 
