@@ -1,3 +1,4 @@
+// pages/admin/dashboard.js
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import theme from '../../styles/theme';
@@ -75,35 +76,10 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      {/* Dashboard header */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '2rem',
-      }}>
-        <h1 style={{ margin: 0 }}>Admin Dashboard</h1>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <span style={{ marginRight: '1rem' }}>Welcome, Admin User</span>
-          <button
-            style={{
-              backgroundColor: '#e74c3c',
-              color: 'white',
-              padding: '0.5rem 1rem',
-              border: 'none',
-              borderRadius: theme.borderRadius.sm,
-              cursor: 'pointer',
-            }}
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-      
-      {/* Metrics Row */}
+      {/* Metrics Row - Updated to be responsive */}
       <div style={{ 
         display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
         gap: '1.5rem',
         marginBottom: '1.5rem',
       }}>
@@ -112,10 +88,10 @@ export default function AdminDashboard() {
         <MetricCard title="Team Conversion Rate" value="0%" />
       </div>
       
-      {/* Contacts Row */}
+      {/* Contacts Row - Updated to be responsive */}
       <div style={{ 
         display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
         gap: '1.5rem',
         marginBottom: '1.5rem',
       }}>
@@ -149,6 +125,7 @@ export default function AdminDashboard() {
         }}>
           <h2 style={{ margin: 0 }}>Team Performance</h2>
           <button
+            onClick={() => router.push('/admin/users')}
             style={{
               backgroundColor: theme.colors.brand.accent,
               color: 'white',
@@ -185,6 +162,7 @@ export default function AdminDashboard() {
                   }}>
                     <span>No team members found.</span>
                     <button
+                      onClick={() => router.push('/admin/users/new')}
                       style={{
                         backgroundColor: theme.colors.brand.accent,
                         color: 'white',
@@ -219,6 +197,7 @@ export default function AdminDashboard() {
           flexWrap: 'wrap',
         }}>
           <button
+            onClick={() => router.push('/admin/users/new')}
             style={{
               backgroundColor: theme.colors.brand.accent,
               color: 'white',
@@ -231,6 +210,7 @@ export default function AdminDashboard() {
             Add New User
           </button>
           <button
+            onClick={() => router.push('/admin/contacts/import')}
             style={{
               backgroundColor: theme.colors.brand.accent,
               color: 'white',
@@ -243,6 +223,7 @@ export default function AdminDashboard() {
             Import Contacts
           </button>
           <button
+            onClick={() => router.push('/admin/contacts/assign')}
             style={{
               backgroundColor: theme.colors.brand.accent,
               color: 'white',
@@ -255,6 +236,7 @@ export default function AdminDashboard() {
             Assign Contacts
           </button>
           <button
+            onClick={() => router.push('/admin/analytics')}
             style={{
               backgroundColor: theme.colors.brand.accent,
               color: 'white',

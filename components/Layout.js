@@ -1,3 +1,4 @@
+// components/Layout.js
 import { useState, useEffect } from 'react';
 import { FaBars, FaSignOutAlt } from 'react-icons/fa';
 import { useRouter } from 'next/router';
@@ -51,6 +52,19 @@ export default function Layout({ children, customHeader }) {
     };
   }, []);
   
+  // Get page title based on path
+  const getPageTitle = () => {
+    const path = router.pathname;
+    if (path.includes('/admin/dashboard')) return 'Admin Dashboard';
+    if (path.includes('/dashboard')) return 'Dashboard';
+    if (path.includes('/contacts')) return 'Contacts';
+    if (path.includes('/calls')) return 'Calls';
+    if (path.includes('/tasks')) return 'Tasks';
+    if (path.includes('/stats') || path.includes('/analytics')) return 'Analytics';
+    // Add more conditions as needed
+    return 'Realtor CRM';
+  };
+  
   return (
     <div style={{ 
       display: 'flex',
@@ -97,7 +111,7 @@ export default function Layout({ children, customHeader }) {
               fontSize: '1.2rem', 
               color: theme.colors.brand.primary 
             }}>
-              Realtor CRM
+              {getPageTitle()}
             </h1>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               {user && (
@@ -135,7 +149,8 @@ export default function Layout({ children, customHeader }) {
             boxShadow: theme.shadows.sm,
             marginBottom: '2rem',
           }}>
-            <div style={{ flex: 1, maxWidth: '500px' }}>
+            <h1 style={{ margin: 0, color: theme.colors.brand.primary }}>{getPageTitle()}</h1>
+            <div style={{ flex: 1, maxWidth: '500px', margin: '0 1rem' }}>
               <input 
                 type="text"
                 placeholder="Search contacts, calls, tasks..."
