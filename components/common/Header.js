@@ -49,23 +49,15 @@ export default function Header() {
         <div className={styles.searchContainer}>
       
 
-      {/* Search Bar */}
-      <form 
+        {/* Search Bar */}
+        <form
+          className={styles.searchForm}
         onSubmit={handleSearch}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          backgroundColor: theme.colors.brand.background,
-          borderRadius: theme.borderRadius.sm,
-          width: '100%',
-          maxWidth: '400px',
-          padding: '0.5rem',
-          border: '1px solid #e2e8f0',
-        }}
       >
         <FaSearch color={theme.colors.brand.text} />
-        <input 
-          type="text"
+        <input
+          className={styles.searchInput}
+          type='text'
           placeholder="Search contacts, calls, tasks..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -80,20 +72,10 @@ export default function Header() {
       </form>
       
       {/* User Menu */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1.5rem',
-      }}>
-        <button style={{
-          backgroundColor: 'transparent',
-          border: 'none',
-          cursor: 'pointer',
-          position: 'relative',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
+      <div className={styles.headerIcons}>
+        <button className={styles.notificationButton}>
+        
+        
           <FaBell 
             color={theme.colors.brand.text} 
             size={20}
@@ -117,18 +99,10 @@ export default function Header() {
         </button>
         
             {/* User Menu */}
-        <div className={styles.userMenuContainer} ref={dropdownRef}>
+            <div className={styles.userMenuContainer} ref={dropdownRef}>
           <div className={styles.userMenu} onClick={toggleDropdown}>
-                <div style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                backgroundColor: theme.colors.brand.primary,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                }}>
+                <div className={styles.userAvatar}>
+
             <FaUser />
           
               </div>
