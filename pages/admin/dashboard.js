@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import theme from '../styles/theme';
+import theme from '../../styles/theme';
 
 export default function AdminDashboard() {
   const router = useRouter();
