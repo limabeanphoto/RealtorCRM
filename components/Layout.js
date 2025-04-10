@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import theme from '../styles/theme';
 import Sidebar from './common/Sidebar';
 
-export default function Layout({ children }) {
+export default function Layout({ children, customHeader }) {
   const router = useRouter();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -109,55 +109,59 @@ export default function Layout({ children }) {
           </div>
         )}
         
-        {/* Header with Search */}
-        <div style={{
-          backgroundColor: 'white',
-          padding: '1rem 2rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          boxShadow: theme.shadows.sm,
-          marginBottom: '2rem',
-        }}>
-          <div style={{ flex: 1 }}>
-            <input 
-              type="text"
-              placeholder="Search contacts, calls, tasks..."
-              style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '4px',
-                border: '1px solid #ddd',
-                width: '100%',
-                maxWidth: '500px',
-              }}
-            />
-          </div>
-          
-          {user && (
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <div style={{ marginRight: '1rem' }}>
-                <div style={{ fontWeight: 'bold' }}>{user.firstName} {user.lastName}</div>
-                <div style={{ fontSize: '0.8rem', color: '#666' }}>
-                  {user.role === 'admin' ? 'Administrator' : 'Team Member'}
-                </div>
-              </div>
-              <button
-                onClick={handleLogout}
+        {/* Use Custom Header or Default Header */}
+        {customHeader ? (
+          customHeader
+        ) : (
+          <div style={{
+            backgroundColor: 'white',
+            padding: '1rem 2rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            boxShadow: theme.shadows.sm,
+            marginBottom: '2rem',
+          }}>
+            <div style={{ flex: 1 }}>
+              <input 
+                type="text"
+                placeholder="Search contacts, calls, tasks..."
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  color: '#666',
-                  cursor: 'pointer',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '4px',
+                  border: '1px solid #ddd',
+                  width: '100%',
+                  maxWidth: '500px',
                 }}
-              >
-                <FaSignOutAlt size={18} />
-                <span style={{ marginLeft: '0.5rem' }}>Logout</span>
-              </button>
+              />
             </div>
-          )}
-        </div>
+            
+            {user && (
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ marginRight: '1rem' }}>
+                  <div style={{ fontWeight: 'bold' }}>{user.firstName} {user.lastName}</div>
+                  <div style={{ fontSize: '0.8rem', color: '#666' }}>
+                    {user.role === 'admin' ? 'Administrator' : 'Team Member'}
+                  </div>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    color: '#666',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <FaSignOutAlt size={18} />
+                  <span style={{ marginLeft: '0.5rem' }}>Logout</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
         
         {/* Main Content Area */}
         <main style={{ 

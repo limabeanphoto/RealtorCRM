@@ -123,30 +123,38 @@ export default function AdminDashboard() {
   
   return (
     <ProtectedRoute adminOnly={true}>
-      <Layout>
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h1>Admin Dashboard</h1>
-            <div>
-              <span style={{ marginRight: '1rem' }}>
-                Welcome, {user?.firstName} {user?.lastName}
-              </span>
-              <button
-                onClick={handleLogout}
-                style={{
-                  backgroundColor: '#e74c3c',
-                  color: 'white',
-                  padding: '0.5rem 1rem',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Logout
-              </button>
-            </div>
+      <Layout customHeader={
+        <div style={{ 
+          backgroundColor: 'white',
+          padding: '1rem 2rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+          marginBottom: '2rem'
+        }}>
+          <h1>Admin Dashboard</h1>
+          <div>
+            <span style={{ marginRight: '1rem' }}>
+              Welcome, {user?.firstName} {user?.lastName}
+            </span>
+            <button
+              onClick={handleLogout}
+              style={{
+                backgroundColor: '#e74c3c',
+                color: 'white',
+                padding: '0.5rem 1rem',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Logout
+            </button>
           </div>
-          
+        </div>
+      }>
+        <div>
           {loading ? (
             <p>Loading dashboard data...</p>
           ) : (
