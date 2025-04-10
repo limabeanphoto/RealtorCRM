@@ -9,7 +9,7 @@ export const DashboardCard = ({ title, children, actionButton, fullWidth = false
     borderRadius: theme.borderRadius.md,
     boxShadow: theme.shadows.sm,
     padding: '1.5rem',
-    marginBottom: '1.5rem',
+    marginBottom: '2rem', // Increased from 1.5rem for better vertical spacing
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
@@ -102,7 +102,7 @@ export const RowLayout = ({ children }) => (
     display: 'flex',
     flexWrap: 'wrap',
     margin: '0 -0.75rem', // Negative margin to counteract padding
-    marginBottom: '1.5rem',
+    marginBottom: '2rem', // Increased from 1.5rem for better spacing between sections
   }}>
     {children}
   </div>
@@ -133,10 +133,32 @@ export const Column = ({ children, width = '100%', mobileWidth = '100%' }) => {
     <div style={{ 
       width: isMobile ? mobileWidth : width, 
       padding: '0 0.75rem',
-      marginBottom: '1.5rem',
+      marginBottom: '1rem', // Added to ensure space between stacked columns on mobile
       boxSizing: 'border-box',
     }}>
       {children}
     </div>
   );
 };
+
+// Section component - for major dashboard sections with proper spacing
+export const Section = ({ children, title, actionButton, marginTop = '2rem', marginBottom = '2rem' }) => (
+  <div style={{ 
+    marginTop,
+    marginBottom,
+    width: '100%' 
+  }}>
+    {title && (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        marginBottom: '1rem',
+      }}>
+        <h2 style={{ margin: 0 }}>{title}</h2>
+        {actionButton}
+      </div>
+    )}
+    {children}
+  </div>
+);

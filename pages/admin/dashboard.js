@@ -6,7 +6,8 @@ import {
   ContactsCard, 
   ActionButton,
   RowLayout,
-  Column
+  Column,
+  Section
 } from '../../components/dashboard/DashboardComponents';
 
 export default function AdminDashboard() {
@@ -41,103 +42,111 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={{ width: '100%', padding: '1rem 0' }}> {/* Added top/bottom padding */}
       {/* Metrics Row - 3 equal columns */}
-      <RowLayout>
-        <Column width="33.333%" mobileWidth="100%">
-          <StatCard title="Weekly Team Calls" value="0" />
-        </Column>
-        <Column width="33.333%" mobileWidth="100%">
-          <StatCard title="Weekly Team Deals" value="0" />
-        </Column>
-        <Column width="33.333%" mobileWidth="100%">
-          <StatCard title="Team Conversion Rate" value="0%" />
-        </Column>
-      </RowLayout>
+      <Section marginTop="0"> {/* First section no top margin */}
+        <RowLayout>
+          <Column width="33.333%" mobileWidth="100%">
+            <StatCard title="Weekly Team Calls" value="0" />
+          </Column>
+          <Column width="33.333%" mobileWidth="100%">
+            <StatCard title="Weekly Team Deals" value="0" />
+          </Column>
+          <Column width="33.333%" mobileWidth="100%">
+            <StatCard title="Team Conversion Rate" value="0%" />
+          </Column>
+        </RowLayout>
+      </Section>
 
       {/* Contacts Row - 2 equal columns */}
-      <RowLayout>
-        <Column width="50%" mobileWidth="100%">
-          <ContactsCard 
-            title="Open Contacts" 
-            count="0" 
-            buttonText="Manage Open Contacts" 
-            onClick={() => router.push('/admin/contacts?status=Open')}
-          />
-        </Column>
-        <Column width="50%" mobileWidth="100%">
-          <ContactsCard 
-            title="Assigned Contacts" 
-            count="0" 
-            buttonText="Manage Assigned Contacts" 
-            onClick={() => router.push('/admin/contacts?status=Assigned')}
-          />
-        </Column>
-      </RowLayout>
+      <Section>
+        <RowLayout>
+          <Column width="50%" mobileWidth="100%">
+            <ContactsCard 
+              title="Open Contacts" 
+              count="0" 
+              buttonText="Manage Open Contacts" 
+              onClick={() => router.push('/admin/contacts?status=Open')}
+            />
+          </Column>
+          <Column width="50%" mobileWidth="100%">
+            <ContactsCard 
+              title="Assigned Contacts" 
+              count="0" 
+              buttonText="Manage Assigned Contacts" 
+              onClick={() => router.push('/admin/contacts?status=Assigned')}
+            />
+          </Column>
+        </RowLayout>
+      </Section>
       
       {/* Team Performance - Full Width Section */}
-      <DashboardCard 
-        title="Team Performance"
+      <Section 
+        title="Team Performance" 
         actionButton={
           <ActionButton onClick={() => router.push('/admin/users')}>
             Manage Users
           </ActionButton>
         }
       >
-        <div style={{ overflowX: 'auto', width: '100%' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Name</th>
-                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Weekly Calls</th>
-                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Weekly Deals</th>
-                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Conversion Rate</th>
-                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Assigned Contacts</th>
-                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '1rem' }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    gap: '0.5rem'
-                  }}>
-                    <span>No team members found.</span>
-                    <ActionButton small onClick={() => router.push('/admin/users/new')}>
-                      Add User
-                    </ActionButton>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </DashboardCard>
+        <DashboardCard>
+          <div style={{ overflowX: 'auto', width: '100%' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Name</th>
+                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Weekly Calls</th>
+                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Weekly Deals</th>
+                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Conversion Rate</th>
+                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Assigned Contacts</th>
+                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '1rem' }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      gap: '0.5rem'
+                    }}>
+                      <span>No team members found.</span>
+                      <ActionButton small onClick={() => router.push('/admin/users/new')}>
+                        Add User
+                      </ActionButton>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </DashboardCard>
+      </Section>
       
       {/* Admin Actions - Full Width Section */}
-      <DashboardCard title="Admin Actions">
-        <div style={{ 
-          display: 'flex', 
-          gap: '1rem',
-          flexWrap: 'wrap',
-        }}>
-          <ActionButton onClick={() => router.push('/admin/users/new')}>
-            Add New User
-          </ActionButton>
-          <ActionButton onClick={() => router.push('/admin/contacts/import')}>
-            Import Contacts
-          </ActionButton>
-          <ActionButton onClick={() => router.push('/admin/contacts/assign')}>
-            Assign Contacts
-          </ActionButton>
-          <ActionButton onClick={() => router.push('/admin/analytics')}>
-            Team Analytics
-          </ActionButton>
-        </div>
-      </DashboardCard>
+      <Section title="Admin Actions">
+        <DashboardCard>
+          <div style={{ 
+            display: 'flex', 
+            gap: '1rem',
+            flexWrap: 'wrap',
+          }}>
+            <ActionButton onClick={() => router.push('/admin/users/new')}>
+              Add New User
+            </ActionButton>
+            <ActionButton onClick={() => router.push('/admin/contacts/import')}>
+              Import Contacts
+            </ActionButton>
+            <ActionButton onClick={() => router.push('/admin/contacts/assign')}>
+              Assign Contacts
+            </ActionButton>
+            <ActionButton onClick={() => router.push('/admin/analytics')}>
+              Team Analytics
+            </ActionButton>
+          </div>
+        </DashboardCard>
+      </Section>
     </div>
   );
 }
