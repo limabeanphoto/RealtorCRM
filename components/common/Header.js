@@ -1,26 +1,54 @@
-import { useState } from 'react';
-import { FaSearch, FaBell, FaUser, FaEllipsisV } from 'react-icons/fa';
+import { useState, useRef, useEffect } from 'react';
+import { FaSearch, FaBell, FaUser, FaEllipsisV, FaSignOutAlt, FaCog } from 'react-icons/fa';
 import theme from '../../styles/theme';
+import Button from './Button';
+import styles from './Header.module.css';
 
 export default function Header() {
   const [searchTerm, setSearchTerm] = useState('');
-  
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
   const handleSearch = (e) => {
     e.preventDefault();
     // Implement search functionality here
     console.log('Searching for:', searchTerm);
   };
-  
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleLogout = () => {
+    // Placeholder for logout functionality
+    console.log('Logging out...');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    // router.push('/login');
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
-    <header style={{
-      backgroundColor: 'white',
-      padding: '1rem 2rem',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      boxShadow: theme.shadows.sm,
-      marginBottom: '2rem',
-    }}>
+    <header className={styles.header}>
+        <div className={styles.headerContent}>
+            
+        </div>
+
+        <div className={styles.searchContainer}>
+      
+
       {/* Search Bar */}
       <form 
         onSubmit={handleSearch}
@@ -28,10 +56,10 @@ export default function Header() {
           display: 'flex',
           alignItems: 'center',
           backgroundColor: theme.colors.brand.background,
-          borderRadius: theme.borderRadius.md,
-          padding: '0.5rem 1rem',
+          borderRadius: theme.borderRadius.sm,
           width: '100%',
-          maxWidth: '500px',
+          maxWidth: '400px',
+          padding: '0.5rem',
           border: '1px solid #e2e8f0',
         }}
       >
@@ -42,13 +70,12 @@ export default function Header() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{
-            border: 'none',
-            backgroundColor: 'transparent',
+            border:'none',
+            backgroundColor:'transparent',
             marginLeft: '0.5rem',
-            outline: 'none',
-            width: '100%',
+            width:'100%',
             color: theme.colors.brand.text,
-          }}
+            }}
         />
       </form>
       
@@ -89,30 +116,49 @@ export default function Header() {
           </span>
         </button>
         
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          cursor: 'pointer',
-        }}>
-          <div style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '50%',
-            backgroundColor: theme.colors.brand.primary,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-          }}>
+            {/* User Menu */}
+        <div className={styles.userMenuContainer} ref={dropdownRef}>
+          <div className={styles.userMenu} onClick={toggleDropdown}>
+                <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                backgroundColor: theme.colors.brand.primary,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                }}>
             <FaUser />
+          
+              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <span style={{ color: theme.colors.brand.text }}>Team Member</span>
+              <FaEllipsisV size={14} color={theme.colors.brand.text} />
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <span style={{ color: theme.colors.brand.text }}>Team Member</span>
-            <FaEllipsisV size={14} color={theme.colors.brand.text} />
-          </div>
+
+          {/* Dropdown */}
+          {isDropdownOpen && (
+            <div className={styles.dropdown}>
+              <div className={styles.dropdownItem}>
+                <FaCog />
+                <Button variant="ghost" size="small">
+                  Settings
+                </Button>
+              </div>
+              <div className={styles.dropdownItem} onClick={handleLogout}>
+                <FaSignOutAlt />
+                <Button variant="ghost" size="small">
+                  Log Out
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+          </div>
+       
+        </div>
     </header>
   );
 }

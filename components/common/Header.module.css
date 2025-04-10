@@ -1,0 +1,76 @@
+@value theme from '../../styles/theme.js';
+@value primary, secondary, accent, background, highlight, text from theme.colors.brand;
+@value shadowSm, shadowMd, shadowLg from theme.shadows;
+@value borderRadiusSm, borderRadiusMd, borderRadiusLg from theme.borderRadius;
+.header {
+  background-color: white;
+  box-shadow: shadowSm;
+  margin-bottom: 2rem;
+  padding: 1rem 2rem;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.searchContainer {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.searchInput {
+  border: 1px solid #e2e8f0;
+  border-radius: borderRadiusMd;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  max-width: 500px;
+  background-color: background;
+  color: text;
+}
+.searchInput::placeholder {
+  color: var(--text-color);
+
+  opacity: 0.7;
+}
+
+.userMenuContainer {
+  position: relative;
+}
+
+.userMenu {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #e2e8f0;  
+  border-radius: borderRadiusSm;
+  min-width: 150px;
+  box-shadow: shadowMd;
+  z-index: 10;
+  margin-top: 0.5rem;
+}
+
+.dropdownItem {
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.dropdownItem:hover {
+  background-color: background;
+}
