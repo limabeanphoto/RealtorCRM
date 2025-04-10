@@ -1,447 +1,273 @@
-// pages/admin/dashboard.js
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/router'
-import Layout from '../../components/Layout'
-import ProtectedRoute from '../../components/auth/ProtectedRoute'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import theme from '../styles/theme';
 
 export default function AdminDashboard() {
-  const router = useRouter()
-  const [user, setUser] = useState(null)
+  const router = useRouter();
   const [teamMetrics, setTeamMetrics] = useState({
     totalCalls: 0,
     totalDeals: 0,
     openContacts: 0,
     assignedContacts: 0,
     teamMembers: []
-  })
-  const [loading, setLoading] = useState(true)
-  
+  });
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    // Get user data from localStorage
-    const userData = JSON.parse(localStorage.getItem('user') || '{}')
-    setUser(userData)
-    
-    // Fetch dashboard data
-    const fetchAdminDashboardData = async () => {
-      try {
-        const token = localStorage.getItem('token')
-        
-        // Fetch team calls (weekly)
-        const callsResponse = await fetch('/api/stats/metrics?startDate=week&endDate=today', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        const callsData = await callsResponse.json()
-        
-        // Fetch open contacts count
-        const openContactsResponse = await fetch('/api/contacts?status=Open', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        const openContactsData = await openContactsResponse.json()
-        
-        // Fetch assigned contacts count
-        const assignedContactsResponse = await fetch('/api/contacts?status=Assigned', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        const assignedContactsData = await assignedContactsResponse.json()
-        
-        // Fetch team members
-        const usersResponse = await fetch('/api/users', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        const usersData = await usersResponse.json()
-        
-        // Fetch performance metrics for each user
-        let teamMembers = []
-        if (usersData.success) {
-          const members = usersData.data.filter(user => user.role === 'member')
-          
-          // For each member, get their metrics
-          teamMembers = await Promise.all(
-            members.map(async (member) => {
-              // Get user's calls
-              const userCallsResponse = await fetch(`/api/stats/metrics?startDate=week&endDate=today&userId=${member.id}`, {
-                headers: {
-                  'Authorization': `Bearer ${token}`
-                }
-              })
-              const userCallsData = await userCallsResponse.json()
-              
-              // Get user's assigned contacts
-              const userContactsResponse = await fetch(`/api/contacts?assignedTo=${member.id}`, {
-                headers: {
-                  'Authorization': `Bearer ${token}`
-                }
-              })
-              const userContactsData = await userContactsResponse.json()
-              
-              return {
-                ...member,
-                metrics: {
-                  calls: userCallsData.success ? userCallsData.callsMetrics.total : 0,
-                  deals: userCallsData.success ? userCallsData.dealsMetrics.total : 0,
-                  conversionRate: userCallsData.success ? userCallsData.conversionRates.rate : 0,
-                  assignedContacts: userContactsData.success ? userContactsData.data.length : 0
-                }
-              }
-            })
-          )
-        }
-        
-        // Update metrics
-        setTeamMetrics({
-          totalCalls: callsData.success ? callsData.callsMetrics.total : 0,
-          totalDeals: callsData.success ? callsData.dealsMetrics.total : 0,
-          openContacts: openContactsData.success ? openContactsData.data.length : 0,
-          assignedContacts: assignedContactsData.success ? assignedContactsData.data.length : 0,
-          teamMembers
-        })
-        
-        setLoading(false)
-      } catch (error) {
-        console.error('Error fetching admin dashboard data:', error)
-        setLoading(false)
-      }
-    }
-    
-    fetchAdminDashboardData()
-  }, [])
-  
-  const handleLogout = () => {
-    // Clear localStorage and redirect to login
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    router.push('/login')
+    // Simulate fetching data
+    setLoading(false);
+  }, []);
+
+  // Card component for metric display
+  const MetricCard = ({ title, value }) => (
+    <div style={{
+      backgroundColor: 'white',
+      borderRadius: theme.borderRadius.md,
+      boxShadow: theme.shadows.sm,
+      padding: '1.5rem',
+      textAlign: 'center',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+    }}>
+      <h3 style={{ margin: '0 0 1rem 0' }}>{title}</h3>
+      <p style={{ 
+        fontSize: '2rem', 
+        fontWeight: 'bold', 
+        margin: 0 
+      }}>{value}</p>
+    </div>
+  );
+
+  // Card component for contact sections
+  const ContactCard = ({ title, count, buttonText, onClick }) => (
+    <div style={{
+      backgroundColor: 'white',
+      borderRadius: theme.borderRadius.md,
+      boxShadow: theme.shadows.sm,
+      padding: '1.5rem',
+      height: '100%',
+    }}>
+      <h3 style={{ margin: '0 0 1rem 0' }}>{title}</h3>
+      <p style={{ fontSize: '1.2rem', marginBottom: '1.5rem' }}>
+        {count} contacts available
+      </p>
+      <button 
+        onClick={onClick}
+        style={{
+          backgroundColor: theme.colors.brand.accent,
+          color: 'white',
+          padding: '0.5rem 1rem',
+          border: 'none',
+          borderRadius: theme.borderRadius.sm,
+          cursor: 'pointer',
+        }}
+      >
+        {buttonText}
+      </button>
+    </div>
+  );
+
+  if (loading) {
+    return <p>Loading dashboard data...</p>;
   }
-  
+
   return (
-    <ProtectedRoute adminOnly={true}>
-      <Layout customHeader={
+    <div>
+      {/* Dashboard header */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '2rem',
+      }}>
+        <h1 style={{ margin: 0 }}>Admin Dashboard</h1>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <span style={{ marginRight: '1rem' }}>Welcome, Admin User</span>
+          <button
+            style={{
+              backgroundColor: '#e74c3c',
+              color: 'white',
+              padding: '0.5rem 1rem',
+              border: 'none',
+              borderRadius: theme.borderRadius.sm,
+              cursor: 'pointer',
+            }}
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+      
+      {/* Metrics Row */}
+      <div style={{ 
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '1.5rem',
+        marginBottom: '1.5rem',
+      }}>
+        <MetricCard title="Weekly Team Calls" value="0" />
+        <MetricCard title="Weekly Team Deals" value="0" />
+        <MetricCard title="Team Conversion Rate" value="0%" />
+      </div>
+      
+      {/* Contacts Row */}
+      <div style={{ 
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: '1.5rem',
+        marginBottom: '1.5rem',
+      }}>
+        <ContactCard 
+          title="Open Contacts" 
+          count="0" 
+          buttonText="Manage Open Contacts" 
+          onClick={() => router.push('/admin/contacts?status=Open')}
+        />
+        <ContactCard 
+          title="Assigned Contacts" 
+          count="0" 
+          buttonText="Manage Assigned Contacts" 
+          onClick={() => router.push('/admin/contacts?status=Assigned')}
+        />
+      </div>
+      
+      {/* Team Performance */}
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: theme.borderRadius.md,
+        boxShadow: theme.shadows.sm,
+        padding: '1.5rem',
+        marginBottom: '1.5rem',
+      }}>
         <div style={{ 
-          backgroundColor: 'white',
-          padding: '1rem 2rem',
-          display: 'flex',
+          display: 'flex', 
+          justifyContent: 'space-between', 
           alignItems: 'center',
-          justifyContent: 'space-between',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
-          marginBottom: '2rem'
+          marginBottom: '1rem',
         }}>
-          <h1>Admin Dashboard</h1>
-          <div>
-            <span style={{ marginRight: '1rem' }}>
-              Welcome, {user?.firstName} {user?.lastName}
-            </span>
-            <button
-              onClick={handleLogout}
-              style={{
-                backgroundColor: '#e74c3c',
-                color: 'white',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Logout
-            </button>
-          </div>
+          <h2 style={{ margin: 0 }}>Team Performance</h2>
+          <button
+            style={{
+              backgroundColor: theme.colors.brand.accent,
+              color: 'white',
+              padding: '0.5rem 1rem',
+              border: 'none',
+              borderRadius: theme.borderRadius.sm,
+              cursor: 'pointer',
+            }}
+          >
+            Manage Users
+          </button>
         </div>
-      }>
-        <div>
-          {loading ? (
-            <p>Loading dashboard data...</p>
-          ) : (
-            <>
-              {/* Team Metrics Overview Cards */}
-              <div style={{ 
-                display: 'flex', 
-                flexWrap: 'wrap', 
-                gap: '1rem', 
-                marginBottom: '2rem'
-              }}>
-                <div style={{ 
-                  flex: '1', 
-                  minWidth: '200px',
-                  padding: '1.5rem',
-                  backgroundColor: 'white',
-                  borderRadius: '8px',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
-                  textAlign: 'center'
-                }}>
-                  <h3>Weekly Team Calls</h3>
-                  <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0' }}>
-                    {teamMetrics.totalCalls}
-                  </p>
-                </div>
-                
-                <div style={{ 
-                  flex: '1', 
-                  minWidth: '200px',
-                  padding: '1.5rem',
-                  backgroundColor: 'white',
-                  borderRadius: '8px',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
-                  textAlign: 'center'
-                }}>
-                  <h3>Weekly Team Deals</h3>
-                  <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0' }}>
-                    {teamMetrics.totalDeals}
-                  </p>
-                </div>
-                
-                <div style={{ 
-                  flex: '1', 
-                  minWidth: '200px',
-                  padding: '1.5rem',
-                  backgroundColor: 'white',
-                  borderRadius: '8px',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
-                  textAlign: 'center'
-                }}>
-                  <h3>Team Conversion Rate</h3>
-                  <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0' }}>
-                    {teamMetrics.totalCalls > 0 ? Math.round((teamMetrics.totalDeals / teamMetrics.totalCalls) * 100) : 0}%
-                  </p>
-                </div>
-              </div>
-              
-              {/* Contact Pool Management */}
-              <div style={{ 
-                display: 'flex', 
-                flexWrap: 'wrap', 
-                gap: '1rem', 
-                marginBottom: '2rem'
-              }}>
-                <div style={{ 
-                  flex: '1',
-                  padding: '1.5rem',
-                  backgroundColor: 'white',
-                  borderRadius: '8px',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.12)'
-                }}>
-                  <h2>Open Contacts</h2>
-                  <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
-                    {teamMetrics.openContacts} contacts available
-                  </p>
-                  <button
-                    onClick={() => router.push('/admin/contacts?status=Open')}
-                    style={{
-                      backgroundColor: '#4a69bd',
-                      color: 'white',
-                      padding: '0.5rem 1rem',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      marginTop: '1rem'
-                    }}
-                  >
-                    Manage Open Contacts
-                  </button>
-                </div>
-                
-                <div style={{ 
-                  flex: '1',
-                  padding: '1.5rem',
-                  backgroundColor: 'white',
-                  borderRadius: '8px',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.12)'
-                }}>
-                  <h2>Assigned Contacts</h2>
-                  <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
-                    {teamMetrics.assignedContacts} contacts assigned
-                  </p>
-                  <button
-                    onClick={() => router.push('/admin/contacts?status=Assigned')}
-                    style={{
-                      backgroundColor: '#4a69bd',
-                      color: 'white',
-                      padding: '0.5rem 1rem',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      marginTop: '1rem'
-                    }}
-                  >
-                    Manage Assigned Contacts
-                  </button>
-                </div>
-              </div>
-              
-              {/* Team Member Performance */}
-              <div style={{
-                padding: '1.5rem',
-                backgroundColor: 'white',
-                borderRadius: '8px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
-                marginBottom: '2rem'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <h2>Team Performance</h2>
-                  <button
-                    onClick={() => router.push('/admin/users')}
-                    style={{
-                      backgroundColor: '#4a69bd',
-                      color: 'white',
-                      padding: '0.5rem 1rem',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Manage Users
-                  </button>
-                </div>
-                
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr>
-                      <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Name</th>
-                      <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Weekly Calls</th>
-                      <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Weekly Deals</th>
-                      <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Conversion Rate</th>
-                      <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Assigned Contacts</th>
-                      <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {teamMetrics.teamMembers.map((member) => (
-                      <tr key={member.id}>
-                        <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
-                          {member.firstName} {member.lastName}
-                        </td>
-                        <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
-                          {member.metrics.calls}
-                        </td>
-                        <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
-                          {member.metrics.deals}
-                        </td>
-                        <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
-                          {member.metrics.conversionRate}%
-                        </td>
-                        <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
-                          {member.metrics.assignedContacts}
-                        </td>
-                        <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
-                          <button
-                            onClick={() => router.push(`/admin/users/${member.id}`)}
-                            style={{
-                              backgroundColor: '#4a69bd',
-                              color: 'white',
-                              padding: '0.25rem 0.5rem',
-                              border: 'none',
-                              borderRadius: '4px',
-                              fontSize: '0.8rem',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            View Profile
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    
-                    {teamMetrics.teamMembers.length === 0 && (
-                      <tr>
-                        <td colSpan="6" style={{ padding: '1rem', textAlign: 'center' }}>
-                          No team members found. 
-                          <button
-                            onClick={() => router.push('/admin/users/new')}
-                            style={{
-                              backgroundColor: '#4a69bd',
-                              color: 'white',
-                              padding: '0.25rem 0.5rem',
-                              border: 'none',
-                              borderRadius: '4px',
-                              marginLeft: '0.5rem',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            Add User
-                          </button>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              
-              {/* Quick Links */}
-              <div style={{
-                padding: '1.5rem',
-                backgroundColor: 'white',
-                borderRadius: '8px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.12)'
-              }}>
-                <h2>Admin Actions</h2>
-                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                  <button
-                    onClick={() => router.push('/admin/users/new')}
-                    style={{
-                      backgroundColor: '#4a69bd',
-                      color: 'white',
-                      padding: '0.75rem 1.5rem',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Add New User
-                  </button>
-                  
-                  <button
-                    onClick={() => router.push('/admin/contacts/import')}
-                    style={{
-                      backgroundColor: '#4a69bd',
-                      color: 'white',
-                      padding: '0.75rem 1.5rem',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Import Contacts
-                  </button>
-                  
-                  <button
-                    onClick={() => router.push('/admin/contacts/assign')}
-                    style={{
-                      backgroundColor: '#4a69bd',
-                      color: 'white',
-                      padding: '0.75rem 1.5rem',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Assign Contacts
-                  </button>
-                  
-                  <button
-                    onClick={() => router.push('/stats')}
-                    style={{
-                      backgroundColor: '#4a69bd',
-                      color: 'white',
-                      padding: '0.75rem 1.5rem',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Team Analytics
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
+        
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Name</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Weekly Calls</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Weekly Deals</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Conversion Rate</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Assigned Contacts</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colSpan="6" style={{ textAlign: 'center', padding: '1rem' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    <span>No team members found.</span>
+                    <button
+                      style={{
+                        backgroundColor: theme.colors.brand.accent,
+                        color: 'white',
+                        padding: '0.25rem 0.5rem',
+                        border: 'none',
+                        borderRadius: theme.borderRadius.sm,
+                        fontSize: '0.8rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Add User
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </Layout>
-    </ProtectedRoute>
-  )
+      </div>
+      
+      {/* Admin Actions */}
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: theme.borderRadius.md,
+        boxShadow: theme.shadows.sm,
+        padding: '1.5rem',
+      }}>
+        <h2 style={{ marginTop: 0, marginBottom: '1rem' }}>Admin Actions</h2>
+        <div style={{ 
+          display: 'flex', 
+          gap: '1rem',
+          flexWrap: 'wrap',
+        }}>
+          <button
+            style={{
+              backgroundColor: theme.colors.brand.accent,
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              border: 'none',
+              borderRadius: theme.borderRadius.sm,
+              cursor: 'pointer',
+            }}
+          >
+            Add New User
+          </button>
+          <button
+            style={{
+              backgroundColor: theme.colors.brand.accent,
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              border: 'none',
+              borderRadius: theme.borderRadius.sm,
+              cursor: 'pointer',
+            }}
+          >
+            Import Contacts
+          </button>
+          <button
+            style={{
+              backgroundColor: theme.colors.brand.accent,
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              border: 'none',
+              borderRadius: theme.borderRadius.sm,
+              cursor: 'pointer',
+            }}
+          >
+            Assign Contacts
+          </button>
+          <button
+            style={{
+              backgroundColor: theme.colors.brand.accent,
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              border: 'none',
+              borderRadius: theme.borderRadius.sm,
+              cursor: 'pointer',
+            }}
+          >
+            Team Analytics
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }

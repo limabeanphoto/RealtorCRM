@@ -56,15 +56,28 @@ export default function Layout({ children, customHeader }) {
       display: 'flex',
       backgroundColor: theme.colors.brand.background,
       minHeight: '100vh',
+      position: 'relative',
+      overflow: 'hidden',
     }}>
-      {/* Sidebar */}
-      <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
+      {/* Sidebar - Fixed position with z-index */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        width: isSidebarCollapsed ? '70px' : '240px',
+        zIndex: 10,
+        transition: 'width 0.3s ease',
+        overflowX: 'hidden',
+      }}>
+        <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
+      </div>
       
-      {/* Main Content */}
+      {/* Main Content - With left margin based on sidebar state */}
       <div style={{ 
         marginLeft: isSidebarCollapsed ? '70px' : '240px',
-        width: '100%',
-        transition: 'margin-left 0.3s ease',
+        width: 'calc(100% - ' + (isSidebarCollapsed ? '70px' : '240px') + ')',
+        transition: 'margin-left 0.3s ease, width 0.3s ease',
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100vh',
@@ -122,7 +135,7 @@ export default function Layout({ children, customHeader }) {
             boxShadow: theme.shadows.sm,
             marginBottom: '2rem',
           }}>
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, maxWidth: '500px' }}>
               <input 
                 type="text"
                 placeholder="Search contacts, calls, tasks..."
@@ -131,7 +144,6 @@ export default function Layout({ children, customHeader }) {
                   borderRadius: '4px',
                   border: '1px solid #ddd',
                   width: '100%',
-                  maxWidth: '500px',
                 }}
               />
             </div>

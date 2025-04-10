@@ -24,18 +24,13 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
   return (
     <div 
       style={{
-        width: isCollapsed ? '70px' : '240px',
-        height: '100vh',
-        position: 'fixed',
-        left: 0,
-        top: 0,
+        height: '100%',
         backgroundColor: theme.colors.brand.primary,
         color: 'white',
-        transition: 'width 0.3s ease',
         display: 'flex',
         flexDirection: 'column',
         boxShadow: theme.shadows.md,
-        zIndex: 1000,
+        width: '100%',
       }}
     >
       {/* Logo Area */}
