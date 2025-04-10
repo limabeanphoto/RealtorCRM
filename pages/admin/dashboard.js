@@ -1,14 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { 
-  DashboardCard, 
-  StatCard, 
-  ContactsCard, 
-  ActionButton,
-  RowLayout,
-  Column,
-  Section
-} from '../../components/dashboard/DashboardComponents';
+import theme from '../../styles/theme';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -22,7 +14,7 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
-    // Simulate fetching data - replace with your actual API calls
+    // Simulate fetching data
     setTimeout(() => {
       setLoading(false);
     }, 500);
@@ -42,111 +34,259 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div style={{ width: '100%', padding: '1rem 0' }}> {/* Added top/bottom padding */}
-      {/* Metrics Row - 3 equal columns */}
-      <Section marginTop="0"> {/* First section no top margin */}
-        <RowLayout>
-          <Column width="33.333%" mobileWidth="100%">
-            <StatCard title="Weekly Team Calls" value="0" />
-          </Column>
-          <Column width="33.333%" mobileWidth="100%">
-            <StatCard title="Weekly Team Deals" value="0" />
-          </Column>
-          <Column width="33.333%" mobileWidth="100%">
-            <StatCard title="Team Conversion Rate" value="0%" />
-          </Column>
-        </RowLayout>
-      </Section>
-
-      {/* Contacts Row - 2 equal columns */}
-      <Section>
-        <RowLayout>
-          <Column width="50%" mobileWidth="100%">
-            <ContactsCard 
-              title="Open Contacts" 
-              count="0" 
-              buttonText="Manage Open Contacts" 
-              onClick={() => router.push('/admin/contacts?status=Open')}
-            />
-          </Column>
-          <Column width="50%" mobileWidth="100%">
-            <ContactsCard 
-              title="Assigned Contacts" 
-              count="0" 
-              buttonText="Manage Assigned Contacts" 
-              onClick={() => router.push('/admin/contacts?status=Assigned')}
-            />
-          </Column>
-        </RowLayout>
-      </Section>
+    <div style={{ width: '100%' }}>
+      {/* Metrics Cards - Fixed 3-column layout with proper spacing */}
+      <div style={{ 
+        display: 'flex',
+        flexWrap: 'wrap',
+        marginBottom: '20px',
+        gap: '20px',
+      }}>
+        {/* Card 1 */}
+        <div style={{ 
+          flex: '1 1 calc(33.333% - 14px)', 
+          minWidth: '250px',
+          backgroundColor: 'white',
+          borderRadius: '8px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+          padding: '20px',
+          textAlign: 'center',
+        }}>
+          <h3>Weekly Team Calls</h3>
+          <p style={{ fontSize: '2rem', fontWeight: 'bold' }}>0</p>
+        </div>
+        
+        {/* Card 2 */}
+        <div style={{ 
+          flex: '1 1 calc(33.333% - 14px)', 
+          minWidth: '250px',
+          backgroundColor: 'white',
+          borderRadius: '8px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+          padding: '20px',
+          textAlign: 'center',
+        }}>
+          <h3>Weekly Team Deals</h3>
+          <p style={{ fontSize: '2rem', fontWeight: 'bold' }}>0</p>
+        </div>
+        
+        {/* Card 3 */}
+        <div style={{ 
+          flex: '1 1 calc(33.333% - 14px)', 
+          minWidth: '250px',
+          backgroundColor: 'white',
+          borderRadius: '8px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+          padding: '20px',
+          textAlign: 'center',
+        }}>
+          <h3>Team Conversion Rate</h3>
+          <p style={{ fontSize: '2rem', fontWeight: 'bold' }}>0%</p>
+        </div>
+      </div>
       
-      {/* Team Performance - Full Width Section */}
-      <Section 
-        title="Team Performance" 
-        actionButton={
-          <ActionButton onClick={() => router.push('/admin/users')}>
+      {/* Contacts Cards - 2-column layout with proper spacing */}
+      <div style={{ 
+        display: 'flex',
+        flexWrap: 'wrap',
+        marginBottom: '20px',
+        gap: '20px',
+      }}>
+        {/* Open Contacts Card */}
+        <div style={{ 
+          flex: '1 1 calc(50% - 10px)', 
+          minWidth: '300px',
+          backgroundColor: 'white',
+          borderRadius: '8px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+          padding: '20px',
+        }}>
+          <h3>Open Contacts</h3>
+          <p>0 contacts available</p>
+          <button
+            onClick={() => router.push('/admin/contacts?status=Open')}
+            style={{
+              backgroundColor: '#6187BC',
+              color: 'white',
+              padding: '0.5rem 1rem',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Manage Open Contacts
+          </button>
+        </div>
+        
+        {/* Assigned Contacts Card */}
+        <div style={{ 
+          flex: '1 1 calc(50% - 10px)', 
+          minWidth: '300px',
+          backgroundColor: 'white',
+          borderRadius: '8px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+          padding: '20px',
+        }}>
+          <h3>Assigned Contacts</h3>
+          <p>0 contacts available</p>
+          <button
+            onClick={() => router.push('/admin/contacts?status=Assigned')}
+            style={{
+              backgroundColor: '#6187BC',
+              color: 'white',
+              padding: '0.5rem 1rem',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Manage Assigned Contacts
+          </button>
+        </div>
+      </div>
+      
+      {/* Team Performance Section */}
+      <div style={{ 
+        backgroundColor: 'white',
+        borderRadius: '8px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+        padding: '20px',
+        marginBottom: '20px',
+      }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          marginBottom: '1rem',
+        }}>
+          <h3 style={{ margin: 0 }}>Team Performance</h3>
+          <button
+            onClick={() => router.push('/admin/users')}
+            style={{
+              backgroundColor: '#6187BC',
+              color: 'white',
+              padding: '0.5rem 1rem',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
             Manage Users
-          </ActionButton>
-        }
-      >
-        <DashboardCard>
-          <div style={{ overflowX: 'auto', width: '100%' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Name</th>
-                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Weekly Calls</th>
-                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Weekly Deals</th>
-                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Conversion Rate</th>
-                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Assigned Contacts</th>
-                  <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td colSpan="6" style={{ textAlign: 'center', padding: '1rem' }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
-                      gap: '0.5rem'
-                    }}>
-                      <span>No team members found.</span>
-                      <ActionButton small onClick={() => router.push('/admin/users/new')}>
-                        Add User
-                      </ActionButton>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </DashboardCard>
-      </Section>
+          </button>
+        </div>
+        
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Name</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Weekly Calls</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Weekly Deals</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Conversion Rate</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Assigned Contacts</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colSpan="6" style={{ textAlign: 'center', padding: '1rem' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    <span>No team members found.</span>
+                    <button
+                      onClick={() => router.push('/admin/users/new')}
+                      style={{
+                        backgroundColor: '#6187BC',
+                        color: 'white',
+                        padding: '0.25rem 0.5rem',
+                        border: 'none',
+                        borderRadius: '4px',
+                        fontSize: '0.8rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Add User
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
       
-      {/* Admin Actions - Full Width Section */}
-      <Section title="Admin Actions">
-        <DashboardCard>
-          <div style={{ 
-            display: 'flex', 
-            gap: '1rem',
-            flexWrap: 'wrap',
-          }}>
-            <ActionButton onClick={() => router.push('/admin/users/new')}>
-              Add New User
-            </ActionButton>
-            <ActionButton onClick={() => router.push('/admin/contacts/import')}>
-              Import Contacts
-            </ActionButton>
-            <ActionButton onClick={() => router.push('/admin/contacts/assign')}>
-              Assign Contacts
-            </ActionButton>
-            <ActionButton onClick={() => router.push('/admin/analytics')}>
-              Team Analytics
-            </ActionButton>
-          </div>
-        </DashboardCard>
-      </Section>
+      {/* Admin Actions Section */}
+      <div style={{ 
+        backgroundColor: 'white',
+        borderRadius: '8px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+        padding: '20px',
+        marginBottom: '20px',
+      }}>
+        <h3 style={{ margin: '0 0 1rem 0' }}>Admin Actions</h3>
+        <div style={{ 
+          display: 'flex', 
+          gap: '1rem',
+          flexWrap: 'wrap',
+        }}>
+          <button
+            onClick={() => router.push('/admin/users/new')}
+            style={{
+              backgroundColor: '#6187BC',
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Add New User
+          </button>
+          <button
+            onClick={() => router.push('/admin/contacts/import')}
+            style={{
+              backgroundColor: '#6187BC',
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Import Contacts
+          </button>
+          <button
+            onClick={() => router.push('/admin/contacts/assign')}
+            style={{
+              backgroundColor: '#6187BC',
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Assign Contacts
+          </button>
+          <button
+            onClick={() => router.push('/admin/analytics')}
+            style={{
+              backgroundColor: '#6187BC',
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Team Analytics
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
