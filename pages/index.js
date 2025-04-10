@@ -12,6 +12,8 @@ import Card from '../components/common/Card';
 import StatsCard from '../components/dashboard/StatsCard';
 import GoalTracker from '../components/dashboard/GoalTracker';
 import Spinner from '../components/common/Spinner';
+import ProtectedRoute from '../components/auth/ProtectedRoute';
+import Layout from '../components/Layout';
 
 export default function Home() {
   const router = useRouter();
@@ -30,15 +32,42 @@ export default function Home() {
   });
   
   useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (!token) {
+      // Redirect to login if not authenticated
+      router.push('/login');
+      return;
+    }
+    
+    // Redirect based on role
+    if (user.role === 'admin') {
+      router.push('/admin/dashboard');
+      return;
+    }
+    
+    // Continue loading the dashboard for members
     async function fetchDashboardData() {
       try {
+        const token = localStorage.getItem('token');
+        
         // Fetch contacts count
-        const contactsResponse = await fetch('/api/contacts');
+        const contactsResponse = await fetch('/api/contacts', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         const contactsData = await contactsResponse.json();
         const contactCount = contactsData.success ? contactsData.data.length : 0;
         
         // Fetch calls count and recent calls
-        const callsResponse = await fetch('/api/calls');
+        const callsResponse = await fetch('/api/calls', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         const callsData = await callsResponse.json();
         const callCount = callsData.success ? callsData.data.length : 0;
         const recentCalls = callsData.success ? callsData.data.slice(0, 5) : [];
@@ -51,7 +80,11 @@ export default function Home() {
           : 0;
         
         // Fetch upcoming tasks
-        const tasksResponse = await fetch('/api/tasks');
+        const tasksResponse = await fetch('/api/tasks', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         const tasksData = await tasksResponse.json();
         const allTasks = tasksData.success ? tasksData.data : [];
         
@@ -89,7 +122,7 @@ export default function Home() {
     }
     
     fetchDashboardData();
-  }, []);
+  }, [router]);
   
   // Get call outcomes distribution
   const getCallOutcomesDistribution = (calls) => {
@@ -206,235 +239,239 @@ export default function Home() {
   // Calculate conversion rate
   const conversionRate = callCount > 0 ? Math.round((dealCount / callCount) * 100) : 0;
   
+  // Show loading during authentication check
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh' 
+      }}>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+  
   return (
-    <div className="page-transition">
-      <Greeting />
-      
-      {loading ? (
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          padding: '3rem'
-        }}>
-          <Spinner color="primary" size="large" />
-          <p style={{ color: theme.colors.brand.text, marginTop: '1rem' }}>
-            Loading dashboard data...
-          </p>
-        </div>
-      ) : (
-        <div>
-          {/* Call Goal Tracker */}
-          <div style={{ marginBottom: '2rem' }}>
-            <GoalTracker current={callCount > 10 ? 10 : callCount} target={10} />
-          </div>
+    <ProtectedRoute>
+      <Layout>
+        <div className="page-transition">
+          <Greeting />
           
-          {/* Stats Summary */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '1rem', 
-            flexWrap: 'wrap',
-            marginBottom: '2rem'
-          }}>
-            <StatsCard
-              title="Contacts"
-              value={contactCount}
-              iconType="contacts"
-              color={theme.colors.brand.accent}
-              link="/contacts"
-              linkText="View all contacts"
-            />
-            
-            <StatsCard
-              title="Calls"
-              value={callCount}
-              iconType="calls"
-              color={theme.colors.brand.primary}
-              link="/calls"
-              linkText="View all calls"
-            />
-            
-            <StatsCard
-              title="Conversion Rate"
-              value={`${conversionRate}%`}
-              iconType="conversion"
-              color={theme.colors.brand.secondary}
-              link="/stats"
-              linkText="View analytics"
-            />
-            
-            <StatsCard
-              title="Open Tasks"
-              value={upcomingTasks.length}
-              iconType="tasks"
-              color={theme.colors.brand.highlight}
-              link="/tasks"
-              linkText="View all tasks"
-            />
-          </div>
-          
-          {/* Charts Section */}
-          <div style={{ marginBottom: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h2 style={{ margin: 0, color: theme.colors.brand.primary }}>Performance Metrics</h2>
-              <Link href="/stats">
-                <Button variant="accent">View Detailed Analytics</Button>
-              </Link>
+          <div>
+            {/* Call Goal Tracker */}
+            <div style={{ marginBottom: '2rem' }}>
+              <GoalTracker current={callCount > 10 ? 10 : callCount} target={10} />
             </div>
             
-            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-              {/* Weekly Activity Chart */}
-              <Card 
-                title="Weekly Activity" 
-                accentColor={theme.colors.brand.primary}
-                style={{ flex: 1, minWidth: '300px' }}
-              >
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={weeklyActivity.calls} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="count" name="Calls" fill={theme.colors.brand.primary} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Card>
+            {/* Stats Summary */}
+            <div style={{ 
+              display: 'flex', 
+              gap: '1rem', 
+              flexWrap: 'wrap',
+              marginBottom: '2rem'
+            }}>
+              <StatsCard
+                title="Contacts"
+                value={contactCount}
+                iconType="contacts"
+                color={theme.colors.brand.accent}
+                link="/contacts"
+                linkText="View all contacts"
+              />
               
-              {/* Call Outcomes Chart */}
-              <Card 
-                title="Call Outcomes" 
-                accentColor={theme.colors.brand.primary}
-                style={{ flex: 1, minWidth: '300px' }}
-              >
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={callOutcomes}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={true}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      nameKey="name"
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {callOutcomes.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value, name) => [`${value} calls`, name]} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </Card>
+              <StatsCard
+                title="Calls"
+                value={callCount}
+                iconType="calls"
+                color={theme.colors.brand.primary}
+                link="/calls"
+                linkText="View all calls"
+              />
+              
+              <StatsCard
+                title="Conversion Rate"
+                value={`${conversionRate}%`}
+                iconType="conversion"
+                color={theme.colors.brand.secondary}
+                link="/stats"
+                linkText="View analytics"
+              />
+              
+              <StatsCard
+                title="Open Tasks"
+                value={upcomingTasks.length}
+                iconType="tasks"
+                color={theme.colors.brand.highlight}
+                link="/tasks"
+                linkText="View all tasks"
+              />
             </div>
-          </div>
-          
-          <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-            {/* Upcoming Tasks */}
-            <div style={{ flex: '1', minWidth: '300px' }}>
+            
+            {/* Charts Section */}
+            <div style={{ marginBottom: '2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h2 style={{ margin: 0, color: theme.colors.brand.primary }}>Upcoming Tasks</h2>
-                <Link href="/tasks">
-                  <Button variant="outline" size="small">View all</Button>
+                <h2 style={{ margin: 0, color: theme.colors.brand.primary }}>Performance Metrics</h2>
+                <Link href="/stats">
+                  <Button variant="accent">View Detailed Analytics</Button>
                 </Link>
               </div>
               
-              {upcomingTasks.length > 0 ? (
-                <div>
-                  {upcomingTasks.map(task => {
-                    const timeRemaining = getTimeRemaining(task.dueDate);
-                    
-                    return (
+              <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+                {/* Weekly Activity Chart */}
+                <Card 
+                  title="Weekly Activity" 
+                  accentColor={theme.colors.brand.primary}
+                  style={{ flex: 1, minWidth: '300px' }}
+                >
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={weeklyActivity.calls} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="count" name="Calls" fill={theme.colors.brand.primary} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Card>
+                
+                {/* Call Outcomes Chart */}
+                <Card 
+                  title="Call Outcomes" 
+                  accentColor={theme.colors.brand.primary}
+                  style={{ flex: 1, minWidth: '300px' }}
+                >
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={callOutcomes}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={true}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        nameKey="name"
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {callOutcomes.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value, name) => [`${value} calls`, name]} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </Card>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+              {/* Upcoming Tasks */}
+              <div style={{ flex: '1', minWidth: '300px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h2 style={{ margin: 0, color: theme.colors.brand.primary }}>Upcoming Tasks</h2>
+                  <Link href="/tasks">
+                    <Button variant="outline" size="small">View all</Button>
+                  </Link>
+                </div>
+                
+                {upcomingTasks.length > 0 ? (
+                  <div>
+                    {upcomingTasks.map(task => {
+                      const timeRemaining = getTimeRemaining(task.dueDate);
+                      
+                      return (
+                        <Card
+                          key={task.id}
+                          style={{ marginBottom: '1rem' }}
+                          onClick={() => router.push(`/tasks?id=${task.id}`)}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                            <h3 style={{ margin: 0, fontSize: '1rem', color: theme.colors.brand.primary }}>{task.title}</h3>
+                            <span style={{ 
+                              display: 'inline-block',
+                              padding: '0.2rem 0.5rem',
+                              borderRadius: theme.borderRadius.sm,
+                              fontSize: '0.7rem',
+                              ...getPriorityStyle(task.priority)
+                            }}>
+                              {task.priority}
+                            </span>
+                          </div>
+                          
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                            <div>
+                              {task.contact && `For: ${task.contact.name}`}
+                            </div>
+                            <div style={{ ...timeRemaining.style }}>
+                              Due: {timeRemaining.text}
+                            </div>
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <Card>
+                    <p style={{ textAlign: 'center', color: theme.colors.brand.text }}>No upcoming tasks.</p>
+                  </Card>
+                )}
+              </div>
+              
+              {/* Recent Calls */}
+              <div style={{ flex: '1', minWidth: '300px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h2 style={{ margin: 0, color: theme.colors.brand.primary }}>Recent Calls</h2>
+                  <Link href="/calls">
+                    <Button variant="outline" size="small">View all</Button>
+                  </Link>
+                </div>
+                
+                {recentCalls.length > 0 ? (
+                  <div>
+                    {recentCalls.map(call => (
                       <Card
-                        key={task.id}
+                        key={call.id}
                         style={{ marginBottom: '1rem' }}
-                        onClick={() => router.push(`/tasks?id=${task.id}`)}
+                        onClick={() => router.push(`/calls?id=${call.id}`)}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                          <h3 style={{ margin: 0, fontSize: '1rem', color: theme.colors.brand.primary }}>{task.title}</h3>
+                          <h3 style={{ margin: 0, fontSize: '1rem', color: theme.colors.brand.primary }}>{call.contact.name}</h3>
                           <span style={{ 
                             display: 'inline-block',
                             padding: '0.2rem 0.5rem',
                             borderRadius: theme.borderRadius.sm,
                             fontSize: '0.7rem',
-                            ...getPriorityStyle(task.priority)
+                            ...getOutcomeStyle(call.outcome)
                           }}>
-                            {task.priority}
+                            {call.outcome}
                           </span>
                         </div>
                         
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: theme.colors.brand.text }}>
                           <div>
-                            {task.contact && `For: ${task.contact.name}`}
+                            {call.duration} minutes
                           </div>
-                          <div style={{ ...timeRemaining.style }}>
-                            Due: {timeRemaining.text}
+                          <div>
+                            {formatDate(call.date)}
                           </div>
                         </div>
                       </Card>
-                    );
-                  })}
-                </div>
-              ) : (
-                <Card>
-                  <p style={{ textAlign: 'center', color: theme.colors.brand.text }}>No upcoming tasks.</p>
-                </Card>
-              )}
-            </div>
-            
-            {/* Recent Calls */}
-            <div style={{ flex: '1', minWidth: '300px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h2 style={{ margin: 0, color: theme.colors.brand.primary }}>Recent Calls</h2>
-                <Link href="/calls">
-                  <Button variant="outline" size="small">View all</Button>
-                </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <Card>
+                    <p style={{ textAlign: 'center', color: theme.colors.brand.text }}>No recent calls.</p>
+                  </Card>
+                )}
               </div>
-              
-              {recentCalls.length > 0 ? (
-                <div>
-                  {recentCalls.map(call => (
-                    <Card
-                      key={call.id}
-                      style={{ marginBottom: '1rem' }}
-                      onClick={() => router.push(`/calls?id=${call.id}`)}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                        <h3 style={{ margin: 0, fontSize: '1rem', color: theme.colors.brand.primary }}>{call.contact.name}</h3>
-                        <span style={{ 
-                          display: 'inline-block',
-                          padding: '0.2rem 0.5rem',
-                          borderRadius: theme.borderRadius.sm,
-                          fontSize: '0.7rem',
-                          ...getOutcomeStyle(call.outcome)
-                        }}>
-                          {call.outcome}
-                        </span>
-                      </div>
-                      
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: theme.colors.brand.text }}>
-                        <div>
-                          {call.duration} minutes
-                        </div>
-                        <div>
-                          {formatDate(call.date)}
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <Card>
-                  <p style={{ textAlign: 'center', color: theme.colors.brand.text }}>No recent calls.</p>
-                </Card>
-              )}
             </div>
           </div>
         </div>
-      )}
-    </div>
+      </Layout>
+    </ProtectedRoute>
   );
 }

@@ -1,17 +1,23 @@
+// pages/api/setup-user-table.js
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
 export default async function handler(req, res) {
   try {
-    // Create the User table
+    // Create the User table with expanded schema
     await prisma.$executeRaw`
       CREATE TABLE IF NOT EXISTS "User" (
         "id" TEXT NOT NULL PRIMARY KEY,
-        "name" TEXT NOT NULL,
         "email" TEXT NOT NULL UNIQUE,
-        "role" TEXT NOT NULL DEFAULT 'user',
-        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+        "passwordHash" TEXT NOT NULL,
+        "firstName" TEXT NOT NULL,
+        "lastName" TEXT NOT NULL,
+        "cellPhone" TEXT,
+        "assignedCallNumber" TEXT,
+        "role" TEXT NOT NULL DEFAULT 'member',
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "lastLoginAt" TIMESTAMP(3)
       )
     `
     
@@ -26,6 +32,14 @@ export default async function handler(req, res) {
       ALTER TABLE "Task" 
       ADD COLUMN IF NOT EXISTS "userId" TEXT,
       ADD CONSTRAINT "Task_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE
+    `
+    
+    // Add status and assignment fields to Contact table
+    await prisma.$executeRaw`
+      ALTER TABLE "Contact" 
+      ADD COLUMN IF NOT EXISTS "status" TEXT DEFAULT 'Open',
+      ADD COLUMN IF NOT EXISTS "assignedTo" TEXT,
+      ADD CONSTRAINT "Contact_assignedTo_fkey" FOREIGN KEY ("assignedTo") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE
     `
     
     return res.status(200).json({ 

@@ -1,16 +1,31 @@
 import { useState, useEffect } from 'react';
-import { FaBars } from 'react-icons/fa';
+import { FaBars, FaSignOutAlt } from 'react-icons/fa';
+import { useRouter } from 'next/router';
 import theme from '../styles/theme';
 import Sidebar from './common/Sidebar';
-import Header from './common/Header';
 
 export default function Layout({ children }) {
+  const router = useRouter();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [user, setUser] = useState(null);
+  
+  // Get user data from localStorage
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    setUser(userData);
+  }, []);
   
   // Toggle sidebar collapsed state
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+  
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    router.push('/login');
   };
   
   // Check if we're on mobile and auto-collapse sidebar
@@ -71,24 +86,78 @@ export default function Layout({ children }) {
             }}>
               Realtor CRM
             </h1>
-            <button 
-              onClick={toggleSidebar}
-              style={{
-                backgroundColor: 'transparent',
-                border: 'none',
-                color: theme.colors.brand.primary,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-              }}
-            >
-              <FaBars size={20} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              {user && (
+                <span style={{ marginRight: '1rem', fontSize: '0.9rem' }}>
+                  Welcome, {user.firstName}
+                </span>
+              )}
+              <button 
+                onClick={toggleSidebar}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: theme.colors.brand.primary,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                <FaBars size={20} />
+              </button>
+            </div>
           </div>
         )}
         
         {/* Header with Search */}
-        <Header />
+        <div style={{
+          backgroundColor: 'white',
+          padding: '1rem 2rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          boxShadow: theme.shadows.sm,
+          marginBottom: '2rem',
+        }}>
+          <div style={{ flex: 1 }}>
+            <input 
+              type="text"
+              placeholder="Search contacts, calls, tasks..."
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '4px',
+                border: '1px solid #ddd',
+                width: '100%',
+                maxWidth: '500px',
+              }}
+            />
+          </div>
+          
+          {user && (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ marginRight: '1rem' }}>
+                <div style={{ fontWeight: 'bold' }}>{user.firstName} {user.lastName}</div>
+                <div style={{ fontSize: '0.8rem', color: '#666' }}>
+                  {user.role === 'admin' ? 'Administrator' : 'Team Member'}
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: '#666',
+                  cursor: 'pointer',
+                }}
+              >
+                <FaSignOutAlt size={18} />
+                <span style={{ marginLeft: '0.5rem' }}>Logout</span>
+              </button>
+            </div>
+          )}
+        </div>
         
         {/* Main Content Area */}
         <main style={{ 
