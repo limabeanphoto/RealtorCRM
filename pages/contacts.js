@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import ContactForm from '../components/contacts/ContactForm'
 import ContactModal from '../components/contacts/ContactModal'
 import CallModal from '../components/calls/CallModal'
+import TaskModal from '../components/tasks/TaskModal'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
 
 export default function Contacts() {
@@ -14,6 +15,7 @@ export default function Contacts() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isCallModalOpen, setIsCallModalOpen] = useState(false)
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState(null)
   
   // Get user from localStorage
@@ -125,6 +127,12 @@ export default function Contacts() {
     setIsCallModalOpen(true)
   }
 
+  // Handle adding a task
+  const handleAddTask = (contact) => {
+    setSelectedContact(contact)
+    setIsTaskModalOpen(true)
+  }
+
   // Handle call form submission
   const handleCallSubmit = async (formData) => {
     try {
@@ -150,6 +158,35 @@ export default function Contacts() {
     } catch (error) {
       console.error('Error logging call:', error)
       alert('Error logging call')
+      return { success: false, message: error.message }
+    }
+  }
+
+  // Handle task form submission
+  const handleTaskSubmit = async (formData) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        alert('Task created successfully')
+        return { success: true, data: data.data }
+      } else {
+        alert('Error creating task: ' + data.message)
+        return { success: false, message: data.message }
+      }
+    } catch (error) {
+      console.error('Error creating task:', error)
+      alert('Error creating task')
       return { success: false, message: error.message }
     }
   }
@@ -243,6 +280,20 @@ export default function Contacts() {
                         >
                           Log Call
                         </button>
+                        <button
+                          onClick={() => handleAddTask(contact)}
+                          style={{
+                            backgroundColor: '#e58e26',
+                            color: 'white',
+                            padding: '0.25rem 0.5rem',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem'
+                          }}
+                        >
+                          Add Task
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -278,6 +329,15 @@ export default function Contacts() {
           onClose={() => setIsCallModalOpen(false)}
           contact={selectedContact}
           onSubmit={handleCallSubmit}
+        />
+
+        {/* Task Modal */}
+        <TaskModal
+          isOpen={isTaskModalOpen}
+          onClose={() => setIsTaskModalOpen(false)}
+          contact={selectedContact}
+          contacts={contacts}
+          onSubmit={handleTaskSubmit}
         />
       </div>
     </ProtectedRoute>

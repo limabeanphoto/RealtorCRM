@@ -1,6 +1,6 @@
 // pages/tasks.js
 import { useState, useEffect } from 'react'
-import TaskForm from '../components/tasks/TaskForm'
+import TaskModal from '../components/tasks/TaskModal'
 import TaskCard from '../components/tasks/TaskCard'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
 
@@ -8,7 +8,7 @@ export default function Tasks() {
   const [tasks, setTasks] = useState([])
   const [contacts, setContacts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
   const [filter, setFilter] = useState('all') // all, open, completed
   
@@ -74,13 +74,15 @@ export default function Tasks() {
       if (data.success) {
         // Add the new task to the list
         setTasks([data.data, ...tasks])
-        setShowForm(false)
+        return { success: true, data: data.data }
       } else {
         alert('Error creating task: ' + data.message)
+        return { success: false, message: data.message }
       }
     } catch (error) {
       console.error('Error creating task:', error)
       alert('Error creating task')
+      return { success: false, message: error.message }
     }
   }
   
@@ -104,13 +106,15 @@ export default function Tasks() {
         setTasks(tasks.map(task => 
           task.id === data.data.id ? data.data : task
         ))
-        setEditingTask(null)
+        return { success: true, data: data.data }
       } else {
         alert('Error updating task: ' + data.message)
+        return { success: false, message: data.message }
       }
     } catch (error) {
       console.error('Error updating task:', error)
       alert('Error updating task')
+      return { success: false, message: error.message }
     }
   }
   
@@ -170,6 +174,24 @@ export default function Tasks() {
       alert('Error deleting task')
     }
   }
+
+  // Handle opening the edit modal
+  const handleOpenEditModal = (task) => {
+    setEditingTask({
+      ...task,
+      dueDate: new Date(task.dueDate).toISOString().slice(0, 16)
+    })
+    setIsTaskModalOpen(true)
+  }
+
+  // Handle task form submit (create or update)
+  const handleTaskSubmit = (formData) => {
+    if (formData.id) {
+      return handleUpdateTask(formData)
+    } else {
+      return handleCreateTask(formData)
+    }
+  }
   
   // Filter tasks based on status
   const filteredTasks = tasks.filter(task => {
@@ -194,10 +216,10 @@ export default function Tasks() {
           <button
             onClick={() => {
               setEditingTask(null)
-              setShowForm(!showForm)
+              setIsTaskModalOpen(true)
             }}
             style={{
-              backgroundColor: showForm ? '#e74c3c' : '#4a69bd',
+              backgroundColor: '#4a69bd',
               color: 'white',
               padding: '0.5rem 1rem',
               border: 'none',
@@ -205,25 +227,9 @@ export default function Tasks() {
               cursor: 'pointer'
             }}
           >
-            {showForm ? 'Cancel' : 'New Task'}
+            New Task
           </button>
         </div>
-        
-        {/* Task Form */}
-        {(showForm || editingTask) && (
-          <div style={{ marginBottom: '2rem' }}>
-            <h2>{editingTask ? 'Edit Task' : 'Create New Task'}</h2>
-            <TaskForm 
-              onSubmit={editingTask ? handleUpdateTask : handleCreateTask} 
-              initialData={editingTask || {}}
-              onCancel={() => {
-                setShowForm(false)
-                setEditingTask(null)
-              }}
-              contacts={contacts}
-            />
-          </div>
-        )}
         
         {/* Task Filters */}
         <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem' }}>
@@ -281,14 +287,7 @@ export default function Tasks() {
                 task={task} 
                 onStatusChange={handleStatusChange}
                 onDelete={handleDeleteTask}
-                onEdit={() => {
-                  setEditingTask({
-                    ...task,
-                    dueDate: new Date(task.dueDate).toISOString().slice(0, 16)
-                  })
-                  setShowForm(false)
-                  window.scrollTo({ top: 0, behavior: 'smooth' })
-                }}
+                onEdit={() => handleOpenEditModal(task)}
               />
             ))}
           </div>
@@ -297,8 +296,8 @@ export default function Tasks() {
             <p style={{ marginBottom: '1rem' }}>No tasks found with the current filter.</p>
             <button
               onClick={() => {
-                setShowForm(true)
                 setEditingTask(null)
+                setIsTaskModalOpen(true)
               }}
               style={{
                 backgroundColor: '#4a69bd',
@@ -313,6 +312,18 @@ export default function Tasks() {
             </button>
           </div>
         )}
+
+        {/* Task Modal */}
+        <TaskModal
+          isOpen={isTaskModalOpen}
+          onClose={() => {
+            setIsTaskModalOpen(false)
+            setEditingTask(null)
+          }}
+          task={editingTask}
+          contacts={contacts}
+          onSubmit={handleTaskSubmit}
+        />
       </div>
     </ProtectedRoute>
   )
