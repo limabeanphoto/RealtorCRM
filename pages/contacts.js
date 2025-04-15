@@ -71,12 +71,15 @@ export default function Contacts() {
       alert('Error creating contact')
     }
   }
+
+  // Use an empty custom header to prevent the default header from being rendered
+  const emptyHeader = <div></div>
   
   return (
     <ProtectedRoute>
-      <Layout>
-        {/* Only the content specific to this page, no headers or search bars */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
+      <Layout customHeader={emptyHeader}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <h1>Contacts</h1>
           <button
             onClick={() => setShowForm(!showForm)}
             style={{
