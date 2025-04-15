@@ -9,6 +9,9 @@ export default function UserManagement() {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   
+  // Use an empty custom header to prevent the default header from being rendered
+  const emptyHeader = <div></div>
+  
   useEffect(() => {
     // Fetch users
     const fetchUsers = async () => {
@@ -69,9 +72,10 @@ export default function UserManagement() {
   
   return (
     <ProtectedRoute adminOnly={true}>
-      <Layout>
+      <Layout customHeader={emptyHeader}>
         <div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h1>User Management</h1>
             <button
               onClick={() => router.push('/admin/users/new')}
               style={{

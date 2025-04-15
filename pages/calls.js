@@ -11,6 +11,9 @@ export default function Calls() {
   const [selectedContact, setSelectedContact] = useState(null)
   const [showForm, setShowForm] = useState(false)
   
+  // Use an empty custom header to prevent the default header from being rendered
+  const emptyHeader = <div></div>
+  
   // Fetch calls and contacts
   useEffect(() => {
     async function fetchData() {
@@ -124,9 +127,10 @@ export default function Calls() {
   
   return (
     <ProtectedRoute>
-      <Layout>
+      <Layout customHeader={emptyHeader}>
         <div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h1>Calls</h1>
             <button
               onClick={() => setShowForm(!showForm)}
               style={{

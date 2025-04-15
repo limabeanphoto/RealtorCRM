@@ -16,6 +16,9 @@ export default function Dashboard() {
   })
   const [loading, setLoading] = useState(true)
   
+  // Use an empty custom header to prevent the default header from being rendered
+  const emptyHeader = <div></div>
+  
   useEffect(() => {
     // Get user data from localStorage
     const userData = JSON.parse(localStorage.getItem('user') || '{}')
@@ -79,8 +82,10 @@ export default function Dashboard() {
   
   return (
     <ProtectedRoute>
-      <Layout>
+      <Layout customHeader={emptyHeader}>
         <div>
+          <h1>Dashboard</h1>
+          
           {loading ? (
             <p>Loading dashboard data...</p>
           ) : (

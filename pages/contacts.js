@@ -22,7 +22,7 @@ export default function Contacts() {
       try {
         const token = localStorage.getItem('token')
         const response = await fetch('/api/contacts', {
-          headers: {
+           s: {
             'Authorization': `Bearer ${token}`
           }
         })

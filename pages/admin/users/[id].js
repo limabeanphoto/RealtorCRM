@@ -21,6 +21,9 @@ export default function EditUser() {
   const [error, setError] = useState('')
   const [saveLoading, setSaveLoading] = useState(false)
   
+  // Use an empty custom header to prevent the default header from being rendered
+  const emptyHeader = <div></div>
+  
   useEffect(() => {
     // Fetch user data
     const fetchUser = async () => {
@@ -110,9 +113,10 @@ export default function EditUser() {
   
   return (
     <ProtectedRoute adminOnly={true}>
-      <Layout>
+      <Layout customHeader={emptyHeader}>
         <div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h1>Edit User</h1>
             <button
               onClick={() => router.push('/admin/users')}
               style={{
@@ -132,8 +136,6 @@ export default function EditUser() {
             <p>Loading user data...</p>
           ) : (
             <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '2rem' }}>
-              <h2>Edit User</h2>
-              
               {error && (
                 <div style={{ 
                   padding: '0.75rem', 

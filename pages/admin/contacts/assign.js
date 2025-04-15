@@ -14,6 +14,9 @@ export default function AssignContacts() {
   const [selectedContacts, setSelectedContacts] = useState([])
   const [assignLoading, setAssignLoading] = useState(false)
   
+  // Use an empty custom header to prevent the default header from being rendered
+  const emptyHeader = <div></div>
+  
   useEffect(() => {
     // Fetch contacts and users
     const fetchData = async () => {
@@ -131,9 +134,10 @@ export default function AssignContacts() {
   
   return (
     <ProtectedRoute adminOnly={true}>
-      <Layout>
+      <Layout customHeader={emptyHeader}>
         <div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h1>Assign Contacts</h1>
             <button
               onClick={() => router.push('/admin/contacts')}
               style={{
@@ -164,25 +168,6 @@ export default function AssignContacts() {
                   {error}
                 </div>
               )}
-              
-              <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '1.5rem', marginBottom: '1.5rem' }}>
-                <h2>1. Select User to Assign Contacts</h2>
-                
-                <div style={{ marginTop: '1rem' }}>
-                  <select
-                    value={selectedUser}
-                    onChange={(e) => setSelectedUser(e.target.value)}
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                  >
-                    <option value="">-- Select a User --</option>
-                    {users.map(user => (
-                      <option key={user.id} value={user.id}>
-                        {user.firstName} {user.lastName} ({user.email})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
               
               <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '1.5rem', marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>

@@ -18,6 +18,9 @@ export default function NewUser() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   
+  // Use an empty custom header to prevent the default header from being rendered
+  const emptyHeader = <div></div>
+  
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -60,9 +63,10 @@ export default function NewUser() {
   
   return (
     <ProtectedRoute adminOnly={true}>
-      <Layout>
+      <Layout customHeader={emptyHeader}>
         <div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h1>Add New User</h1>
             <button
               onClick={() => router.push('/admin/users')}
               style={{
@@ -79,8 +83,6 @@ export default function NewUser() {
           </div>
           
           <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '2rem' }}>
-            <h2>Add New User</h2>
-            
             {error && (
               <div style={{ 
                 padding: '0.75rem', 

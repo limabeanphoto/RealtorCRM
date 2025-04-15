@@ -13,6 +13,9 @@ export default function Tasks() {
   const [editingTask, setEditingTask] = useState(null)
   const [filter, setFilter] = useState('all') // all, open, completed
   
+  // Use an empty custom header to prevent the default header from being rendered
+  const emptyHeader = <div></div>
+  
   // Fetch tasks and contacts
   useEffect(() => {
     async function fetchData() {
@@ -189,9 +192,10 @@ export default function Tasks() {
   
   return (
     <ProtectedRoute>
-      <Layout>
+      <Layout customHeader={emptyHeader}>
         <div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h1>Tasks</h1>
             <button
               onClick={() => {
                 setEditingTask(null)
