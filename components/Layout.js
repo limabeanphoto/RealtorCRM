@@ -33,11 +33,17 @@ export default function Layout({ children, customHeader }) {
   // Check if we're on mobile and auto-collapse sidebar
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+      const mobileCheck = window.innerWidth < 768;
+      setIsMobile(mobileCheck);
       
-      // Auto-collapse on small screens
-      if (window.innerWidth < 768) {
+      // Auto-collapse only if entering mobile view
+      // Keep it collapsed if already mobile and user expanded it manually
+      // Keep it expanded if already desktop and user collapsed it manually
+      if (mobileCheck && !isMobile) { // Check if changed to mobile
         setIsSidebarCollapsed(true);
+      } else if (!mobileCheck && isMobile) { // Check if changed to desktop
+         // Optional: Auto-expand when going back to desktop?
+         // setIsSidebarCollapsed(false);\ 
       }
     };
     
@@ -51,7 +57,7 @@ export default function Layout({ children, customHeader }) {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [isMobile]); // Rerun effect if isMobile state changes
   
   // Get page title based on path
   const getPageTitle = () => {
@@ -72,7 +78,7 @@ export default function Layout({ children, customHeader }) {
       backgroundColor: theme.colors.brand.background,
       minHeight: '100vh',
       position: 'relative',
-      overflow: 'hidden',
+      // Removed overflow: 'hidden', potential issue?
     }}>
       {/* Sidebar - Fixed position with z-index */}
       <div style={{
@@ -84,6 +90,7 @@ export default function Layout({ children, customHeader }) {
         zIndex: 10,
         transition: 'width 0.3s ease',
         overflowX: 'hidden',
+        flexShrink: 0, // Prevent sidebar from shrinking
       }}>
         <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
       </div>
@@ -96,8 +103,9 @@ export default function Layout({ children, customHeader }) {
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100vh',
+        flexGrow: 1, // Ensure it takes available space
       }}>
-        {/* Top Bar - Mobile Only */}
+        {/* Top Bar - Mobile Only - This should only show < 768px */}
         {isMobile && (
           <div style={{
             display: 'flex',
@@ -106,6 +114,7 @@ export default function Layout({ children, customHeader }) {
             padding: '1rem',
             backgroundColor: 'white',
             boxShadow: theme.shadows.sm,
+            flexShrink: 0, // Prevent shrinking
           }}>
             <h1 style={{ 
               margin: 0, 
@@ -137,20 +146,24 @@ export default function Layout({ children, customHeader }) {
           </div>
         )}
         
-        {/* Use Custom Header or Default Header */}
-        {customHeader ? (
-          customHeader
-        ) : (
+        {/* Default Header (Not Mobile) */}
+        {/* Render Header only if not custom and not mobile (mobile has its own top bar) */}
+        {!customHeader && !isMobile && (
           <Header />
         )}
+        {/* Render custom header if provided (regardless of mobile status?) */} 
+        {/* Consider if customHeader needs to be mobile aware too */} 
+        {customHeader && customHeader } 
         
         {/* Main Content Area */}
         <main style={{ 
-          padding: '0 2rem 2rem',
-          flex: 1,
+          // Use responsive padding: 1rem on mobile, 2rem otherwise
+          padding: isMobile ? '0 1rem 1rem' : '0 2rem 2rem',
+          flex: 1, // Allow shrinking/growing
           maxWidth: '1200px',
           margin: '0 auto',
           width: '100%',
+          overflowY: 'auto', // Allow vertical scroll within main if needed
         }}>
           {children}
         </main>
@@ -162,6 +175,7 @@ export default function Layout({ children, customHeader }) {
           borderTop: `1px solid ${theme.colors.brand.secondary}`,
           textAlign: 'center',
           color: theme.colors.brand.text,
+          flexShrink: 0, // Prevent footer from shrinking
         }}>
           <p style={{ margin: 0 }}>Realtor CRM • Simplifying sales tracking since 2024</p>
         </footer>
