@@ -1,4 +1,4 @@
-// pages/tasks.js (updated version)
+// pages/tasks.js
 import { useState, useEffect } from 'react'
 import TaskForm from '../components/tasks/TaskForm'
 import TaskCard from '../components/tasks/TaskCard'
@@ -191,8 +191,7 @@ export default function Tasks() {
     <ProtectedRoute>
       <Layout>
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h1>Tasks</h1>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
             <button
               onClick={() => {
                 setEditingTask(null)

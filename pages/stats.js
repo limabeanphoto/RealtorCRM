@@ -221,8 +221,6 @@ export default function Stats() {
   return (
     <ProtectedRoute>
       <Layout>
-        <h1>Performance Analytics</h1>
-        
         {/* Date Range Selector */}
         <div className="date-range-container" style={{ marginBottom: '2rem' }}>
           <DateRangeSelector 

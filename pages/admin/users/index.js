@@ -8,13 +8,8 @@ export default function UserManagement() {
   const router = useRouter()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState(null)
   
   useEffect(() => {
-    // Get user data from localStorage
-    const userData = JSON.parse(localStorage.getItem('user') || '{}')
-    setUser(userData)
-    
     // Fetch users
     const fetchUsers = async () => {
       try {
@@ -72,46 +67,9 @@ export default function UserManagement() {
     }
   }
   
-  const handleLogout = () => {
-    // Clear localStorage and redirect to login
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    router.push('/login')
-  }
-  
   return (
     <ProtectedRoute adminOnly={true}>
-      <Layout customHeader={
-        <div style={{ 
-          backgroundColor: 'white',
-          padding: '1rem 2rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
-          marginBottom: '2rem'
-        }}>
-          <h1>User Management</h1>
-          <div>
-            <span style={{ marginRight: '1rem' }}>
-              Welcome, {user?.firstName} {user?.lastName}
-            </span>
-            <button
-              onClick={handleLogout}
-              style={{
-                backgroundColor: '#e74c3c',
-                color: 'white',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      }>
+      <Layout>
         <div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
             <button

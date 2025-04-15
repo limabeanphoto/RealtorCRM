@@ -1,4 +1,4 @@
-// pages/calls.js (updated version)
+// pages/calls.js
 import { useState, useEffect } from 'react'
 import CallForm from '../components/calls/CallForm'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
@@ -126,8 +126,7 @@ export default function Calls() {
     <ProtectedRoute>
       <Layout>
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h1>Calls</h1>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
             <button
               onClick={() => setShowForm(!showForm)}
               style={{

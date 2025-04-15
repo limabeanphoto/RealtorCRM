@@ -1,4 +1,4 @@
-// pages/contacts.js (updated version)
+// pages/contacts.js
 import { useState, useEffect } from 'react'
 import ContactForm from '../components/contacts/ContactForm'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
@@ -76,8 +76,7 @@ export default function Contacts() {
     <ProtectedRoute>
       <Layout>
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h1>Contacts</h1>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
             <button
               onClick={() => setShowForm(!showForm)}
               style={{

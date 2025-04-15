@@ -1,5 +1,5 @@
 // pages/admin/users/new.js
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/router'
 import Layout from '../../../components/Layout'
 import ProtectedRoute from '../../../components/auth/ProtectedRoute'
@@ -17,13 +17,6 @@ export default function NewUser() {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [user, setUser] = useState(null)
-  
-  useEffect(() => {
-    // Get user data from localStorage
-    const userData = JSON.parse(localStorage.getItem('user') || '{}')
-    setUser(userData)
-  }, [])
   
   const handleChange = (e) => {
     setFormData({
@@ -65,45 +58,9 @@ export default function NewUser() {
     }
   }
   
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    router.push('/login')
-  }
-  
   return (
     <ProtectedRoute adminOnly={true}>
-      <Layout customHeader={
-        <div style={{ 
-          backgroundColor: 'white',
-          padding: '1rem 2rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
-          marginBottom: '2rem'
-        }}>
-          <h1>Add New User</h1>
-          <div>
-            <span style={{ marginRight: '1rem' }}>
-              Welcome, {user?.firstName} {user?.lastName}
-            </span>
-            <button
-              onClick={handleLogout}
-              style={{
-                backgroundColor: '#e74c3c',
-                color: 'white',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      }>
+      <Layout>
         <div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
             <button
@@ -122,6 +79,8 @@ export default function NewUser() {
           </div>
           
           <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '2rem' }}>
+            <h2>Add New User</h2>
+            
             {error && (
               <div style={{ 
                 padding: '0.75rem', 

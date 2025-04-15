@@ -77,39 +77,10 @@ export default function Dashboard() {
     fetchDashboardData()
   }, [])
   
-  const handleLogout = () => {
-    // Clear localStorage and redirect to login
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    router.push('/login')
-  }
-  
   return (
     <ProtectedRoute>
       <Layout>
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h1>Dashboard</h1>
-            <div>
-              <span style={{ marginRight: '1rem' }}>
-                Welcome, {user?.firstName} {user?.lastName}
-              </span>
-              <button
-                onClick={handleLogout}
-                style={{
-                  backgroundColor: '#e74c3c',
-                  color: 'white',
-                  padding: '0.5rem 1rem',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-          
           {loading ? (
             <p>Loading dashboard data...</p>
           ) : (
@@ -239,7 +210,7 @@ export default function Dashboard() {
                 <h2>Quick Actions</h2>
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                   <button
-                    onClick={() => router.push('/calls/new')}
+                    onClick={() => router.push('/calls')}
                     style={{
                       backgroundColor: '#4a69bd',
                       color: 'white',
@@ -253,7 +224,7 @@ export default function Dashboard() {
                   </button>
                   
                   <button
-                    onClick={() => router.push('/tasks/new')}
+                    onClick={() => router.push('/tasks')}
                     style={{
                       backgroundColor: '#4a69bd',
                       color: 'white',

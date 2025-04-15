@@ -133,8 +133,7 @@ export default function AssignContacts() {
     <ProtectedRoute adminOnly={true}>
       <Layout>
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h1>Assign Contacts</h1>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
             <button
               onClick={() => router.push('/admin/contacts')}
               style={{
