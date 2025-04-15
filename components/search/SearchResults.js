@@ -1,4 +1,3 @@
-// components/search/SearchResults.js
 import { useRouter } from 'next/router'
 import theme from '../../styles/theme'
 
@@ -84,9 +83,10 @@ export default function SearchResults({ results, onClose }) {
                   padding: '0.5rem',
                   cursor: 'pointer',
                   borderRadius: '4px',
-                  transition: 'background-color 0.2s',
-                  ':hover': { backgroundColor: '#f8f9fa' }
+                  transition: 'background-color 0.2s'
                 }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <div style={{ fontWeight: 'bold' }}>{contact.name}</div>
                 <div style={{ fontSize: '0.8rem', color: theme.colors.brand.text }}>
@@ -119,9 +119,10 @@ export default function SearchResults({ results, onClose }) {
                   padding: '0.5rem',
                   cursor: 'pointer',
                   borderRadius: '4px',
-                  transition: 'background-color 0.2s',
-                  ':hover': { backgroundColor: '#f8f9fa' }
+                  transition: 'background-color 0.2s'
                 }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <div style={{ fontWeight: 'bold' }}>
                   Call with {call.contact?.name || 'Unknown'}
@@ -156,9 +157,10 @@ export default function SearchResults({ results, onClose }) {
                   padding: '0.5rem',
                   cursor: 'pointer',
                   borderRadius: '4px',
-                  transition: 'background-color 0.2s',
-                  ':hover': { backgroundColor: '#f8f9fa' }
+                  transition: 'background-color 0.2s'
                 }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <div style={{ fontWeight: 'bold' }}>{task.title}</div>
                 <div style={{ fontSize: '0.8rem', color: theme.colors.brand.text }}>

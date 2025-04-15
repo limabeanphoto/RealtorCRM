@@ -1,4 +1,3 @@
-// Updated Header.js with search functionality
 import { useState, useRef, useEffect } from 'react';
 import { FaSearch, FaBell, FaUser, FaEllipsisV, FaSignOutAlt, FaCog, FaTimes } from 'react-icons/fa';
 import theme from '../../styles/theme';

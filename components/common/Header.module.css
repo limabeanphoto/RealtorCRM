@@ -2,6 +2,7 @@
 @value primary, secondary, accent, background, highlight, text from theme.colors.brand;
 @value shadowSm, shadowMd, shadowLg from theme.shadows;
 @value borderRadiusSm, borderRadiusMd, borderRadiusLg from theme.borderRadius;
+
 .header {
   background-color: white;
   box-shadow: shadowSm;
@@ -20,22 +21,53 @@
 .searchContainer {
   flex: 1;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.searchForm {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 500px;
+  background-color: background;
+  border-radius: borderRadiusMd;
+  padding: 0.5rem 1rem;
+  border: 1px solid #e2e8f0;
 }
 
 .searchInput {
-  border: 1px solid #e2e8f0;
+  border: none;
   border-radius: borderRadiusMd;
-  padding: 0.5rem 1rem;
-  width: 100%;
-  max-width: 500px;
-  background-color: background;
+  padding: 0.5rem 0;
+  background-color: transparent;
   color: text;
+  width: 100%;
+  outline: none;
 }
-.searchInput::placeholder {
-  color: var(--text-color);
 
+.searchInput::placeholder {
+  color: text;
   opacity: 0.7;
+}
+
+.headerIcons {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.notificationButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .userMenuContainer {
@@ -47,6 +79,17 @@
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
+}
+
+.userAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: accent;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dropdown {
