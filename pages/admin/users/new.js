@@ -1,7 +1,6 @@
 // pages/admin/users/new.js
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import Layout from '../../../components/Layout'
 import ProtectedRoute from '../../../components/auth/ProtectedRoute'
 
 export default function NewUser() {
@@ -17,9 +16,6 @@ export default function NewUser() {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  
-  // Use an empty custom header to prevent the default header from being rendered
-  const emptyHeader = <div></div>
   
   const handleChange = (e) => {
     setFormData({
@@ -63,166 +59,164 @@ export default function NewUser() {
   
   return (
     <ProtectedRoute adminOnly={true}>
-      <Layout customHeader={emptyHeader}>
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h1>Add New User</h1>
-            <button
-              onClick={() => router.push('/admin/users')}
-              style={{
-                backgroundColor: '#6c757d',
-                color: 'white',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Back to Users
-            </button>
-          </div>
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <h1>Add New User</h1>
+          <button
+            onClick={() => router.push('/admin/users')}
+            style={{
+              backgroundColor: '#6c757d',
+              color: 'white',
+              padding: '0.5rem 1rem',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Back to Users
+          </button>
+        </div>
+        
+        <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '2rem' }}>
+          {error && (
+            <div style={{ 
+              padding: '0.75rem', 
+              backgroundColor: '#f8d7da', 
+              color: '#721c24', 
+              borderRadius: '4px',
+              marginBottom: '1rem'
+            }}>
+              {error}
+            </div>
+          )}
           
-          <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '2rem' }}>
-            {error && (
-              <div style={{ 
-                padding: '0.75rem', 
-                backgroundColor: '#f8d7da', 
-                color: '#721c24', 
-                borderRadius: '4px',
-                marginBottom: '1rem'
-              }}>
-                {error}
-              </div>
-            )}
-            
-            <form onSubmit={handleSubmit}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-                    First Name*
-                  </label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    required
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                  />
-                </div>
-                
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-                    Last Name*
-                  </label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    required
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                  />
-                </div>
-              </div>
-              
-              <div style={{ marginBottom: '1.5rem' }}>
+          <form onSubmit={handleSubmit}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-                  Email* (used for login)
+                  First Name*
                 </label>
                 <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
                   onChange={handleChange}
                   required
                   style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
                 />
-              </div>
-              
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-                  Password*
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                />
-                <small style={{ color: '#6c757d', display: 'block', marginTop: '0.25rem' }}>
-                  Password must be at least 8 characters
-                </small>
-              </div>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-                    Cell Phone
-                  </label>
-                  <input
-                    type="tel"
-                    name="cellPhone"
-                    value={formData.cellPhone}
-                    onChange={handleChange}
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                  />
-                </div>
-                
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-                    Assigned Call Number
-                  </label>
-                  <input
-                    type="tel"
-                    name="assignedCallNumber"
-                    value={formData.assignedCallNumber}
-                    onChange={handleChange}
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                  />
-                </div>
-              </div>
-              
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-                  Role*
-                </label>
-                <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  required
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                >
-                  <option value="member">Member</option>
-                  <option value="admin">Admin</option>
-                </select>
               </div>
               
               <div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  style={{
-                    backgroundColor: '#4a69bd',
-                    color: 'white',
-                    padding: '0.75rem 1.5rem',
-                    border: 'none',
-                    borderRadius: '4px',
-                    fontSize: '1rem',
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    opacity: loading ? 0.7 : 1
-                  }}
-                >
-                  {loading ? 'Creating User...' : 'Create User'}
-                </button>
+                <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                  Last Name*
+                </label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  required
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
+                />
               </div>
-            </form>
-          </div>
+            </div>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                Email* (used for login)
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
+              />
+            </div>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                Password*
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
+              />
+              <small style={{ color: '#6c757d', display: 'block', marginTop: '0.25rem' }}>
+                Password must be at least 8 characters
+              </small>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                  Cell Phone
+                </label>
+                <input
+                  type="tel"
+                  name="cellPhone"
+                  value={formData.cellPhone}
+                  onChange={handleChange}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                  Assigned Call Number
+                </label>
+                <input
+                  type="tel"
+                  name="assignedCallNumber"
+                  value={formData.assignedCallNumber}
+                  onChange={handleChange}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
+                />
+              </div>
+            </div>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                Role*
+              </label>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                required
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
+              >
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            
+            <div>
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  backgroundColor: '#4a69bd',
+                  color: 'white',
+                  padding: '0.75rem 1.5rem',
+                  border: 'none',
+                  borderRadius: '4px',
+                  fontSize: '1rem',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.7 : 1
+                }}
+              >
+                {loading ? 'Creating User...' : 'Create User'}
+              </button>
+            </div>
+          </form>
         </div>
-      </Layout>
+      </div>
     </ProtectedRoute>
   )
 }

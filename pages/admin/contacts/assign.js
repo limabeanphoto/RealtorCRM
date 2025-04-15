@@ -1,7 +1,6 @@
 // pages/admin/contacts/assign.js
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import Layout from '../../../components/Layout'
 import ProtectedRoute from '../../../components/auth/ProtectedRoute'
 
 export default function AssignContacts() {
@@ -13,9 +12,6 @@ export default function AssignContacts() {
   const [selectedUser, setSelectedUser] = useState('')
   const [selectedContacts, setSelectedContacts] = useState([])
   const [assignLoading, setAssignLoading] = useState(false)
-  
-  // Use an empty custom header to prevent the default header from being rendered
-  const emptyHeader = <div></div>
   
   useEffect(() => {
     // Fetch contacts and users
@@ -134,156 +130,154 @@ export default function AssignContacts() {
   
   return (
     <ProtectedRoute adminOnly={true}>
-      <Layout customHeader={emptyHeader}>
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h1>Assign Contacts</h1>
-            <button
-              onClick={() => router.push('/admin/contacts')}
-              style={{
-                backgroundColor: '#6c757d',
-                color: 'white',
-                padding: '0.5rem 1rem',
-                border: 'none',
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <h1>Assign Contacts</h1>
+          <button
+            onClick={() => router.push('/admin/contacts')}
+            style={{
+              backgroundColor: '#6c757d',
+              color: 'white',
+              padding: '0.5rem 1rem',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Back to Contacts
+          </button>
+        </div>
+        
+        {loading ? (
+          <p>Loading data...</p>
+        ) : (
+          <div>
+            {error && (
+              <div style={{ 
+                padding: '0.75rem', 
+                backgroundColor: '#f8d7da', 
+                color: '#721c24', 
                 borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Back to Contacts
-            </button>
-          </div>
-          
-          {loading ? (
-            <p>Loading data...</p>
-          ) : (
-            <div>
-              {error && (
-                <div style={{ 
-                  padding: '0.75rem', 
-                  backgroundColor: '#f8d7da', 
-                  color: '#721c24', 
-                  borderRadius: '4px',
-                  marginBottom: '1rem'
-                }}>
-                  {error}
+                marginBottom: '1rem'
+              }}>
+                {error}
+              </div>
+            )}
+            
+            {/* Added: User Selection Section */}
+            <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '1.5rem', marginBottom: '1.5rem' }}>
+              <h2>1. Select User to Assign Contacts</h2>
+              
+              {users.length === 0 ? (
+                <p>No team members available for assignment</p>
+              ) : (
+                <select
+                  value={selectedUser}
+                  onChange={(e) => setSelectedUser(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
+                >
+                  <option value="">-- Select a team member --</option>
+                  {users.map(user => (
+                    <option key={user.id} value={user.id}>
+                      {user.firstName} {user.lastName}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+            
+            <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '1.5rem', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h2>2. Select Contacts to Assign</h2>
+                
+                <div>
+                  <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedContacts.length === contacts.length}
+                      onChange={handleSelectAllContacts}
+                      style={{ marginRight: '0.5rem' }}
+                    />
+                    Select All ({contacts.length})
+                  </label>
+                </div>
+              </div>
+              
+              {contacts.length === 0 ? (
+                <p>No open contacts available to assign</p>
+              ) : (
+                <div style={{ marginBottom: '1rem' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ width: '50px', textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid #ddd' }}></th>
+                        <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Name</th>
+                        <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Company</th>
+                        <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Phone</th>
+                        <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Email</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {contacts.map((contact) => (
+                        <tr key={contact.id}>
+                          <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>
+                            <input
+                              type="checkbox"
+                              checked={selectedContacts.includes(contact.id)}
+                              onChange={() => handleSelectContact(contact.id)}
+                            />
+                          </td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #ddd' }}>
+                            {contact.name}
+                          </td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #ddd' }}>
+                            {contact.company || '-'}
+                          </td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #ddd' }}>
+                            {contact.phone}
+                          </td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #ddd' }}>
+                            {contact.email || '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
               
-              {/* Added: User Selection Section */}
-              <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '1.5rem', marginBottom: '1.5rem' }}>
-                <h2>1. Select User to Assign Contacts</h2>
-                
-                {users.length === 0 ? (
-                  <p>No team members available for assignment</p>
-                ) : (
-                  <select
-                    value={selectedUser}
-                    onChange={(e) => setSelectedUser(e.target.value)}
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                  >
-                    <option value="">-- Select a team member --</option>
-                    {users.map(user => (
-                      <option key={user.id} value={user.id}>
-                        {user.firstName} {user.lastName}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-              
-              <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '1.5rem', marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <h2>2. Select Contacts to Assign</h2>
-                  
-                  <div>
-                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedContacts.length === contacts.length}
-                        onChange={handleSelectAllContacts}
-                        style={{ marginRight: '0.5rem' }}
-                      />
-                      Select All ({contacts.length})
-                    </label>
-                  </div>
-                </div>
-                
-                {contacts.length === 0 ? (
-                  <p>No open contacts available to assign</p>
-                ) : (
-                  <div style={{ marginBottom: '1rem' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                      <thead>
-                        <tr>
-                          <th style={{ width: '50px', textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid #ddd' }}></th>
-                          <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Name</th>
-                          <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Company</th>
-                          <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Phone</th>
-                          <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Email</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {contacts.map((contact) => (
-                          <tr key={contact.id}>
-                            <td style={{ textAlign: 'center', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>
-                              <input
-                                type="checkbox"
-                                checked={selectedContacts.includes(contact.id)}
-                                onChange={() => handleSelectContact(contact.id)}
-                              />
-                            </td>
-                            <td style={{ padding: '0.75rem', borderBottom: '1px solid #ddd' }}>
-                              {contact.name}
-                            </td>
-                            <td style={{ padding: '0.75rem', borderBottom: '1px solid #ddd' }}>
-                              {contact.company || '-'}
-                            </td>
-                            <td style={{ padding: '0.75rem', borderBottom: '1px solid #ddd' }}>
-                              {contact.phone}
-                            </td>
-                            <td style={{ padding: '0.75rem', borderBottom: '1px solid #ddd' }}>
-                              {contact.email || '-'}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-                
-                <div style={{ textAlign: 'right' }}>
-                  <span style={{ marginRight: '1rem' }}>
-                    {selectedContacts.length} contacts selected
-                  </span>
-                </div>
-              </div>
-              
-              <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '1.5rem' }}>
-                <h2>3. Assign Contacts</h2>
-                
-                <div style={{ marginTop: '1rem' }}>
-                  <button
-                    onClick={handleAssignContacts}
-                    disabled={!selectedUser || selectedContacts.length === 0 || assignLoading}
-                    style={{
-                      backgroundColor: '#4a69bd',
-                      color: 'white',
-                      padding: '0.75rem 1.5rem',
-                      border: 'none',
-                      borderRadius: '4px',
-                      fontSize: '1rem',
-                      cursor: (!selectedUser || selectedContacts.length === 0 || assignLoading) ? 'not-allowed' : 'pointer',
-                      opacity: (!selectedUser || selectedContacts.length === 0 || assignLoading) ? 0.7 : 1
-                    }}
-                  >
-                    {assignLoading ? 'Assigning...' : `Assign ${selectedContacts.length} Contacts to Selected User`}
-                  </button>
-                </div>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ marginRight: '1rem' }}>
+                  {selectedContacts.length} contacts selected
+                </span>
               </div>
             </div>
-          )}
-        </div>
-      </Layout>
+            
+            <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '1.5rem' }}>
+              <h2>3. Assign Contacts</h2>
+              
+              <div style={{ marginTop: '1rem' }}>
+                <button
+                  onClick={handleAssignContacts}
+                  disabled={!selectedUser || selectedContacts.length === 0 || assignLoading}
+                  style={{
+                    backgroundColor: '#4a69bd',
+                    color: 'white',
+                    padding: '0.75rem 1.5rem',
+                    border: 'none',
+                    borderRadius: '4px',
+                    fontSize: '1rem',
+                    cursor: (!selectedUser || selectedContacts.length === 0 || assignLoading) ? 'not-allowed' : 'pointer',
+                    opacity: (!selectedUser || selectedContacts.length === 0 || assignLoading) ? 0.7 : 1
+                  }}
+                >
+                  {assignLoading ? 'Assigning...' : `Assign ${selectedContacts.length} Contacts to Selected User`}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </ProtectedRoute>
   )
 }

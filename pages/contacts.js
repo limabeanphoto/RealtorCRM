@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import ContactForm from '../components/contacts/ContactForm'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
-import Layout from '../components/Layout'
 
 export default function Contacts() {
   const [contacts, setContacts] = useState([])
@@ -71,13 +70,10 @@ export default function Contacts() {
       alert('Error creating contact')
     }
   }
-
-  // Use an empty custom header to prevent the default header from being rendered
-  const emptyHeader = <div></div>
   
   return (
     <ProtectedRoute>
-      <Layout customHeader={emptyHeader}>
+      <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <h1>Contacts</h1>
           <button
@@ -148,7 +144,7 @@ export default function Contacts() {
         ) : (
           <p>No contacts found. Add your first contact to get started.</p>
         )}
-      </Layout>
+      </div>
     </ProtectedRoute>
   )
 }

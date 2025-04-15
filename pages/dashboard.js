@@ -1,7 +1,6 @@
 // pages/dashboard.js
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import Layout from '../components/Layout'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
 
 export default function Dashboard() {
@@ -15,9 +14,6 @@ export default function Dashboard() {
     myContacts: 0
   })
   const [loading, setLoading] = useState(true)
-  
-  // Use an empty custom header to prevent the default header from being rendered
-  const emptyHeader = <div></div>
   
   useEffect(() => {
     // Get user data from localStorage
@@ -82,185 +78,183 @@ export default function Dashboard() {
   
   return (
     <ProtectedRoute>
-      <Layout customHeader={emptyHeader}>
-        <div>
-          <h1>Dashboard</h1>
-          
-          {loading ? (
-            <p>Loading dashboard data...</p>
-          ) : (
-            <>
-              {/* Metrics Overview Cards */}
+      <div>
+        <h1>Dashboard</h1>
+        
+        {loading ? (
+          <p>Loading dashboard data...</p>
+        ) : (
+          <>
+            {/* Metrics Overview Cards */}
+            <div style={{ 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              gap: '1rem', 
+              marginBottom: '2rem'
+            }}>
               <div style={{ 
-                display: 'flex', 
-                flexWrap: 'wrap', 
-                gap: '1rem', 
-                marginBottom: '2rem'
+                flex: '1', 
+                minWidth: '200px',
+                padding: '1.5rem',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                textAlign: 'center'
               }}>
-                <div style={{ 
-                  flex: '1', 
-                  minWidth: '200px',
-                  padding: '1.5rem',
-                  backgroundColor: 'white',
-                  borderRadius: '8px',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
-                  textAlign: 'center'
-                }}>
-                  <h3>Today's Calls</h3>
-                  <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0' }}>
-                    {metrics.callsToday}
-                  </p>
-                </div>
-                
-                <div style={{ 
-                  flex: '1', 
-                  minWidth: '200px',
-                  padding: '1.5rem',
-                  backgroundColor: 'white',
-                  borderRadius: '8px',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
-                  textAlign: 'center'
-                }}>
-                  <h3>Tasks Due Today</h3>
-                  <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0' }}>
-                    {metrics.tasksToday}
-                  </p>
-                </div>
-                
-                <div style={{ 
-                  flex: '1', 
-                  minWidth: '200px',
-                  padding: '1.5rem',
-                  backgroundColor: 'white',
-                  borderRadius: '8px',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
-                  textAlign: 'center'
-                }}>
-                  <h3>Conversion Rate</h3>
-                  <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0' }}>
-                    {metrics.conversionRate}%
-                  </p>
-                </div>
+                <h3>Today's Calls</h3>
+                <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0' }}>
+                  {metrics.callsToday}
+                </p>
               </div>
               
-              {/* Contact Status Cards */}
               <div style={{ 
-                display: 'flex', 
-                flexWrap: 'wrap', 
-                gap: '1rem', 
-                marginBottom: '2rem'
+                flex: '1', 
+                minWidth: '200px',
+                padding: '1.5rem',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                textAlign: 'center'
               }}>
-                <div style={{ 
-                  flex: '1',
-                  padding: '1.5rem',
-                  backgroundColor: 'white',
-                  borderRadius: '8px',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.12)'
-                }}>
-                  <h2>Open Contacts</h2>
-                  <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
-                    {metrics.openContacts} contacts available
-                  </p>
-                  <button
-                    onClick={() => router.push('/contacts?status=Open')}
-                    style={{
-                      backgroundColor: '#4a69bd',
-                      color: 'white',
-                      padding: '0.5rem 1rem',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      marginTop: '1rem'
-                    }}
-                  >
-                    View Open Contacts
-                  </button>
-                </div>
-                
-                <div style={{ 
-                  flex: '1',
-                  padding: '1.5rem',
-                  backgroundColor: 'white',
-                  borderRadius: '8px',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.12)'
-                }}>
-                  <h2>My Contacts</h2>
-                  <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
-                    {metrics.myContacts} contacts assigned
-                  </p>
-                  <button
-                    onClick={() => router.push(`/contacts?assignedTo=${user?.id}`)}
-                    style={{
-                      backgroundColor: '#4a69bd',
-                      color: 'white',
-                      padding: '0.5rem 1rem',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      marginTop: '1rem'
-                    }}
-                  >
-                    View My Contacts
-                  </button>
-                </div>
+                <h3>Tasks Due Today</h3>
+                <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0' }}>
+                  {metrics.tasksToday}
+                </p>
               </div>
               
-              {/* Quick Links */}
-              <div style={{
+              <div style={{ 
+                flex: '1', 
+                minWidth: '200px',
+                padding: '1.5rem',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                textAlign: 'center'
+              }}>
+                <h3>Conversion Rate</h3>
+                <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0' }}>
+                  {metrics.conversionRate}%
+                </p>
+              </div>
+            </div>
+            
+            {/* Contact Status Cards */}
+            <div style={{ 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              gap: '1rem', 
+              marginBottom: '2rem'
+            }}>
+              <div style={{ 
+                flex: '1',
                 padding: '1.5rem',
                 backgroundColor: 'white',
                 borderRadius: '8px',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.12)'
               }}>
-                <h2>Quick Actions</h2>
-                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                  <button
-                    onClick={() => router.push('/calls')}
-                    style={{
-                      backgroundColor: '#4a69bd',
-                      color: 'white',
-                      padding: '0.75rem 1.5rem',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Log New Call
-                  </button>
-                  
-                  <button
-                    onClick={() => router.push('/tasks')}
-                    style={{
-                      backgroundColor: '#4a69bd',
-                      color: 'white',
-                      padding: '0.75rem 1.5rem',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Create Task
-                  </button>
-                  
-                  <button
-                    onClick={() => router.push('/stats')}
-                    style={{
-                      backgroundColor: '#4a69bd',
-                      color: 'white',
-                      padding: '0.75rem 1.5rem',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    View My Stats
-                  </button>
-                </div>
+                <h2>Open Contacts</h2>
+                <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
+                  {metrics.openContacts} contacts available
+                </p>
+                <button
+                  onClick={() => router.push('/contacts?status=Open')}
+                  style={{
+                    backgroundColor: '#4a69bd',
+                    color: 'white',
+                    padding: '0.5rem 1rem',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    marginTop: '1rem'
+                  }}
+                >
+                  View Open Contacts
+                </button>
               </div>
-            </>
-          )}
-        </div>
-      </Layout>
+              
+              <div style={{ 
+                flex: '1',
+                padding: '1.5rem',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.12)'
+              }}>
+                <h2>My Contacts</h2>
+                <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
+                  {metrics.myContacts} contacts assigned
+                </p>
+                <button
+                  onClick={() => router.push(`/contacts?assignedTo=${user?.id}`)}
+                  style={{
+                    backgroundColor: '#4a69bd',
+                    color: 'white',
+                    padding: '0.5rem 1rem',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    marginTop: '1rem'
+                  }}
+                >
+                  View My Contacts
+                </button>
+              </div>
+            </div>
+            
+            {/* Quick Links */}
+            <div style={{
+              padding: '1.5rem',
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.12)'
+            }}>
+              <h2>Quick Actions</h2>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => router.push('/calls')}
+                  style={{
+                    backgroundColor: '#4a69bd',
+                    color: 'white',
+                    padding: '0.75rem 1.5rem',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Log New Call
+                </button>
+                
+                <button
+                  onClick={() => router.push('/tasks')}
+                  style={{
+                    backgroundColor: '#4a69bd',
+                    color: 'white',
+                    padding: '0.75rem 1.5rem',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Create Task
+                </button>
+                
+                <button
+                  onClick={() => router.push('/stats')}
+                  style={{
+                    backgroundColor: '#4a69bd',
+                    color: 'white',
+                    padding: '0.75rem 1.5rem',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  View My Stats
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
     </ProtectedRoute>
   )
 }
