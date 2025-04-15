@@ -1,16 +1,20 @@
 // pages/contacts.js
 import { useState, useEffect } from 'react'
 import ContactForm from '../components/contacts/ContactForm'
+import ContactModal from '../components/contacts/ContactModal'
 import CallModal from '../components/calls/CallModal'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
 
 export default function Contacts() {
   const [contacts, setContacts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
   const [user, setUser] = useState(null)
-  const [selectedContact, setSelectedContact] = useState(null)
+  
+  // State for modals
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isCallModalOpen, setIsCallModalOpen] = useState(false)
+  const [selectedContact, setSelectedContact] = useState(null)
   
   // Get user from localStorage
   useEffect(() => {
@@ -20,34 +24,35 @@ export default function Contacts() {
   
   // Fetch contacts
   useEffect(() => {
-    async function fetchContacts() {
-      try {
-        const token = localStorage.getItem('token')
-        const response = await fetch('/api/contacts', {
-           headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        const data = await response.json()
-        
-        if (data.success) {
-          setContacts(data.data)
-        } else {
-          console.error('Error fetching contacts:', data.message)
-        }
-        
-        setLoading(false)
-      } catch (error) {
-        console.error('Error fetching contacts:', error)
-        setLoading(false)
-      }
-    }
-    
     fetchContacts()
   }, [])
+
+  const fetchContacts = async () => {
+    try {
+      setLoading(true)
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/contacts', {
+         headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      const data = await response.json()
+      
+      if (data.success) {
+        setContacts(data.data)
+      } else {
+        console.error('Error fetching contacts:', data.message)
+      }
+      
+      setLoading(false)
+    } catch (error) {
+      console.error('Error fetching contacts:', error)
+      setLoading(false)
+    }
+  }
   
-  // Handle form submission
-  const handleSubmit = async (formData) => {
+  // Handle adding a new contact
+  const handleAddContact = async (formData) => {
     try {
       const token = localStorage.getItem('token')
       const response = await fetch('/api/contacts', {
@@ -64,17 +69,57 @@ export default function Contacts() {
       if (data.success) {
         // Add the new contact to the list
         setContacts([data.data, ...contacts])
-        setShowForm(false)
+        return { success: true, data: data.data }
       } else {
         alert('Error creating contact: ' + data.message)
+        return { success: false, message: data.message }
       }
     } catch (error) {
       console.error('Error creating contact:', error)
       alert('Error creating contact')
+      return { success: false, message: error.message }
     }
   }
 
-  // Handle call logging
+  // Handle editing a contact
+  const handleEditContact = async (formData) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/contacts/${formData.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        // Update the contact in the list
+        setContacts(contacts.map(contact => 
+          contact.id === data.data.id ? data.data : contact
+        ))
+        return { success: true, data: data.data }
+      } else {
+        alert('Error updating contact: ' + data.message)
+        return { success: false, message: data.message }
+      }
+    } catch (error) {
+      console.error('Error updating contact:', error)
+      alert('Error updating contact')
+      return { success: false, message: error.message }
+    }
+  }
+
+  // Handle opening the edit modal
+  const handleOpenEditModal = (contact) => {
+    setSelectedContact(contact)
+    setIsEditModalOpen(true)
+  }
+
+  // Handle logging a call
   const handleLogCall = (contact) => {
     setSelectedContact(contact)
     setIsCallModalOpen(true)
@@ -115,9 +160,9 @@ export default function Contacts() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <h1>Contacts</h1>
           <button
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => setIsAddModalOpen(true)}
             style={{
-              backgroundColor: showForm ? '#e74c3c' : '#4a69bd',
+              backgroundColor: '#4a69bd',
               color: 'white',
               padding: '0.5rem 1rem',
               border: 'none',
@@ -125,16 +170,9 @@ export default function Contacts() {
               cursor: 'pointer'
             }}
           >
-            {showForm ? 'Cancel' : 'Add Contact'}
+            Add Contact
           </button>
         </div>
-        
-        {showForm && (
-          <div style={{ marginBottom: '2rem' }}>
-            <h2>Add New Contact</h2>
-            <ContactForm onSubmit={handleSubmit} />
-          </div>
-        )}
         
         {loading ? (
           <p>Loading contacts...</p>
@@ -176,20 +214,36 @@ export default function Contacts() {
                       </td>
                     )}
                     <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
-                      <button
-                        onClick={() => handleLogCall(contact)}
-                        style={{
-                          backgroundColor: '#4a69bd',
-                          color: 'white',
-                          padding: '0.25rem 0.5rem',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '0.8rem'
-                        }}
-                      >
-                        Log Call
-                      </button>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button
+                          onClick={() => handleOpenEditModal(contact)}
+                          style={{
+                            backgroundColor: '#4a69bd',
+                            color: 'white',
+                            padding: '0.25rem 0.5rem',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem'
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleLogCall(contact)}
+                          style={{
+                            backgroundColor: '#78e08f',
+                            color: 'white',
+                            padding: '0.25rem 0.5rem',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem'
+                          }}
+                        >
+                          Log Call
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -199,6 +253,24 @@ export default function Contacts() {
         ) : (
           <p>No contacts found. Add your first contact to get started.</p>
         )}
+
+        {/* Add Contact Modal */}
+        <ContactModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          contact={{}}
+          onSubmit={handleAddContact}
+          mode="add"
+        />
+
+        {/* Edit Contact Modal */}
+        <ContactModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          contact={selectedContact || {}}
+          onSubmit={handleEditContact}
+          mode="edit"
+        />
 
         {/* Call Modal */}
         <CallModal

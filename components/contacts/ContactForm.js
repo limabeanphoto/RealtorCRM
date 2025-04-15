@@ -1,12 +1,13 @@
 import { useState } from 'react'
 
-export default function ContactForm({ onSubmit }) {
+export default function ContactForm({ onSubmit, initialData = {}, onCancel }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     company: '',
-    notes: ''
+    notes: '',
+    ...initialData
   })
   
   const handleChange = (e) => {
@@ -90,19 +91,38 @@ export default function ContactForm({ onSubmit }) {
         />
       </div>
       
-      <button
-        type="submit"
-        style={{
-          backgroundColor: '#4a69bd',
-          color: 'white',
-          padding: '0.5rem 1rem',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer'
-        }}
-      >
-        Save Contact
-      </button>
+      <div style={{ display: 'flex', gap: '1rem' }}>
+        <button
+          type="submit"
+          style={{
+            backgroundColor: '#4a69bd',
+            color: 'white',
+            padding: '0.5rem 1rem',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          {initialData.id ? 'Update Contact' : 'Save Contact'}
+        </button>
+        
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            style={{
+              backgroundColor: '#e74c3c',
+              color: 'white',
+              padding: '0.5rem 1rem',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Cancel
+          </button>
+        )}
+      </div>
     </form>
   )
 }
