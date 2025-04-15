@@ -42,7 +42,7 @@ export default function AssignContacts() {
         if (contactsData.success) {
           setContacts(contactsData.data)
         } else {
-          setError('Error fetching contacts: ' + contactsData.message)
+          setError('Error fetching contacts: ' + (contactsData.message || 'Unknown error'))
         }
         
         if (usersData.success) {
@@ -50,13 +50,13 @@ export default function AssignContacts() {
           const memberUsers = usersData.data.filter(user => user.role === 'member')
           setUsers(memberUsers)
         } else {
-          setError('Error fetching users: ' + usersData.message)
+          setError('Error fetching users: ' + (usersData.message || 'Unknown error'))
         }
         
         setLoading(false)
       } catch (error) {
         console.error('Error fetching data:', error)
-        setError('An error occurred while fetching data')
+        setError('An error occurred while fetching data: ' + (error.message || 'Unknown error'))
         setLoading(false)
       }
     }
@@ -126,7 +126,7 @@ export default function AssignContacts() {
       }
     } catch (error) {
       console.error('Error assigning contacts:', error)
-      setError('An error occurred while assigning contacts')
+      setError('An error occurred while assigning contacts: ' + (error.message || 'Unknown error'))
     } finally {
       setAssignLoading(false)
     }
@@ -168,6 +168,28 @@ export default function AssignContacts() {
                   {error}
                 </div>
               )}
+              
+              {/* Added: User Selection Section */}
+              <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '1.5rem', marginBottom: '1.5rem' }}>
+                <h2>1. Select User to Assign Contacts</h2>
+                
+                {users.length === 0 ? (
+                  <p>No team members available for assignment</p>
+                ) : (
+                  <select
+                    value={selectedUser}
+                    onChange={(e) => setSelectedUser(e.target.value)}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
+                  >
+                    <option value="">-- Select a team member --</option>
+                    {users.map(user => (
+                      <option key={user.id} value={user.id}>
+                        {user.firstName} {user.lastName}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
               
               <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '1.5rem', marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>

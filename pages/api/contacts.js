@@ -22,17 +22,41 @@ async function handler(req, res) {
         ]
       }
       
-      // Add additional filters if provided
+      // Add additional filters if provided - FIXED logic
       if (status) {
-        where.status = status
+        if (where.OR) {
+          // If we have OR conditions, we need to refine them based on status
+          if (status === 'Open') {
+            // Keep only the Open condition
+            where.OR = where.OR.filter(condition => condition.status === 'Open')
+          } else if (status === 'Assigned') {
+            // Keep only the assigned condition
+            where.OR = where.OR.filter(condition => condition.assignedTo)
+          } else {
+            // For other statuses, replace OR with direct status filter
+            delete where.OR
+            where.status = status
+          }
+        } else {
+          // If no OR conditions, just set the status directly
+          where.status = status
+        }
       }
       
       if (assignedTo) {
         // Only admins can filter by assignedTo
-        if (req.user.role !== 'admin') {
+        if (req.user.role !== 'admin' && assignedTo !== req.user.id) {
           return res.status(403).json({ success: false, message: 'Unauthorized' })
         }
-        where.assignedTo = assignedTo
+        
+        if (where.OR) {
+          // If filtering by assignedTo, replace OR conditions 
+          delete where.OR
+          where.assignedTo = assignedTo
+        } else {
+          // Otherwise just set assignedTo directly
+          where.assignedTo = assignedTo
+        }
       }
       
       // Get contacts with filtering
@@ -56,7 +80,7 @@ async function handler(req, res) {
       return res.status(200).json({ success: true, data: contacts })
     } catch (error) {
       console.error('Error fetching contacts:', error)
-      return res.status(500).json({ success: false, message: 'Error fetching contacts' })
+      return res.status(500).json({ success: false, message: 'Error fetching contacts: ' + error.message })
     }
   } 
   
