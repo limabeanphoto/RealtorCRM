@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import CallForm from './CallForm';
 
-export default function CallModal({ isOpen, onClose, contact, onSubmit }) {
+export default function CallModal({ isOpen, onClose, call, contact, onSubmit, mode = 'new' }) {
   if (!isOpen) return null;
 
   const handleSubmit = async (formData) => {
@@ -11,6 +11,11 @@ export default function CallModal({ isOpen, onClose, contact, onSubmit }) {
     }
     return result;
   };
+
+  // For editing, we need to use the call data
+  // For new calls, we use the provided contact
+  const initialData = call || { contactId: contact?.id };
+  const title = mode === 'edit' ? `Edit Call with ${contact?.name || call?.contact?.name}` : `Log Call with ${contact?.name}`;
 
   return (
     <div
@@ -41,7 +46,7 @@ export default function CallModal({ isOpen, onClose, contact, onSubmit }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2 style={{ margin: 0 }}>Log Call with {contact?.name}</h2>
+          <h2 style={{ margin: 0 }}>{title}</h2>
           <button
             onClick={onClose}
             style={{
@@ -57,7 +62,8 @@ export default function CallModal({ isOpen, onClose, contact, onSubmit }) {
         
         <CallForm 
           onSubmit={handleSubmit} 
-          contact={contact} 
+          contact={contact || call?.contact}
+          initialData={initialData}
           onCancel={onClose}
         />
       </div>

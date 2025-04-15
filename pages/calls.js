@@ -8,7 +8,9 @@ export default function Calls() {
   const [contacts, setContacts] = useState([])
   const [loading, setLoading] = useState(true)
   const [isCallModalOpen, setIsCallModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState(null)
+  const [selectedCall, setSelectedCall] = useState(null)
   
   // Fetch calls and contacts
   useEffect(() => {
@@ -54,7 +56,7 @@ export default function Calls() {
     fetchData()
   }, [])
   
-  // Handle call form submission
+  // Handle creating a new call
   const handleCallSubmit = async (formData) => {
     try {
       const token = localStorage.getItem('token')
@@ -84,10 +86,48 @@ export default function Calls() {
     }
   }
 
+  // Handle editing a call
+  const handleEditCall = async (formData) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/calls/${formData.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        // Update the call in the list
+        setCalls(calls.map(call => 
+          call.id === data.data.id ? data.data : call
+        ))
+        return { success: true, data: data.data }
+      } else {
+        alert('Error updating call: ' + data.message)
+        return { success: false, message: data.message }
+      }
+    } catch (error) {
+      console.error('Error updating call:', error)
+      alert('Error updating call')
+      return { success: false, message: error.message }
+    }
+  }
+
   // Open modal to select a contact
   const handleNewCall = () => {
     setSelectedContact(null)
     setIsCallModalOpen(true)
+  }
+
+  // Handle opening the edit modal
+  const handleOpenEditModal = (call) => {
+    setSelectedCall(call)
+    setIsEditModalOpen(true)
   }
 
   // Handle contact selection for new call
@@ -122,7 +162,8 @@ export default function Calls() {
       'Follow Up': { backgroundColor: '#fff3cd', color: '#856404' },
       'No Answer': { backgroundColor: '#e2e3e5', color: '#383d41' },
       'Left Message': { backgroundColor: '#cce5ff', color: '#004085' },
-      'Wrong Number': { backgroundColor: '#f8d7da', color: '#721c24' }
+      'Wrong Number': { backgroundColor: '#f8d7da', color: '#721c24' },
+      'Deal Closed': { backgroundColor: '#d4edda', color: '#155724' }
     }
     
     return styles[outcome] || {}
@@ -168,6 +209,7 @@ export default function Calls() {
                   <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Duration</th>
                   <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Outcome</th>
                   <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Notes</th>
+                  <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -197,6 +239,22 @@ export default function Calls() {
                     <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
                       {call.notes || '-'}
                     </td>
+                    <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
+                      <button
+                        onClick={() => handleOpenEditModal(call)}
+                        style={{
+                          backgroundColor: '#4a69bd',
+                          color: 'white',
+                          padding: '0.25rem 0.5rem',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '0.8rem'
+                        }}
+                      >
+                        Edit
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -206,12 +264,22 @@ export default function Calls() {
           <p>No calls recorded yet. Log your first call to get started.</p>
         )}
 
-        {/* Call Modal */}
+        {/* New Call Modal */}
         <CallModal
           isOpen={isCallModalOpen}
           onClose={() => setIsCallModalOpen(false)}
           contact={selectedContact}
           onSubmit={handleCallSubmit}
+          mode="new"
+        />
+
+        {/* Edit Call Modal */}
+        <CallModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          call={selectedCall}
+          onSubmit={handleEditCall}
+          mode="edit"
         />
 
         {/* Contact Selection Modal (when no contact is selected) */}
