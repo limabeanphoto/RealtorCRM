@@ -75,6 +75,7 @@ export default function Contacts() {
   return (
     <ProtectedRoute>
       <Layout>
+        {/* Only the content specific to this page, no headers or search bars */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
           <button
             onClick={() => setShowForm(!showForm)}
