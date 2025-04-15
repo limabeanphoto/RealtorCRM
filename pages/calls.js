@@ -1,14 +1,14 @@
 // pages/calls.js
 import { useState, useEffect } from 'react'
-import CallForm from '../components/calls/CallForm'
+import CallModal from '../components/calls/CallModal'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
 
 export default function Calls() {
   const [calls, setCalls] = useState([])
   const [contacts, setContacts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [isCallModalOpen, setIsCallModalOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState(null)
-  const [showForm, setShowForm] = useState(false)
   
   // Fetch calls and contacts
   useEffect(() => {
@@ -54,20 +54,8 @@ export default function Calls() {
     fetchData()
   }, [])
   
-  // Handle contact selection for new call
-  const handleContactSelect = (e) => {
-    const contactId = e.target.value
-    
-    if (contactId) {
-      const contact = contacts.find(c => c.id === contactId)
-      setSelectedContact(contact)
-    } else {
-      setSelectedContact(null)
-    }
-  }
-  
-  // Handle form submission
-  const handleSubmit = async (formData) => {
+  // Handle call form submission
+  const handleCallSubmit = async (formData) => {
     try {
       const token = localStorage.getItem('token')
       const response = await fetch('/api/calls', {
@@ -84,14 +72,33 @@ export default function Calls() {
       if (data.success) {
         // Add the new call to the list
         setCalls([data.data, ...calls])
-        setShowForm(false)
-        setSelectedContact(null)
+        return { success: true, data: data.data }
       } else {
         alert('Error logging call: ' + data.message)
+        return { success: false, message: data.message }
       }
     } catch (error) {
       console.error('Error logging call:', error)
       alert('Error logging call')
+      return { success: false, message: error.message }
+    }
+  }
+
+  // Open modal to select a contact
+  const handleNewCall = () => {
+    setSelectedContact(null)
+    setIsCallModalOpen(true)
+  }
+
+  // Handle contact selection for new call
+  const handleContactSelect = (e) => {
+    const contactId = e.target.value
+    
+    if (contactId) {
+      const contact = contacts.find(c => c.id === contactId)
+      setSelectedContact(contact)
+    } else {
+      setSelectedContact(null)
     }
   }
   
@@ -124,64 +131,30 @@ export default function Calls() {
   return (
     <ProtectedRoute>
       <div>
-        {/* Modified the style here to include flexWrap and gap */}
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
           marginBottom: '2rem', 
-          flexWrap: 'wrap', // Allow items to wrap
-          gap: '1rem' // Add some space between items when they wrap
+          flexWrap: 'wrap', 
+          gap: '1rem' 
         }}>
           <h1>Calls</h1>
           <button
-            onClick={() => setShowForm(!showForm)}
+            onClick={handleNewCall}
             style={{
-              backgroundColor: showForm ? '#e74c3c' : '#4a69bd',
+              backgroundColor: '#4a69bd',
               color: 'white',
               padding: '0.5rem 1rem',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              whiteSpace: 'nowrap' // Prevent button text itself from wrapping
+              whiteSpace: 'nowrap'
             }}
           >
-            {showForm ? 'Cancel' : 'Log New Call'}
+            Log New Call
           </button>
         </div>
-        
-        {showForm && (
-          <div style={{ marginBottom: '2rem' }}>
-            <h2>Log New Call</h2>
-            
-            {!selectedContact && (
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-                  Select Contact
-                </label>
-                <select
-                  onChange={handleContactSelect}
-                  style={{ width: '100%', maxWidth: '500px', padding: '0.5rem' }}
-                >
-                  <option value="">-- Select a contact --</option>
-                  {contacts.map(contact => (
-                    <option key={contact.id} value={contact.id}>
-                      {contact.name} {contact.company ? `(${contact.company})` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-            
-            {selectedContact && (
-              <CallForm 
-                onSubmit={handleSubmit} 
-                contact={selectedContact} 
-                onCancel={() => setSelectedContact(null)}
-              />
-            )}
-          </div>
-        )}
         
         {loading ? (
           <p>Loading calls...</p>
@@ -231,6 +204,76 @@ export default function Calls() {
           </div>
         ) : (
           <p>No calls recorded yet. Log your first call to get started.</p>
+        )}
+
+        {/* Call Modal */}
+        <CallModal
+          isOpen={isCallModalOpen}
+          onClose={() => setIsCallModalOpen(false)}
+          contact={selectedContact}
+          onSubmit={handleCallSubmit}
+        />
+
+        {/* Contact Selection Modal (when no contact is selected) */}
+        {isCallModalOpen && !selectedContact && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+            }}
+            onClick={() => setIsCallModalOpen(false)}
+          >
+            <div
+              style={{
+                backgroundColor: 'white',
+                padding: '2rem',
+                borderRadius: '8px',
+                maxWidth: '600px',
+                width: '100%',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h2 style={{ margin: 0 }}>Select Contact</h2>
+                <button
+                  onClick={() => setIsCallModalOpen(false)}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    fontSize: '1.5rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  &times;
+                </button>
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                  Select Contact for Call
+                </label>
+                <select
+                  onChange={handleContactSelect}
+                  style={{ width: '100%', padding: '0.5rem' }}
+                >
+                  <option value="">-- Select a contact --</option>
+                  {contacts.map(contact => (
+                    <option key={contact.id} value={contact.id}>
+                      {contact.name} {contact.company ? `(${contact.company})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </ProtectedRoute>

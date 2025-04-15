@@ -1,6 +1,7 @@
 // pages/contacts.js
 import { useState, useEffect } from 'react'
 import ContactForm from '../components/contacts/ContactForm'
+import CallModal from '../components/calls/CallModal'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
 
 export default function Contacts() {
@@ -8,6 +9,8 @@ export default function Contacts() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [user, setUser] = useState(null)
+  const [selectedContact, setSelectedContact] = useState(null)
+  const [isCallModalOpen, setIsCallModalOpen] = useState(false)
   
   // Get user from localStorage
   useEffect(() => {
@@ -70,6 +73,41 @@ export default function Contacts() {
       alert('Error creating contact')
     }
   }
+
+  // Handle call logging
+  const handleLogCall = (contact) => {
+    setSelectedContact(contact)
+    setIsCallModalOpen(true)
+  }
+
+  // Handle call form submission
+  const handleCallSubmit = async (formData) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/calls', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        alert('Call logged successfully')
+        return { success: true, data: data.data }
+      } else {
+        alert('Error logging call: ' + data.message)
+        return { success: false, message: data.message }
+      }
+    } catch (error) {
+      console.error('Error logging call:', error)
+      alert('Error logging call')
+      return { success: false, message: error.message }
+    }
+  }
   
   return (
     <ProtectedRoute>
@@ -112,6 +150,7 @@ export default function Contacts() {
                   {user?.role === 'admin' && (
                     <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Status</th>
                   )}
+                  <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -136,6 +175,22 @@ export default function Contacts() {
                         </span>
                       </td>
                     )}
+                    <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
+                      <button
+                        onClick={() => handleLogCall(contact)}
+                        style={{
+                          backgroundColor: '#4a69bd',
+                          color: 'white',
+                          padding: '0.25rem 0.5rem',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '0.8rem'
+                        }}
+                      >
+                        Log Call
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -144,6 +199,14 @@ export default function Contacts() {
         ) : (
           <p>No contacts found. Add your first contact to get started.</p>
         )}
+
+        {/* Call Modal */}
+        <CallModal
+          isOpen={isCallModalOpen}
+          onClose={() => setIsCallModalOpen(false)}
+          contact={selectedContact}
+          onSubmit={handleCallSubmit}
+        />
       </div>
     </ProtectedRoute>
   )
