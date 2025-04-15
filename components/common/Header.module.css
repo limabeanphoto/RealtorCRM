@@ -1,11 +1,6 @@
-@value theme from '../../styles/theme.js';
-@value primary, secondary, accent, background, highlight, text from theme.colors.brand;
-@value shadowSm, shadowMd, shadowLg from theme.shadows;
-@value borderRadiusSm, borderRadiusMd, borderRadiusLg from theme.borderRadius;
-
 .header {
   background-color: white;
-  box-shadow: shadowSm;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
   margin-bottom: 2rem;
   padding: 1rem 2rem;
 }
@@ -33,24 +28,24 @@
   align-items: center;
   flex: 1;
   max-width: 500px;
-  background-color: background;
-  border-radius: borderRadiusMd;
+  background-color: #f8f9fa;
+  border-radius: 8px;
   padding: 0.5rem 1rem;
   border: 1px solid #e2e8f0;
 }
 
 .searchInput {
   border: none;
-  border-radius: borderRadiusMd;
+  border-radius: 8px;
   padding: 0.5rem 0;
   background-color: transparent;
-  color: text;
+  color: #7A7A73;
   width: 100%;
   outline: none;
 }
 
 .searchInput::placeholder {
-  color: text;
+  color: #7A7A73;
   opacity: 0.7;
 }
 
@@ -85,7 +80,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: accent;
+  background-color: #6187BC;
   color: white;
   display: flex;
   align-items: center;
@@ -98,9 +93,9 @@
   right: 0;
   background-color: white;
   border: 1px solid #e2e8f0;  
-  border-radius: borderRadiusSm;
+  border-radius: 4px;
   min-width: 150px;
-  box-shadow: shadowMd;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   z-index: 10;
   margin-top: 0.5rem;
 }
@@ -115,5 +110,5 @@
 }
 
 .dropdownItem:hover {
-  background-color: background;
+  background-color: #E3E4F0;
 }
