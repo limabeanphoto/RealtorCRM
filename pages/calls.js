@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import CallForm from '../components/calls/CallForm'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
-// Removed import Layout
 
 export default function Calls() {
   const [calls, setCalls] = useState([])
@@ -10,8 +9,6 @@ export default function Calls() {
   const [loading, setLoading] = useState(true)
   const [selectedContact, setSelectedContact] = useState(null)
   const [showForm, setShowForm] = useState(false)
-  
-  // Removed emptyHeader definition
   
   // Fetch calls and contacts
   useEffect(() => {
@@ -126,9 +123,16 @@ export default function Calls() {
   
   return (
     <ProtectedRoute>
-      {/* Removed the Layout wrapper */}
       <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        {/* Modified the style here to include flexWrap and gap */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          marginBottom: '2rem', 
+          flexWrap: 'wrap', // Allow items to wrap
+          gap: '1rem' // Add some space between items when they wrap
+        }}>
           <h1>Calls</h1>
           <button
             onClick={() => setShowForm(!showForm)}
@@ -138,7 +142,8 @@ export default function Calls() {
               padding: '0.5rem 1rem',
               border: 'none',
               borderRadius: '4px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              whiteSpace: 'nowrap' // Prevent button text itself from wrapping
             }}
           >
             {showForm ? 'Cancel' : 'Log New Call'}
@@ -181,8 +186,8 @@ export default function Calls() {
         {loading ? (
           <p>Loading calls...</p>
         ) : calls.length > 0 ? (
-          <div style={{ overflowX: 'auto' }}> {/* Added div wrapper for horizontal scrolling */}
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}> {/* Added minWidth for better scroll experience */}
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
               <thead>
                 <tr>
                   <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Date/Time</th>
@@ -228,7 +233,6 @@ export default function Calls() {
           <p>No calls recorded yet. Log your first call to get started.</p>
         )}
       </div>
-      {/* Removed closing Layout tag */}
     </ProtectedRoute>
   )
 }
