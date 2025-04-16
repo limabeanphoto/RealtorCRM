@@ -36,13 +36,13 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
     setUser(userData);
   }, []);
   
-  // Navigation items with conditional admin dashboard
+// Navigation items with conditional dashboard
   const navItems = [
-    // Add Admin Dashboard only for admin users
-    ...(user?.role === 'admin' ? [
-      { href: '/admin/dashboard', label: 'Admin Dashboard', icon: <FaHome size={18} /> }
-    ] : []),
-    { href: '/', label: 'Dashboard', icon: <FaHome size={18} /> },
+    // For admin users, show Admin Dashboard instead of regular Dashboard
+    ...(user?.role === 'admin' 
+        ? [{ href: '/admin/dashboard', label: 'Dashboard', icon: <FaHome size={18} /> }]
+        : [{ href: '/', label: 'Dashboard', icon: <FaHome size={18} /> }]
+    ),
     { href: '/contacts', label: 'Contacts', icon: <FaUsers size={18} /> },
     { href: '/calls', label: 'Calls', icon: <FaPhone size={18} /> },
     { href: '/tasks', label: 'Tasks', icon: <FaTasks size={18} /> },
