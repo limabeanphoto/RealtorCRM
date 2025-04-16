@@ -1,0 +1,462 @@
+import { useState, useEffect } from 'react';
+import { FaCheck, FaPhone, FaEdit, FaEnvelope, FaBuilding, FaAngleDown, FaAngleUp, FaTasks, FaHistory, FaTrash } from 'react-icons/fa';
+import theme from '../../styles/theme';
+
+export default function ContactCard({ 
+  contact, 
+  onEditClick, 
+  onLogCallClick, 
+  onAddTaskClick,
+  onDeleteContact
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [tasks, setTasks] = useState([]);
+  const [calls, setCalls] = useState([]);
+  const [isLoadingRelated, setIsLoadingRelated] = useState(false);
+  
+  // Toggle expanded state
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+    
+    // Load related data when expanding for the first time
+    if (!isExpanded && tasks.length === 0 && calls.length === 0) {
+      fetchRelatedData();
+    }
+  };
+  
+  // Fetch tasks and calls related to this contact
+  const fetchRelatedData = async () => {
+    setIsLoadingRelated(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Fetch tasks for this contact
+      const tasksResponse = await fetch(`/api/tasks?contactId=${contact.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      // Fetch calls for this contact
+      const callsResponse = await fetch(`/api/calls?contactId=${contact.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const tasksData = await tasksResponse.json();
+      const callsData = await callsResponse.json();
+      
+      if (tasksData.success) {
+        setTasks(tasksData.data);
+      }
+      
+      if (callsData.success) {
+        setCalls(callsData.data);
+      }
+    } catch (error) {
+      console.error('Error fetching related data:', error);
+    } finally {
+      setIsLoadingRelated(false);
+    }
+  };
+  
+  // Format date for display
+  const formatDate = (dateString) => {
+    const options = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+  
+  // Get color and style for call outcome badge
+  const getOutcomeStyle = (outcome) => {
+    const styles = {
+      'Interested': { backgroundColor: '#d4edda', color: '#155724' },
+      'Not Interested': { backgroundColor: '#f8d7da', color: '#721c24' },
+      'Follow Up': { backgroundColor: '#fff3cd', color: '#856404' },
+      'No Answer': { backgroundColor: '#e2e3e5', color: '#383d41' },
+      'Left Message': { backgroundColor: '#cce5ff', color: '#004085' },
+      'Wrong Number': { backgroundColor: '#f8d7da', color: '#721c24' },
+      'Deal Closed': { backgroundColor: '#d4edda', color: '#155724' }
+    };
+    
+    return styles[outcome] || { backgroundColor: '#e2e3e5', color: '#383d41' };
+  };
+  
+  // Get color and style for task status
+  const getStatusStyle = (status) => {
+    const styles = {
+      'Open': { backgroundColor: '#cce5ff', color: '#004085' },
+      'In Progress': { backgroundColor: '#fff3cd', color: '#856404' },
+      'Completed': { backgroundColor: '#d4edda', color: '#155724' }
+    };
+    
+    return styles[status] || { backgroundColor: '#e2e3e5', color: '#383d41' };
+  };
+  
+  // Get assigned status badge style (for admin view)
+  const getAssignedStyle = (status) => {
+    return status === 'Open' 
+      ? { backgroundColor: '#78e08f', color: 'white' }
+      : { backgroundColor: '#4a69bd', color: 'white' };
+  };
+  
+  return (
+    <div style={{ 
+      border: '1px solid #e2e8f0', 
+      borderRadius: theme.borderRadius.md,
+      margin: '0 0 1rem 0',
+      backgroundColor: 'white',
+      boxShadow: theme.shadows.sm,
+      overflow: 'hidden',
+      transition: 'box-shadow 0.2s ease',
+      ':hover': {
+        boxShadow: theme.shadows.md
+      }
+    }}>
+      {/* Card Header */}
+      <div style={{ 
+        padding: '1rem', 
+        borderBottom: isExpanded ? '1px solid #ddd' : 'none',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        cursor: 'pointer'
+      }} onClick={toggleExpand}>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <h3 style={{ 
+              margin: 0, 
+              color: theme.colors.brand.primary
+            }}>
+              {contact.name}
+            </h3>
+            
+            {/* Only show if user is admin and we have status info */}
+            {contact.status && (
+              <span style={{
+                display: 'inline-block',
+                padding: '0.2rem 0.5rem',
+                borderRadius: '4px',
+                fontSize: '0.8rem',
+                ...getAssignedStyle(contact.status)
+              }}>
+                {contact.status}
+                {contact.assignedToUser && ` (${contact.assignedToUser.firstName})`}
+              </span>
+            )}
+          </div>
+          
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {contact.company && (
+              <span style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.2rem',
+                fontSize: '0.9rem', 
+                color: theme.colors.brand.text
+              }}>
+                <FaBuilding size={12} />
+                {contact.company}
+              </span>
+            )}
+            
+            <span style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.2rem',
+              fontSize: '0.9rem', 
+              color: theme.colors.brand.text
+            }}>
+              <FaPhone size={12} />
+              {contact.phone}
+            </span>
+            
+            {contact.email && (
+              <span style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.2rem',
+                fontSize: '0.9rem', 
+                color: theme.colors.brand.text
+              }}>
+                <FaEnvelope size={12} />
+                {contact.email}
+              </span>
+            )}
+          </div>
+        </div>
+        
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEditClick(contact);
+            }}
+            style={{
+              backgroundColor: '#4a69bd',
+              color: 'white',
+              padding: '0.25rem 0.5rem',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '0.8rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.2rem',
+            }}
+          >
+            <FaEdit size={12} /> Edit
+          </button>
+          
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onLogCallClick(contact);
+            }}
+            style={{
+              backgroundColor: '#78e08f',
+              color: 'white',
+              padding: '0.25rem 0.5rem',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '0.8rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.2rem',
+            }}
+          >
+            <FaPhone size={12} /> Log Call
+          </button>
+          
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddTaskClick(contact);
+            }}
+            style={{
+              backgroundColor: '#e58e26',
+              color: 'white',
+              padding: '0.25rem 0.5rem',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '0.8rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.2rem',
+            }}
+          >
+            <FaTasks size={12} /> Add Task
+          </button>
+          
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            color: theme.colors.brand.text,
+            marginLeft: '0.5rem'
+          }}>
+            {isExpanded ? <FaAngleUp /> : <FaAngleDown />}
+          </div>
+        </div>
+      </div>
+      
+      {/* Card Expanded Content */}
+      {isExpanded && (
+        <div style={{ padding: '1rem', backgroundColor: '#f9f9f9' }}>
+          {/* Notes Section */}
+          {contact.notes && (
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Notes</h4>
+              <div style={{ 
+                backgroundColor: 'white', 
+                padding: '0.75rem', 
+                borderRadius: theme.borderRadius.sm,
+                border: '1px solid #eee'
+              }}>
+                {contact.notes}
+              </div>
+            </div>
+          )}
+          
+          {/* Tasks Section */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <h4 style={{ margin: 0 }}>Tasks</h4>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddTaskClick(contact);
+                }}
+                style={{
+                  backgroundColor: '#e58e26',
+                  color: 'white',
+                  padding: '0.25rem 0.5rem',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '0.8rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.2rem',
+                }}
+              >
+                <FaTasks size={12} /> Add Task
+              </button>
+            </div>
+            
+            {isLoadingRelated ? (
+              <div style={{ textAlign: 'center', padding: '1rem' }}>Loading tasks...</div>
+            ) : tasks.length > 0 ? (
+              <div>
+                {tasks.map(task => (
+                  <div key={task.id} style={{ 
+                    backgroundColor: 'white', 
+                    padding: '0.75rem', 
+                    borderRadius: theme.borderRadius.sm,
+                    border: '1px solid #eee',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontWeight: 'bold' }}>{task.title}</div>
+                      <span style={{ 
+                        display: 'inline-block',
+                        padding: '0.2rem 0.5rem',
+                        borderRadius: '4px',
+                        fontSize: '0.7rem',
+                        ...getStatusStyle(task.status)
+                      }}>
+                        {task.status}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>
+                      Due: {formatDate(task.dueDate)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ 
+                backgroundColor: 'white', 
+                padding: '0.75rem', 
+                borderRadius: theme.borderRadius.sm,
+                border: '1px solid #eee',
+                textAlign: 'center',
+                color: theme.colors.brand.text,
+                fontStyle: 'italic'
+              }}>
+                No tasks for this contact
+              </div>
+            )}
+          </div>
+          
+          {/* Call History Section */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <h4 style={{ margin: 0 }}>Recent Calls</h4>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onLogCallClick(contact);
+                }}
+                style={{
+                  backgroundColor: '#78e08f',
+                  color: 'white',
+                  padding: '0.25rem 0.5rem',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '0.8rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.2rem',
+                }}
+              >
+                <FaPhone size={12} /> Log Call
+              </button>
+            </div>
+            
+            {isLoadingRelated ? (
+              <div style={{ textAlign: 'center', padding: '1rem' }}>Loading calls...</div>
+            ) : calls.length > 0 ? (
+              <div>
+                {calls.map(call => (
+                  <div key={call.id} style={{ 
+                    backgroundColor: 'white', 
+                    padding: '0.75rem', 
+                    borderRadius: theme.borderRadius.sm,
+                    border: '1px solid #eee',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>{formatDate(call.date)} <span style={{ color: theme.colors.brand.text }}>({call.duration} min)</span></div>
+                      <span style={{ 
+                        display: 'inline-block',
+                        padding: '0.2rem 0.5rem',
+                        borderRadius: '4px',
+                        fontSize: '0.7rem',
+                        ...getOutcomeStyle(call.outcome)
+                      }}>
+                        {call.outcome}
+                      </span>
+                    </div>
+                    {call.notes && (
+                      <div style={{ fontSize: '0.8rem', marginTop: '0.25rem', fontStyle: 'italic' }}>
+                        {call.notes}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ 
+                backgroundColor: 'white', 
+                padding: '0.75rem', 
+                borderRadius: theme.borderRadius.sm,
+                border: '1px solid #eee',
+                textAlign: 'center',
+                color: theme.colors.brand.text,
+                fontStyle: 'italic'
+              }}>
+                No calls logged for this contact
+              </div>
+            )}
+          </div>
+          
+          {/* Delete Contact Button */}
+          <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm('Are you sure you want to delete this contact? This cannot be undone.')) {
+                  onDeleteContact(contact.id);
+                }
+              }}
+              style={{
+                backgroundColor: '#e74c3c',
+                color: 'white',
+                padding: '0.25rem 0.5rem',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.2rem',
+              }}
+            >
+              <FaTrash size={12} /> Delete Contact
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

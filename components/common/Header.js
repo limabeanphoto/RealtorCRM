@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { FaSearch, FaBell, FaUser, FaEllipsisV, FaSignOutAlt, FaCog, FaTimes } from 'react-icons/fa';
 import theme from '../../styles/theme';
+import Link from 'next/link';
 import Button from './Button';
 import styles from './Header.module.css';
 import SearchResults from '../search/SearchResults';
@@ -190,11 +191,13 @@ export default function Header() {
             {/* Dropdown */}
             {isDropdownOpen && (
               <div className={styles.dropdown}>
-                <div className={styles.dropdownItem}>
-                  <FaCog />
-                  <Button variant="ghost" size="small">
-                    Settings
-                  </Button>
+                <div className={styles.dropdownItem} >
+                  <Link href="/settings" style={{display: 'flex', gap: '0.5rem', alignItems: 'center'}}>
+                    <FaCog />
+                    <Button variant="ghost" size="small">
+                      Account Settings
+                    </Button>
+                  </Link>
                 </div>
                 <div className={styles.dropdownItem} onClick={handleLogout}>
                   <FaSignOutAlt />
