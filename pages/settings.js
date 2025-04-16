@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
 
-
 const AccountSettings = () => {
   return (
     <ProtectedRoute>
-      <div className="container mx-auto p-4">
+      <div>
+      <div style={{ marginBottom: '2rem' }}>
          <h1 className="text-2xl font-bold mb-6">Account Settings</h1>
         <SettingsForm />
       </div>
@@ -53,49 +53,61 @@ const SettingsForm = () => {
     }
   };
   return (
-    <ProtectedRoute><form onSubmit={handleSubmit} className="space-y-4">
-          {message && <div className="text-red-500">{message}</div>}
+    <form onSubmit={handleSubmit} style={{ maxWidth: '500px', margin: '0 auto' }}>
+          {message && <div style={{ color: 'red', marginBottom: '1rem' }}>{message}</div>}
           {/* Name Field */}
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem' }}>
               Name
             </label>
-            <input type="text" id="name" name="name" className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-              value={formData.name} onChange={handleChange} />
+            <input 
+              type="text" 
+              id="name" 
+              name="name" 
+              value={formData.name} 
+              onChange={handleChange} 
+              style={{ width: '100%', padding: '0.5rem' }} 
+            />
           </div>
 
           {/* Email Field */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-            <input type="email" id="email" name="email" className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" value={formData.email} onChange={handleChange}/>
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="email" style={{ display: 'block', marginBottom: '0.5rem' }}>Email</label>
+            <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} style={{ width: '100%', padding: '0.5rem' }}/>
           </div>
 
           {/* Current Password Field */}
-          <div>
-            <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">Current Password</label>
-            <input type="password" id="currentPassword" name="currentPassword" className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="currentPassword" style={{ display: 'block', marginBottom: '0.5rem' }}>Current Password</label>
+            <input type="password" id="currentPassword" name="currentPassword" style={{ width: '100%', padding: '0.5rem' }} />
           </div>
 
           {/* New Password Field */}
-          <div>
-            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="newPassword" style={{ display: 'block', marginBottom: '0.5rem' }}>
               New Password
             </label>
-            <input type="password" id="newPassword" name="newPassword" className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-               value={formData.newPassword} onChange={handleChange} />
+            <input 
+              type="password" 
+              id="newPassword" 
+              name="newPassword" 
+              value={formData.newPassword} 
+              onChange={handleChange} 
+              style={{ width: '100%', padding: '0.5rem' }} 
+            />
           </div>
 
           {/* Submit Button */}
-          <div>
+          <div style={{ marginBottom: '1rem' }}>
             <button
                 type="submit"
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                style={{backgroundColor: '#4a69bd', color: 'white', padding: '0.5rem 1rem', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
               >
                 Save Changes
             </button>
           </div>
         </form> 
-        </ProtectedRoute>  
+  
   )
 }
 export default AccountSettings
