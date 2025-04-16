@@ -1,7 +1,7 @@
 // pages/api/users/settings.js
 import { PrismaClient, Prisma } from '@prisma/client';
-import { getSession } from 'next-auth/react'; 
 import bcrypt from 'bcryptjs';
+import { getSession } from 'next-auth/next';
 
 const prisma = new PrismaClient();
 
