@@ -383,13 +383,14 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
         {isUserMenuOpen && (
           <div style={{
             position: 'absolute',
-            bottom: '100%',
+            bottom: isCollapsed ? 'auto' : '100%',  // Change from bottom to top for collapsed
             left: isCollapsed ? '70px' : '20px',
+            top: isCollapsed ? '0' : 'auto',       // Add this for collapsed state
             backgroundColor: 'white',
             borderRadius: '4px',
             boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
             width: '200px',
-            zIndex: 1000,
+            zIndex: 1010,
           }}>
             <div 
               style={{ 
