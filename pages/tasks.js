@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import TaskModal from '../components/tasks/TaskModal'
 import TaskCard from '../components/tasks/TaskCard'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
-import { FaTrash } from 'react-icons/fa'
+import { FaTrash, FaSearch } from 'react-icons/fa'
 import theme from '../styles/theme'
 
 export default function Tasks() {
@@ -13,7 +13,8 @@ export default function Tasks() {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
   const [filter, setFilter] = useState('todo') // Changed default from 'all' to 'todo'
-  const [purging, setPurging] = useState(false) // New state for purge operation
+  const [purging, setPurging] = useState(false) // State for purge operation
+  const [searchTerm, setSearchTerm] = useState('') // New state for search functionality
   
   // Fetch tasks and contacts
   useEffect(() => {
@@ -178,7 +179,7 @@ export default function Tasks() {
     }
   }
 
-  // NEW FUNCTION: Handle purging all completed tasks
+  // Handle purging all completed tasks
   const handlePurgeCompleted = async () => {
     if (!confirm('Are you sure you want to delete ALL completed tasks? This cannot be undone.')) {
       return;
@@ -237,12 +238,30 @@ export default function Tasks() {
     }
   }
   
-  // Filter tasks based on status
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+  
+  // Filter tasks based on status and search term
   const filteredTasks = tasks.filter(task => {
-    if (filter === 'todo') return task.status !== 'Completed'
-    if (filter === 'completed') return task.status === 'Completed'
-    return true
-  })
+    // First filter by status (To-Do/Completed)
+    const statusMatch = 
+      (filter === 'todo' && task.status !== 'Completed') ||
+      (filter === 'completed' && task.status === 'Completed');
+    
+    // Then filter by search term if one exists
+    if (!searchTerm) return statusMatch;
+    
+    const searchLower = searchTerm.toLowerCase();
+    
+    // Search in task title, description, contact name
+    const titleMatch = task.title?.toLowerCase().includes(searchLower);
+    const descMatch = task.description?.toLowerCase().includes(searchLower);
+    const contactMatch = task.contact?.name?.toLowerCase().includes(searchLower);
+    
+    return statusMatch && (titleMatch || descMatch || contactMatch);
+  });
   
   // Get counts for filters
   const counts = {
@@ -273,12 +292,14 @@ export default function Tasks() {
           </button>
         </div>
         
-        {/* Task Filters - Updated to To-Do/Completed */}
+        {/* Task Filters and Search - Updated layout with search box */}
         <div style={{ 
           marginBottom: '1.5rem', 
           display: 'flex', 
+          flexWrap: 'wrap',
           justifyContent: 'space-between', 
-          alignItems: 'center'
+          alignItems: 'center',
+          gap: '1rem'
         }}>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <button
@@ -310,28 +331,58 @@ export default function Tasks() {
             </button>
           </div>
           
-          {/* Purge button - only visible in Completed view */}
-          {filter === 'completed' && counts.completed > 0 && (
-            <button
-              onClick={handlePurgeCompleted}
-              disabled={purging}
-              style={{
-                backgroundColor: '#e74c3c',
-                color: 'white',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: purging ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                opacity: purging ? 0.7 : 1
-              }}
-            >
-              <FaTrash size={14} />
-              {purging ? 'Purging...' : 'Purge All Completed'}
-            </button>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {/* Search Box */}
+            <div style={{ 
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              <input
+                type="text"
+                placeholder="Search tasks..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                style={{
+                  padding: '0.5rem 0.5rem 0.5rem 2rem', // Space for the icon
+                  borderRadius: '4px',
+                  border: '1px solid #ddd',
+                  width: '250px'
+                }}
+              />
+              <FaSearch 
+                size={14} 
+                style={{ 
+                  position: 'absolute', 
+                  left: '0.75rem',
+                  color: '#a0aec0'
+                }} 
+              />
+            </div>
+            
+            {/* Purge button - only visible in Completed view */}
+            {filter === 'completed' && counts.completed > 0 && (
+              <button
+                onClick={handlePurgeCompleted}
+                disabled={purging}
+                style={{
+                  backgroundColor: '#e74c3c',
+                  color: 'white',
+                  padding: '0.5rem 1rem',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: purging ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  opacity: purging ? 0.7 : 1
+                }}
+              >
+                <FaTrash size={14} />
+                {purging ? 'Purging...' : 'Purge All Completed'}
+              </button>
+            )}
+          </div>
         </div>
         
         {/* Task List */}
@@ -352,11 +403,13 @@ export default function Tasks() {
         ) : (
           <div style={{ textAlign: 'center', padding: '2rem', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
             <p style={{ marginBottom: '1rem' }}>
-              {filter === 'todo' 
-                ? 'No tasks to do. Create your first task to get started!' 
-                : 'No completed tasks.'}
+              {searchTerm 
+                ? 'No tasks matching your search.' 
+                : filter === 'todo' 
+                  ? 'No tasks to do. Create your first task to get started!' 
+                  : 'No completed tasks.'}
             </p>
-            {filter === 'todo' && (
+            {filter === 'todo' && !searchTerm && (
               <button
                 onClick={() => {
                   setEditingTask(null)
