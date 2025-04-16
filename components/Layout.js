@@ -1,33 +1,17 @@
 // components/Layout.js
 import { useState, useEffect } from 'react';
-import { FaBars, FaSignOutAlt } from 'react-icons/fa';
 import { useRouter } from 'next/router';
 import theme from '../styles/theme';
 import Sidebar from './common/Sidebar';
-import Header from './common/Header';
 
 export default function Layout({ children, customHeader }) {
   const router = useRouter();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [user, setUser] = useState(null);
-  
-  // Get user data from localStorage
-  useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('user') || '{}');
-    setUser(userData);
-  }, []);
   
   // Toggle sidebar collapsed state
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
-  };
-  
-  // Handle logout
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    router.push('/login');
   };
   
   // Check if we're on mobile and auto-collapse sidebar
@@ -37,13 +21,8 @@ export default function Layout({ children, customHeader }) {
       setIsMobile(mobileCheck);
       
       // Auto-collapse only if entering mobile view
-      // Keep it collapsed if already mobile and user expanded it manually
-      // Keep it expanded if already desktop and user collapsed it manually
       if (mobileCheck && !isMobile) { // Check if changed to mobile
         setIsSidebarCollapsed(true);
-      } else if (!mobileCheck && isMobile) { // Check if changed to desktop
-         // Optional: Auto-expand when going back to desktop?
-         // setIsSidebarCollapsed(false);\ 
       }
     };
     
@@ -59,26 +38,12 @@ export default function Layout({ children, customHeader }) {
     };
   }, [isMobile]); // Rerun effect if isMobile state changes
   
-  // Get page title based on path
-  const getPageTitle = () => {
-    const path = router.pathname;
-    if (path.includes('/admin/dashboard')) return 'Admin Dashboard';
-    if (path.includes('/dashboard')) return 'Dashboard';
-    if (path.includes('/contacts')) return 'Contacts';
-    if (path.includes('/calls')) return 'Calls';
-    if (path.includes('/tasks')) return 'Tasks';
-    if (path.includes('/stats') || path.includes('/analytics')) return 'Analytics';
-    // Add more conditions as needed
-    return 'Realtor CRM';
-  };
-  
   return (
     <div style={{ 
       display: 'flex',
       backgroundColor: theme.colors.brand.background,
       minHeight: '100vh',
       position: 'relative',
-      // Removed overflow: 'hidden', potential issue?
     }}>
       {/* Sidebar - Fixed position with z-index */}
       <div style={{
@@ -121,44 +86,27 @@ export default function Layout({ children, customHeader }) {
               fontSize: '1.2rem', 
               color: theme.colors.brand.primary 
             }}>
-              {getPageTitle()}
+              {getPageTitle(router.pathname)}
             </h1>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              {user && (
-                <span style={{ marginRight: '1rem', fontSize: '0.9rem' }}>
-                  Welcome, {user.firstName}
-                </span>
-              )}
-              <button 
-                onClick={toggleSidebar}
-                style={{
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  color: theme.colors.brand.primary,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                <FaBars size={20} />
-              </button>
-            </div>
+            <button 
+              onClick={toggleSidebar}
+              style={{
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: theme.colors.brand.primary,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <FaBars size={20} />
+            </button>
           </div>
         )}
         
-        {/* Default Header (Not Mobile) */}
-        {/* Render Header only if not custom and not mobile (mobile has its own top bar) */}
-        {!customHeader && !isMobile && (
-          <Header />
-        )}
-        {/* Render custom header if provided (regardless of mobile status?) */} 
-        {/* Consider if customHeader needs to be mobile aware too */} 
-        {customHeader && customHeader } 
-        
         {/* Main Content Area */}
         <main style={{ 
-          // Use responsive padding: 1rem on mobile, 2rem otherwise
-          padding: isMobile ? '0 1rem 1rem' : '0 2rem 2rem',
+          padding: isMobile ? '1rem' : '2rem',
           flex: 1, // Allow shrinking/growing
           maxWidth: '1200px',
           margin: '0 auto',
@@ -182,4 +130,16 @@ export default function Layout({ children, customHeader }) {
       </div>
     </div>
   );
+}
+
+// Helper function to get page title based on path
+function getPageTitle(path) {
+  if (path.includes('/admin/dashboard')) return 'Admin Dashboard';
+  if (path === '/' || path.includes('/dashboard')) return 'Dashboard';
+  if (path.includes('/contacts')) return 'Contacts';
+  if (path.includes('/calls')) return 'Calls';
+  if (path.includes('/tasks')) return 'Tasks';
+  if (path.includes('/stats') || path.includes('/analytics')) return 'Analytics';
+  if (path.includes('/settings')) return 'Settings';
+  return 'Realtor CRM';
 }
