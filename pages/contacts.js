@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import ContactForm from '../components/contacts/ContactForm'
 import ContactModal from '../components/contacts/ContactModal'
+import ContactCard from '../components/contacts/ContactCard'
 import CallModal from '../components/calls/CallModal'
 import TaskModal from '../components/tasks/TaskModal'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
@@ -18,6 +19,9 @@ export default function Contacts() {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState(null)
   
+  // Added state for filters
+  const [filter, setFilter] = useState('all') // all, open, assigned
+  
   // Get user from localStorage
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem('user') || '{}')
@@ -27,13 +31,22 @@ export default function Contacts() {
   // Fetch contacts
   useEffect(() => {
     fetchContacts()
-  }, [])
+  }, [filter]) // Re-fetch when filter changes
 
   const fetchContacts = async () => {
     try {
       setLoading(true)
       const token = localStorage.getItem('token')
-      const response = await fetch('/api/contacts', {
+      
+      // Build URL with filter parameters
+      let url = '/api/contacts'
+      if (filter === 'open') {
+        url += '?status=Open'
+      } else if (filter === 'assigned' && user?.id) {
+        url += `?assignedTo=${user.id}`
+      }
+      
+      const response = await fetch(url, {
          headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -69,8 +82,12 @@ export default function Contacts() {
       const data = await response.json()
       
       if (data.success) {
-        // Add the new contact to the list
-        setContacts([data.data, ...contacts])
+        // Add the new contact to the list if it matches current filter
+        if (filter === 'all' || 
+            (filter === 'open' && data.data.status === 'Open') ||
+            (filter === 'assigned' && data.data.assignedTo === user?.id)) {
+          setContacts([data.data, ...contacts])
+        }
         return { success: true, data: data.data }
       } else {
         alert('Error creating contact: ' + data.message)
@@ -111,6 +128,34 @@ export default function Contacts() {
     } catch (error) {
       console.error('Error updating contact:', error)
       alert('Error updating contact')
+      return { success: false, message: error.message }
+    }
+  }
+
+  // Handle deleting a contact
+  const handleDeleteContact = async (contactId) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/contacts/${contactId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        // Remove the contact from the list
+        setContacts(contacts.filter(contact => contact.id !== contactId))
+        return { success: true }
+      } else {
+        alert('Error deleting contact: ' + data.message)
+        return { success: false, message: data.message }
+      }
+    } catch (error) {
+      console.error('Error deleting contact:', error)
+      alert('Error deleting contact')
       return { success: false, message: error.message }
     }
   }
@@ -191,10 +236,40 @@ export default function Contacts() {
     }
   }
   
+  // Get counts for filter badges
+  const getCounts = () => {
+    const openCount = contacts.filter(contact => contact.status === 'Open').length
+    const assignedCount = contacts.filter(contact => contact.assignedTo === user?.id).length
+    
+    return {
+      all: contacts.length,
+      open: openCount,
+      assigned: assignedCount
+    }
+  }
+  
+  const counts = getCounts()
+  
+  // Filter contacts based on search term
+  const [searchTerm, setSearchTerm] = useState('')
+  
+  const filteredContacts = contacts.filter(contact => {
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase()
+      return (
+        contact.name.toLowerCase().includes(searchLower) ||
+        (contact.company && contact.company.toLowerCase().includes(searchLower)) ||
+        contact.phone.includes(searchTerm) ||
+        (contact.email && contact.email.toLowerCase().includes(searchLower))
+      )
+    }
+    return true
+  })
+  
   return (
     <ProtectedRoute>
       <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h1>Contacts</h1>
           <button
             onClick={() => setIsAddModalOpen(true)}
@@ -211,98 +286,116 @@ export default function Contacts() {
           </button>
         </div>
         
+        {/* Filters and Search */}
+        <div style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          justifyContent: 'space-between', 
+          gap: '1rem', 
+          marginBottom: '1.5rem' 
+        }}>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              onClick={() => setFilter('all')}
+              style={{
+                backgroundColor: filter === 'all' ? '#4a69bd' : '#e2e8f0',
+                color: filter === 'all' ? 'white' : '#4a5568',
+                padding: '0.5rem 1rem',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              All Contacts ({counts.all})
+            </button>
+            
+            <button
+              onClick={() => setFilter('open')}
+              style={{
+                backgroundColor: filter === 'open' ? '#4a69bd' : '#e2e8f0',
+                color: filter === 'open' ? 'white' : '#4a5568',
+                padding: '0.5rem 1rem',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Open ({counts.open})
+            </button>
+            
+            <button
+              onClick={() => setFilter('assigned')}
+              style={{
+                backgroundColor: filter === 'assigned' ? '#4a69bd' : '#e2e8f0',
+                color: filter === 'assigned' ? 'white' : '#4a5568',
+                padding: '0.5rem 1rem',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              My Contacts ({counts.assigned})
+            </button>
+          </div>
+          
+          <div>
+            <input
+              type="text"
+              placeholder="Search contacts..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                padding: '0.5rem',
+                borderRadius: '4px',
+                border: '1px solid #ddd',
+                width: '250px'
+              }}
+            />
+          </div>
+        </div>
+        
+        {/* Contact Cards List */}
         {loading ? (
           <p>Loading contacts...</p>
-        ) : contacts.length > 0 ? (
+        ) : filteredContacts.length > 0 ? (
           <div>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Name</th>
-                  <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Company</th>
-                  <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Phone</th>
-                  <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Email</th>
-                  {user?.role === 'admin' && (
-                    <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Status</th>
-                  )}
-                  <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {contacts.map((contact) => (
-                  <tr key={contact.id}>
-                    <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>{contact.name}</td>
-                    <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>{contact.company || '-'}</td>
-                    <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>{contact.phone}</td>
-                    <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>{contact.email || '-'}</td>
-                    {user?.role === 'admin' && (
-                      <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
-                        <span style={{
-                          display: 'inline-block',
-                          padding: '0.2rem 0.5rem',
-                          borderRadius: '4px',
-                          fontSize: '0.8rem',
-                          backgroundColor: contact.status === 'Open' ? '#78e08f' : '#4a69bd',
-                          color: 'white'
-                        }}>
-                          {contact.status || 'Open'}
-                          {contact.assignedToUser && ` (${contact.assignedToUser.firstName})`}
-                        </span>
-                      </td>
-                    )}
-                    <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button
-                          onClick={() => handleOpenEditModal(contact)}
-                          style={{
-                            backgroundColor: '#4a69bd',
-                            color: 'white',
-                            padding: '0.25rem 0.5rem',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '0.8rem'
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleLogCall(contact)}
-                          style={{
-                            backgroundColor: '#78e08f',
-                            color: 'white',
-                            padding: '0.25rem 0.5rem',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '0.8rem'
-                          }}
-                        >
-                          Log Call
-                        </button>
-                        <button
-                          onClick={() => handleAddTask(contact)}
-                          style={{
-                            backgroundColor: '#e58e26',
-                            color: 'white',
-                            padding: '0.25rem 0.5rem',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '0.8rem'
-                          }}
-                        >
-                          Add Task
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {filteredContacts.map(contact => (
+              <ContactCard
+                key={contact.id}
+                contact={contact}
+                onEditClick={handleOpenEditModal}
+                onLogCallClick={handleLogCall}
+                onAddTaskClick={handleAddTask}
+                onDeleteContact={handleDeleteContact}
+              />
+            ))}
           </div>
         ) : (
-          <p>No contacts found. Add your first contact to get started.</p>
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '2rem', 
+            backgroundColor: '#f8f9fa', 
+            borderRadius: '8px' 
+          }}>
+            <p style={{ marginBottom: '1rem' }}>
+              {searchTerm 
+                ? 'No contacts found matching your search.' 
+                : 'No contacts found. Add your first contact to get started.'}
+            </p>
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              style={{
+                backgroundColor: '#4a69bd',
+                color: 'white',
+                padding: '0.5rem 1rem',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Add Contact
+            </button>
+          </div>
         )}
 
         {/* Add Contact Modal */}
