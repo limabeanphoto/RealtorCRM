@@ -8,7 +8,8 @@ export default function MiniTaskCard({
   onEdit
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isCompleting, setIsCompleting] = useState(false); // New state for animation
+  const [isAnimating, setIsAnimating] = useState(false); // Animation state for both check/uncheck
+  const [animatingToComplete, setAnimatingToComplete] = useState(false); // Direction of animation
   
   // Toggle expanded state
   const toggleExpand = (e) => {
@@ -61,25 +62,40 @@ export default function MiniTaskCard({
   
   const timeStatus = getTimeStatus();
   
-  // Handle status change - with animation
+  // Enhanced handle status change with better animations
   const handleStatusChange = (e) => {
     e.stopPropagation(); // Prevent card from toggling
     
-    // Only animate when marking as complete
-    if (task.status !== 'Completed') {
-      // Set completing state for animation
-      setIsCompleting(true);
+    // Don't allow changes while animating
+    if (isAnimating) return;
+    
+    const isCurrentlyCompleted = task.status === 'Completed';
+    
+    // Set animation direction
+    setAnimatingToComplete(!isCurrentlyCompleted);
+    setIsAnimating(true);
+    
+    // Delay the actual status change
+    setTimeout(() => {
+      onStatusChange(task.id, isCurrentlyCompleted ? 'Active' : 'Completed');
       
-      // Delay the actual status change
+      // Keep the animation state a bit longer to prevent flashing
       setTimeout(() => {
-        onStatusChange(task.id, 'Completed');
-        setIsCompleting(false);
-      }, 300); // 300ms delay for animation
-    } else {
-      // No animation when marking as active
-      onStatusChange(task.id, 'Active');
-    }
+        setIsAnimating(false);
+      }, 50); // Small additional delay to prevent flashing
+    }, 300); // Main animation delay
   };
+  
+  // For visual display, we need to calculate what the status "looks like" during animation
+  const visualStatus = () => {
+    if (isAnimating) {
+      return animatingToComplete ? 'Completed' : 'Active';
+    }
+    return task.status;
+  };
+  
+  // Is visually completed
+  const isVisuallyCompleted = visualStatus() === 'Completed';
   
   return (
     <div style={{ 
@@ -95,13 +111,16 @@ export default function MiniTaskCard({
         {/* Task Title and Status */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
           <div 
-            onClick={handleStatusChange}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleStatusChange(e);
+            }}
             style={{
               width: '18px',
               height: '18px',
               borderRadius: '50%',
-              border: `2px solid ${task.status === 'Completed' || isCompleting ? theme.colors.brand.primary : '#ddd'}`,
-              backgroundColor: task.status === 'Completed' || isCompleting ? theme.colors.brand.primary : 'white',
+              border: `2px solid ${isVisuallyCompleted ? theme.colors.brand.primary : '#ddd'}`,
+              backgroundColor: isVisuallyCompleted ? theme.colors.brand.primary : 'white',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -109,13 +128,14 @@ export default function MiniTaskCard({
               transition: 'all 0.3s ease', // Add transition for the checkbox
             }}
           >
-            {(task.status === 'Completed' || isCompleting) && (
+            {isVisuallyCompleted && (
               <FaCheck 
                 size={10} 
                 color="white"
                 style={{ 
-                  opacity: isCompleting ? 0 : 1,
-                  animation: isCompleting ? 'fadeIn 0.3s forwards' : 'none',
+                  opacity: animatingToComplete && isAnimating ? 0 : 1,
+                  animation: animatingToComplete && isAnimating ? 'fadeIn 0.3s forwards' : 
+                              !animatingToComplete && isAnimating ? 'fadeOut 0.3s forwards' : 'none',
                 }}
               />
             )}
@@ -123,8 +143,8 @@ export default function MiniTaskCard({
           
           <div style={{ 
             fontWeight: 'bold',
-            textDecoration: task.status === 'Completed' || isCompleting ? 'line-through' : 'none',
-            color: task.status === 'Completed' || isCompleting ? theme.colors.brand.text : 'inherit',
+            textDecoration: isVisuallyCompleted ? 'line-through' : 'none',
+            color: isVisuallyCompleted ? theme.colors.brand.text : 'inherit',
             transition: 'all 0.3s ease', // Add transition for the text
           }}>
             {task.title}
@@ -230,6 +250,10 @@ export default function MiniTaskCard({
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
+        }
+        @keyframes fadeOut {
+          from { opacity: 1; }
+          to { opacity: 0; }
         }
       `}</style>
     </div>

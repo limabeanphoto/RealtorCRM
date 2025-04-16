@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaCheck, FaClock, FaEdit, FaTrash, FaAngleDown, FaAngleUp } from 'react-icons/fa';
 import theme from '../../styles/theme';
 
@@ -9,7 +9,8 @@ export default function TaskCard({
   onEdit
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isCompleting, setIsCompleting] = useState(false); // New state for animation
+  const [isAnimating, setIsAnimating] = useState(false); // Animation state for both check/uncheck
+  const [animatingToComplete, setAnimatingToComplete] = useState(false); // Direction of animation
   
   // Toggle expanded state
   const toggleExpand = () => {
@@ -61,33 +62,48 @@ export default function TaskCard({
   
   const timeStatus = getTimeStatus();
   
-  // Handle status change - with animation
+  // Enhanced handle status change with better animations
   const handleStatusChange = (e) => {
     e.stopPropagation();
     
-    // Only animate when marking as complete
-    if (task.status !== 'Completed') {
-      // Set completing state for animation
-      setIsCompleting(true);
+    // Don't allow changes while animating
+    if (isAnimating) return;
+    
+    const isCurrentlyCompleted = task.status === 'Completed';
+    
+    // Set animation direction
+    setAnimatingToComplete(!isCurrentlyCompleted);
+    setIsAnimating(true);
+    
+    // Delay the actual status change
+    setTimeout(() => {
+      onStatusChange(task.id, isCurrentlyCompleted ? 'Active' : 'Completed');
       
-      // Delay the actual status change
+      // Keep the animation state a bit longer to prevent flashing
       setTimeout(() => {
-        onStatusChange(task.id, 'Completed');
-        setIsCompleting(false);
-      }, 300); // 300ms delay for animation
-    } else {
-      // No animation when marking as active
-      onStatusChange(task.id, 'Active');
-    }
+        setIsAnimating(false);
+      }, 50); // Small additional delay to prevent flashing
+    }, 300); // Main animation delay
   };
+  
+  // For visual display, we need to calculate what the status "looks like" during animation
+  const visualStatus = () => {
+    if (isAnimating) {
+      return animatingToComplete ? 'Completed' : 'Active';
+    }
+    return task.status;
+  };
+  
+  // Is visually completed
+  const isVisuallyCompleted = visualStatus() === 'Completed';
   
   return (
     <div style={{ 
       border: '1px solid #e2e8f0', 
       borderRadius: theme.borderRadius.md,
       margin: '0 0 1rem 0',
-      backgroundColor: task.status === 'Completed' ? '#f8f9fa' : 'white',
-      opacity: task.status === 'Completed' ? 0.8 : 1,
+      backgroundColor: isVisuallyCompleted ? '#f8f9fa' : 'white',
+      opacity: isVisuallyCompleted ? 0.8 : 1,
       boxShadow: theme.shadows.sm,
       overflow: 'hidden',
       transition: 'all 0.3s ease', // Add transition for whole card
@@ -115,8 +131,8 @@ export default function TaskCard({
                 width: '22px',
                 height: '22px',
                 borderRadius: '50%',
-                border: `2px solid ${task.status === 'Completed' || isCompleting ? theme.colors.brand.primary : '#ddd'}`,
-                backgroundColor: task.status === 'Completed' || isCompleting ? theme.colors.brand.primary : 'white',
+                border: `2px solid ${isVisuallyCompleted ? theme.colors.brand.primary : '#ddd'}`,
+                backgroundColor: isVisuallyCompleted ? theme.colors.brand.primary : 'white',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -124,13 +140,14 @@ export default function TaskCard({
                 transition: 'all 0.3s ease', // Add transition for checkbox
               }}
             >
-              {(task.status === 'Completed' || isCompleting) && (
+              {isVisuallyCompleted && (
                 <FaCheck 
                   size={12} 
                   color="white" 
                   style={{ 
-                    opacity: isCompleting ? 0 : 1,
-                    animation: isCompleting ? 'fadeIn 0.3s forwards' : 'none',
+                    opacity: animatingToComplete && isAnimating ? 0 : 1,
+                    animation: animatingToComplete && isAnimating ? 'fadeIn 0.3s forwards' : 
+                               !animatingToComplete && isAnimating ? 'fadeOut 0.3s forwards' : 'none',
                   }} 
                 />
               )}
@@ -138,8 +155,8 @@ export default function TaskCard({
             
             <h3 style={{ 
               margin: 0, 
-              textDecoration: task.status === 'Completed' || isCompleting ? 'line-through' : 'none',
-              color: task.status === 'Completed' || isCompleting ? theme.colors.brand.text : theme.colors.brand.primary,
+              textDecoration: isVisuallyCompleted ? 'line-through' : 'none',
+              color: isVisuallyCompleted ? theme.colors.brand.text : theme.colors.brand.primary,
               transition: 'all 0.3s ease', // Add transition for text
             }}>
               {task.title}
@@ -234,7 +251,7 @@ export default function TaskCard({
       
       {/* Card Expanded Content */}
       {isExpanded && (
-        <div style={{ padding: '1rem', backgroundColor: '#f9f9f9' }}>
+        <div style={{ padding: '1rem', backgroundColor: '#f9f9fa' }}>
           {task.description && (
             <div style={{ marginBottom: '1rem' }}>
               <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>Description:</div>
@@ -293,6 +310,10 @@ export default function TaskCard({
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
+        }
+        @keyframes fadeOut {
+          from { opacity: 1; }
+          to { opacity: 0; }
         }
       `}</style>
     </div>
