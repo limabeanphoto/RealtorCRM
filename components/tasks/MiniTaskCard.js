@@ -27,18 +27,7 @@ export default function MiniTaskCard({
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
   
-  // Get color and style for task status
-  const getStatusStyle = (status) => {
-    const styles = {
-      'Open': { backgroundColor: '#cce5ff', color: '#004085' },
-      'In Progress': { backgroundColor: '#fff3cd', color: '#856404' },
-      'Completed': { backgroundColor: '#d4edda', color: '#155724' }
-    };
-    
-    return styles[status] || { backgroundColor: '#e2e3e5', color: '#383d41' };
-  };
-  
-  // Get style for priority
+  // Get color based on priority
   const getPriorityStyle = (priority) => {
     const styles = {
       'High': { backgroundColor: '#f8d7da', color: '#721c24' },
@@ -71,10 +60,10 @@ export default function MiniTaskCard({
   
   const timeStatus = getTimeStatus();
   
-  // Handle status change
+  // Handle status change - simplified to toggle between Active/Completed
   const handleStatusChange = (e) => {
     e.stopPropagation(); // Prevent card from toggling
-    onStatusChange(task.id, task.status === 'Completed' ? 'Open' : 'Completed');
+    onStatusChange(task.id, task.status === 'Completed' ? 'Active' : 'Completed');
   };
   
   return (
@@ -115,7 +104,7 @@ export default function MiniTaskCard({
           </div>
         </div>
         
-        {/* Status Badges and Expand Icon */}
+        {/* Priority Badge and Expand Icon */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span style={{ 
             display: 'flex',
@@ -126,16 +115,6 @@ export default function MiniTaskCard({
           }}>
             <FaClock size={10} />
             {timeStatus.text}
-          </span>
-          
-          <span style={{ 
-            display: 'inline-block',
-            padding: '0.15rem 0.35rem',
-            borderRadius: '3px',
-            fontSize: '0.7rem',
-            ...getStatusStyle(task.status)
-          }}>
-            {task.status}
           </span>
           
           <span style={{ 
@@ -183,25 +162,25 @@ export default function MiniTaskCard({
                 onEdit(task);
               }}
               style={{
-                backgroundColor: '#4a69bd',
-                color: 'white',
-                padding: '0.25rem 0.5rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
+                width: '28px',
+                height: '28px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.25rem',
+                justifyContent: 'center',
+                backgroundColor: theme.colors.brand.primary, // Lima Bean Green
+                color: 'white',
+                border: 'none',
+                borderRadius: theme.borderRadius.sm,
+                cursor: 'pointer',
               }}
             >
-              <FaEdit size={12} /> Edit Task
+              <FaEdit size={12} />
             </button>
             
             <button
               onClick={handleStatusChange}
               style={{
-                backgroundColor: task.status === 'Completed' ? '#6c757d' : '#78e08f',
+                backgroundColor: task.status === 'Completed' ? '#6c757d' : theme.colors.brand.primary,
                 color: 'white',
                 padding: '0.25rem 0.5rem',
                 border: 'none',
@@ -210,7 +189,7 @@ export default function MiniTaskCard({
                 fontSize: '0.8rem',
               }}
             >
-              {task.status === 'Completed' ? 'Mark as Open' : 'Mark as Completed'}
+              {task.status === 'Completed' ? 'Mark as Active' : 'Mark as Completed'}
             </button>
           </div>
         </div>

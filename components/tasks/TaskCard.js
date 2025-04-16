@@ -1,10 +1,19 @@
 import { useState } from 'react';
 import { FaCheck, FaClock, FaEdit, FaTrash, FaAngleDown, FaAngleUp } from 'react-icons/fa';
 import theme from '../../styles/theme';
-import Button from '../common/Button';
 
-export default function TaskCard({ task, onStatusChange, onDelete, onEdit }) {
+export default function TaskCard({ 
+  task, 
+  onStatusChange,
+  onDelete,
+  onEdit
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Toggle expanded state
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
   
   // Format date for display
   const formatDate = (dateString) => {
@@ -29,17 +38,6 @@ export default function TaskCard({ task, onStatusChange, onDelete, onEdit }) {
     return styles[priority] || {};
   };
   
-  // Get color based on status
-  const getStatusStyle = (status) => {
-    const styles = {
-      'Open': { backgroundColor: theme.colors.brand.accent, color: 'white' },
-      'In Progress': { backgroundColor: theme.colors.brand.highlight, color: theme.colors.brand.text },
-      'Completed': { backgroundColor: theme.colors.brand.primary, color: 'white' }
-    };
-    
-    return styles[status] || {};
-  };
-  
   // Calculate time remaining or overdue
   const getTimeStatus = () => {
     const now = new Date();
@@ -62,10 +60,10 @@ export default function TaskCard({ task, onStatusChange, onDelete, onEdit }) {
   
   const timeStatus = getTimeStatus();
   
-  // Handle status change
+  // Handle status change - simplified to toggle between Active/Completed
   const handleStatusChange = (e) => {
-    const newStatus = e.target.value;
-    onStatusChange(task.id, newStatus);
+    e.stopPropagation();
+    onStatusChange(task.id, task.status === 'Completed' ? 'Active' : 'Completed');
   };
   
   return (
@@ -90,13 +88,13 @@ export default function TaskCard({ task, onStatusChange, onDelete, onEdit }) {
         justifyContent: 'space-between',
         alignItems: 'flex-start',
         cursor: 'pointer'
-      }} onClick={() => setIsExpanded(!isExpanded)}>
+      }} onClick={toggleExpand}>
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
             <div 
               onClick={(e) => {
                 e.stopPropagation();
-                onStatusChange(task.id, task.status === 'Completed' ? 'Open' : 'Completed');
+                handleStatusChange(e);
               }}
               style={{
                 width: '22px',
@@ -134,16 +132,6 @@ export default function TaskCard({ task, onStatusChange, onDelete, onEdit }) {
             </span>
             
             <span style={{ 
-              display: 'inline-block',
-              padding: '0.2rem 0.5rem',
-              borderRadius: theme.borderRadius.sm,
-              fontSize: '0.8rem',
-              ...getStatusStyle(task.status)
-            }}>
-              {task.status}
-            </span>
-            
-            <span style={{ 
               display: 'flex',
               alignItems: 'center',
               gap: '0.2rem',
@@ -163,25 +151,28 @@ export default function TaskCard({ task, onStatusChange, onDelete, onEdit }) {
         </div>
         
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <Button
-            variant="outline"
-            size="small"
+          <button
             onClick={(e) => {
               e.stopPropagation();
               onEdit(task);
             }}
             style={{
+              width: '32px',
+              height: '32px',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.2rem',
+              justifyContent: 'center',
+              backgroundColor: theme.colors.brand.primary, // Lima Bean Green (#8F9F3B)
+              color: 'white',
+              border: 'none',
+              borderRadius: theme.borderRadius.sm,
+              cursor: 'pointer',
             }}
           >
-            <FaEdit size={12} /> Edit
-          </Button>
+            <FaEdit size={14} />
+          </button>
           
-          <Button
-            variant="danger"
-            size="small"
+          <button
             onClick={(e) => {
               e.stopPropagation();
               if (confirm('Are you sure you want to delete this task?')) {
@@ -189,13 +180,20 @@ export default function TaskCard({ task, onStatusChange, onDelete, onEdit }) {
               }
             }}
             style={{
+              width: '32px',
+              height: '32px',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.2rem',
+              justifyContent: 'center',
+              backgroundColor: theme.colors.brand.primary, // Lima Bean Green (#8F9F3B)
+              color: 'white',
+              border: 'none',
+              borderRadius: theme.borderRadius.sm,
+              cursor: 'pointer',
             }}
           >
-            <FaTrash size={12} /> Delete
-          </Button>
+            <FaTrash size={14} />
+          </button>
           
           <div style={{ 
             display: 'flex', 
@@ -256,24 +254,6 @@ export default function TaskCard({ task, onStatusChange, onDelete, onEdit }) {
               </div>
             </div>
           )}
-          
-          <div style={{ marginBottom: '1rem' }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>Status:</div>
-            <select
-              value={task.status}
-              onChange={handleStatusChange}
-              style={{ 
-                padding: '0.5rem',
-                borderRadius: theme.borderRadius.sm,
-                border: '1px solid #ddd',
-                width: '100%',
-              }}
-            >
-              <option value="Open">Open</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
-            </select>
-          </div>
           
           <div>
             <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>Created:</div>
