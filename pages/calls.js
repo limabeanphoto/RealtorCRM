@@ -1,6 +1,8 @@
 // pages/calls.js
 import { useState, useEffect } from 'react'
 import CallModal from '../components/calls/CallModal'
+import CallCard from '../components/calls/CallCard'
+import TaskModal from '../components/tasks/TaskModal'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
 
 export default function Calls() {
@@ -9,52 +11,74 @@ export default function Calls() {
   const [loading, setLoading] = useState(true)
   const [isCallModalOpen, setIsCallModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState(null)
   const [selectedCall, setSelectedCall] = useState(null)
   
+  // Added for filtering calls
+  const [filter, setFilter] = useState('all') // all, deals, recent
+  const [searchTerm, setSearchTerm] = useState('')
+  
   // Fetch calls and contacts
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const token = localStorage.getItem('token')
-        
-        // Fetch calls
-        const callsResponse = await fetch('/api/calls', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        const callsData = await callsResponse.json()
-        
-        if (callsData.success) {
-          setCalls(callsData.data)
-        } else {
-          console.error('Error fetching calls:', callsData.message)
-        }
-        
-        // Fetch contacts for the dropdown
-        const contactsResponse = await fetch('/api/contacts', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        const contactsData = await contactsResponse.json()
-        
-        if (contactsData.success) {
-          setContacts(contactsData.data)
-        } else {
-          console.error('Error fetching contacts:', contactsData.message)
-        }
-        
-        setLoading(false)
-      } catch (error) {
-        console.error('Error fetching data:', error)
-        setLoading(false)
-      }
-    }
-    
     fetchData()
-  }, [])
+  }, [filter])
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      const token = localStorage.getItem('token')
+      
+      // Build URL with filter parameters (in a real implementation, 
+      // you might add query params to the API to filter on the server side)
+      let url = '/api/calls'
+      
+      // Fetch calls
+      const callsResponse = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      const callsData = await callsResponse.json()
+      
+      // Fetch contacts for the dropdown
+      const contactsResponse = await fetch('/api/contacts', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      const contactsData = await contactsResponse.json()
+      
+      if (callsData.success) {
+        // Filter calls based on the selected filter
+        let filteredCalls = callsData.data
+        
+        if (filter === 'deals') {
+          filteredCalls = filteredCalls.filter(call => call.isDeal)
+        } else if (filter === 'recent') {
+          // Get calls from the last 7 days
+          const oneWeekAgo = new Date()
+          oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+          filteredCalls = filteredCalls.filter(call => new Date(call.date) >= oneWeekAgo)
+        }
+        
+        setCalls(filteredCalls)
+      } else {
+        console.error('Error fetching calls:', callsData.message)
+      }
+      
+      if (contactsData.success) {
+        setContacts(contactsData.data)
+      } else {
+        console.error('Error fetching contacts:', contactsData.message)
+      }
+      
+      setLoading(false)
+    } catch (error) {
+      console.error('Error fetching data:', error)
+      setLoading(false)
+    }
+  }
   
   // Handle creating a new call
   const handleCallSubmit = async (formData) => {
@@ -72,8 +96,12 @@ export default function Calls() {
       const data = await response.json()
       
       if (data.success) {
-        // Add the new call to the list
-        setCalls([data.data, ...calls])
+        // Add the new call to the list if it matches current filter
+        if (filter === 'all' || 
+            (filter === 'deals' && data.data.isDeal) ||
+            (filter === 'recent')) { // New calls are always recent
+          setCalls([data.data, ...calls])
+        }
         return { success: true, data: data.data }
       } else {
         alert('Error logging call: ' + data.message)
@@ -118,6 +146,31 @@ export default function Calls() {
     }
   }
 
+  // Handle deleting a call
+  const handleDeleteCall = async (callId) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/calls/${callId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        // Remove the call from the list
+        setCalls(calls.filter(call => call.id !== callId))
+      } else {
+        alert('Error deleting call: ' + data.message)
+      }
+    } catch (error) {
+      console.error('Error deleting call:', error)
+      alert('Error deleting call')
+    }
+  }
+
   // Open modal to select a contact
   const handleNewCall = () => {
     setSelectedContact(null)
@@ -128,6 +181,12 @@ export default function Calls() {
   const handleOpenEditModal = (call) => {
     setSelectedCall(call)
     setIsEditModalOpen(true)
+  }
+
+  // Handle opening task modal for a call
+  const handleAddTask = (call) => {
+    setSelectedCall(call)
+    setIsTaskModalOpen(true)
   }
 
   // Handle contact selection for new call
@@ -142,32 +201,67 @@ export default function Calls() {
     }
   }
   
-  // Format date for display
-  const formatDate = (dateString) => {
-    const options = { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+  // Handle task submission
+  const handleTaskSubmit = async (formData) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        alert('Task created successfully')
+        return { success: true, data: data.data }
+      } else {
+        alert('Error creating task: ' + data.message)
+        return { success: false, message: data.message }
+      }
+    } catch (error) {
+      console.error('Error creating task:', error)
+      alert('Error creating task')
+      return { success: false, message: error.message }
     }
-    return new Date(dateString).toLocaleDateString(undefined, options)
   }
   
-  // Get style based on outcome
-  const getOutcomeStyle = (outcome) => {
-    const styles = {
-      'Interested': { backgroundColor: '#d4edda', color: '#155724' },
-      'Not Interested': { backgroundColor: '#f8d7da', color: '#721c24' },
-      'Follow Up': { backgroundColor: '#fff3cd', color: '#856404' },
-      'No Answer': { backgroundColor: '#e2e3e5', color: '#383d41' },
-      'Left Message': { backgroundColor: '#cce5ff', color: '#004085' },
-      'Wrong Number': { backgroundColor: '#f8d7da', color: '#721c24' },
-      'Deal Closed': { backgroundColor: '#d4edda', color: '#155724' }
-    }
+  // Get counts for filters
+  const getCounts = () => {
+    const allCount = calls.length
+    const dealsCount = calls.filter(call => call.isDeal).length
     
-    return styles[outcome] || {}
+    // Count calls from the last 7 days
+    const oneWeekAgo = new Date()
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+    const recentCount = calls.filter(call => new Date(call.date) >= oneWeekAgo).length
+    
+    return {
+      all: allCount,
+      deals: dealsCount,
+      recent: recentCount
+    }
   }
+  
+  const counts = getCounts()
+  
+  // Filter calls based on search term
+  const filteredCalls = calls.filter(call => {
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase()
+      return (
+        call.contact.name.toLowerCase().includes(searchLower) ||
+        (call.contact.company && call.contact.company.toLowerCase().includes(searchLower)) ||
+        call.notes?.toLowerCase().includes(searchLower) ||
+        call.outcome.toLowerCase().includes(searchLower)
+      )
+    }
+    return true
+  })
   
   return (
     <ProtectedRoute>
@@ -176,9 +270,7 @@ export default function Calls() {
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          marginBottom: '2rem', 
-          flexWrap: 'wrap', 
-          gap: '1rem' 
+          marginBottom: '1.5rem'
         }}>
           <h1>Calls</h1>
           <button
@@ -197,71 +289,115 @@ export default function Calls() {
           </button>
         </div>
         
+        {/* Filters and Search */}
+        <div style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          justifyContent: 'space-between', 
+          gap: '1rem', 
+          marginBottom: '1.5rem' 
+        }}>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              onClick={() => setFilter('all')}
+              style={{
+                backgroundColor: filter === 'all' ? '#4a69bd' : '#e2e8f0',
+                color: filter === 'all' ? 'white' : '#4a5568',
+                padding: '0.5rem 1rem',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              All Calls ({counts.all})
+            </button>
+            
+            <button
+              onClick={() => setFilter('deals')}
+              style={{
+                backgroundColor: filter === 'deals' ? '#4a69bd' : '#e2e8f0',
+                color: filter === 'deals' ? 'white' : '#4a5568',
+                padding: '0.5rem 1rem',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Deals ({counts.deals})
+            </button>
+            
+            <button
+              onClick={() => setFilter('recent')}
+              style={{
+                backgroundColor: filter === 'recent' ? '#4a69bd' : '#e2e8f0',
+                color: filter === 'recent' ? 'white' : '#4a5568',
+                padding: '0.5rem 1rem',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Recent ({counts.recent})
+            </button>
+          </div>
+          
+          <div>
+            <input
+              type="text"
+              placeholder="Search calls..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                padding: '0.5rem',
+                borderRadius: '4px',
+                border: '1px solid #ddd',
+                width: '250px'
+              }}
+            />
+          </div>
+        </div>
+        
+        {/* Call Cards List */}
         {loading ? (
           <p>Loading calls...</p>
-        ) : calls.length > 0 ? (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Date/Time</th>
-                  <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Contact</th>
-                  <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Duration</th>
-                  <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Outcome</th>
-                  <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Notes</th>
-                  <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ddd' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {calls.map((call) => (
-                  <tr key={call.id}>
-                    <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
-                      {formatDate(call.date)}
-                    </td>
-                    <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
-                      <div>{call.contact.name}</div>
-                      {call.contact.company && <div style={{ fontSize: '0.8rem', color: '#666' }}>{call.contact.company}</div>}
-                    </td>
-                    <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
-                      {call.duration} min
-                    </td>
-                    <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
-                      <span style={{ 
-                        display: 'inline-block',
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: '4px',
-                        fontSize: '0.8rem',
-                        ...getOutcomeStyle(call.outcome)
-                      }}>
-                        {call.outcome}
-                      </span>
-                    </td>
-                    <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
-                      {call.notes || '-'}
-                    </td>
-                    <td style={{ padding: '0.5rem', borderBottom: '1px solid #ddd' }}>
-                      <button
-                        onClick={() => handleOpenEditModal(call)}
-                        style={{
-                          backgroundColor: '#4a69bd',
-                          color: 'white',
-                          padding: '0.25rem 0.5rem',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '0.8rem'
-                        }}
-                      >
-                        Edit
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        ) : filteredCalls.length > 0 ? (
+          <div>
+            {filteredCalls.map(call => (
+              <CallCard
+                key={call.id}
+                call={call}
+                onEditClick={handleOpenEditModal}
+                onDeleteClick={handleDeleteCall}
+                onAddTaskClick={handleAddTask}
+              />
+            ))}
           </div>
         ) : (
-          <p>No calls recorded yet. Log your first call to get started.</p>
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '2rem', 
+            backgroundColor: '#f8f9fa', 
+            borderRadius: '8px' 
+          }}>
+            <p style={{ marginBottom: '1rem' }}>
+              {searchTerm 
+                ? 'No calls found matching your search.' 
+                : 'No calls recorded yet. Log your first call to get started.'}
+            </p>
+            <button
+              onClick={handleNewCall}
+              style={{
+                backgroundColor: '#4a69bd',
+                color: 'white',
+                padding: '0.5rem 1rem',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Log New Call
+            </button>
+          </div>
         )}
 
         {/* New Call Modal */}
@@ -280,6 +416,21 @@ export default function Calls() {
           call={selectedCall}
           onSubmit={handleEditCall}
           mode="edit"
+        />
+
+        {/* Task Modal for Call Follow-up */}
+        <TaskModal
+          isOpen={isTaskModalOpen}
+          onClose={() => setIsTaskModalOpen(false)}
+          contact={selectedCall?.contact}
+          contacts={contacts}
+          initialData={{
+            contactId: selectedCall?.contact?.id,
+            callId: selectedCall?.id,
+            title: selectedCall ? `Follow up with ${selectedCall.contact.name}` : '',
+            description: selectedCall ? `Follow-up from call on ${new Date(selectedCall.date).toLocaleDateString()}${selectedCall.notes ? `: ${selectedCall.notes}` : ''}` : '',
+          }}
+          onSubmit={handleTaskSubmit}
         />
 
         {/* Contact Selection Modal (when no contact is selected) */}
