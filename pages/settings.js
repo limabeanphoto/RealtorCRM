@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
 
 const AccountSettings = () => {
@@ -13,12 +13,36 @@ const AccountSettings = () => {
 }
 
 const SettingsForm = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
+  const [formData, setFormData] = useState({   
     currentPassword: '',
     newPassword: '',
   });
+
+  const [initialFormData, setInitialFormData] = useState({
+    name: '',
+    email: '',
+  });
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/users/settings', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        if (data.success) {
+          setInitialFormData(data.data);
+          setFormData(prev => ({ ...prev, name: data.data.name, email: data.data.email }));
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+    fetchUserData();
+  }, []);
   const [message, setMessage] = useState('');
 
   const handleChange = (e) => {
@@ -58,13 +82,13 @@ const SettingsForm = () => {
           <div style={{ marginBottom: '1rem' }}>
             <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem' }}>
               Name
-            </label>
+            </label>          
             <input 
               type="text" 
               id="name" 
               name="name" 
-              value={formData.name} 
-              onChange={handleChange} 
+              value={formData.name}
+                onChange={handleChange} 
               style={{ width: '100%', padding: '0.5rem' }} 
             />
           </div>
@@ -72,7 +96,7 @@ const SettingsForm = () => {
           {/* Email Field */}
           <div style={{ marginBottom: '1rem' }}>
             <label htmlFor="email" style={{ display: 'block', marginBottom: '0.5rem' }}>Email</label>
-            <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} style={{ width: '100%', padding: '0.5rem' }}/>
+            <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} style={{ width: '100%', padding: '0.5rem' }} />
           </div>
 
           {/* Current Password Field */}
