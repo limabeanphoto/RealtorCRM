@@ -1,4 +1,4 @@
-// components/contacts/ContactCard.js (complete file)
+// components/contacts/ContactCard.js
 import { useState, useEffect } from 'react';
 import { FaCheck, FaPhone, FaEdit, FaEnvelope, FaBuilding, FaAngleDown, FaAngleUp, FaTasks, FaHistory, FaTrash } from 'react-icons/fa';
 import theme from '../../styles/theme';
@@ -12,12 +12,14 @@ export default function ContactCard({
   onAddTaskClick,
   onDeleteContact,
   onEditTask,
-  onTaskStatusChange
+  onTaskStatusChange,
+  onContactUpdate // New prop for handling contact updates
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [calls, setCalls] = useState([]);
   const [isLoadingRelated, setIsLoadingRelated] = useState(false);
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false); // New state for status dropdown
   
   // Toggle expanded state
   const toggleExpand = () => {
@@ -64,6 +66,37 @@ export default function ContactCard({
       console.error('Error fetching related data:', error);
     } finally {
       setIsLoadingRelated(false);
+    }
+  };
+  
+  // Handle status update
+  const handleStatusUpdate = async (newStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/contacts/${contact.id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ lastCallOutcome: newStatus })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Update the contact in parent component
+        if (onContactUpdate) {
+          onContactUpdate(data.data);
+        }
+      } else {
+        alert('Error updating contact status: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error updating contact status:', error);
+      alert('Error updating contact status');
+    } finally {
+      setIsStatusDropdownOpen(false);
     }
   };
   
@@ -119,6 +152,20 @@ export default function ContactCard({
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
   
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isStatusDropdownOpen) {
+        setIsStatusDropdownOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isStatusDropdownOpen]);
+  
   return (
     <div style={{ 
       border: '1px solid #e2e8f0', 
@@ -166,17 +213,61 @@ export default function ContactCard({
                 </span>
               )}
               
-              {/* Last call outcome badge - NEW */}
+              {/* Last call outcome badge with dropdown */}
               {contact.lastCallOutcome && (
-                <span style={{
-                  display: 'inline-block',
-                  padding: '0.2rem 0.5rem',
-                  borderRadius: '4px',
-                  fontSize: '0.8rem',
-                  ...getOutcomeStyle(contact.lastCallOutcome)
-                }}>
-                  {contact.lastCallOutcome}
-                </span>
+                <div style={{ position: 'relative' }}>
+                  <span 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsStatusDropdownOpen(!isStatusDropdownOpen);
+                    }}
+                    style={{
+                      display: 'inline-block',
+                      padding: '0.2rem 0.5rem',
+                      borderRadius: '4px',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      ...getOutcomeStyle(contact.lastCallOutcome)
+                    }}
+                  >
+                    {contact.lastCallOutcome} ▼
+                  </span>
+                  
+                  {isStatusDropdownOpen && (
+                    <div 
+                      style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        backgroundColor: 'white',
+                        borderRadius: '4px',
+                        boxShadow: theme.shadows.md,
+                        zIndex: 10,
+                        width: '180px',
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {['Interested', 'Not Interested', 'Follow Up', 'No Answer', 'Left Message', 'Wrong Number', 'Deal Closed'].map(status => (
+                        <div
+                          key={status}
+                          onClick={(e) => {
+                            handleStatusUpdate(status);
+                          }}
+                          style={{
+                            padding: '0.5rem',
+                            cursor: 'pointer',
+                            backgroundColor: status === contact.lastCallOutcome ? '#f0f0f0' : 'white',
+                            borderBottom: '1px solid #eee',
+                            ...getOutcomeStyle(status),
+                            borderRadius: 0
+                          }}
+                        >
+                          {status}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -219,7 +310,7 @@ export default function ContactCard({
               </span>
             )}
             
-            {/* Last call date - NEW */}
+            {/* Last call date */}
             {contact.lastCallDate && (
               <span style={{ 
                 display: 'flex',
@@ -236,25 +327,26 @@ export default function ContactCard({
         </div>
         
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          {/* Updated square buttons */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onEditClick(contact);
             }}
             style={{
-              backgroundColor: '#4a69bd',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: theme.colors.brand.primary,
               color: 'white',
-              padding: '0.25rem 0.5rem',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '0.8rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.2rem',
             }}
           >
-            <FaEdit size={12} /> Edit
+            <FaEdit size={14} />
           </button>
           
           <button
@@ -263,19 +355,19 @@ export default function ContactCard({
               onLogCallClick(contact);
             }}
             style={{
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               backgroundColor: '#78e08f',
               color: 'white',
-              padding: '0.25rem 0.5rem',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '0.8rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.2rem',
             }}
           >
-            <FaPhone size={12} /> Log Call
+            <FaPhone size={14} />
           </button>
           
           <button
@@ -284,19 +376,19 @@ export default function ContactCard({
               onAddTaskClick(contact);
             }}
             style={{
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               backgroundColor: '#e58e26',
               color: 'white',
-              padding: '0.25rem 0.5rem',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '0.8rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.2rem',
             }}
           >
-            <FaTasks size={12} /> Add Task
+            <FaTasks size={14} />
           </button>
           
           <div style={{ 
@@ -338,19 +430,19 @@ export default function ContactCard({
                   onAddTaskClick(contact);
                 }}
                 style={{
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   backgroundColor: '#e58e26',
                   color: 'white',
-                  padding: '0.25rem 0.5rem',
                   border: 'none',
                   borderRadius: '4px',
                   cursor: 'pointer',
-                  fontSize: '0.8rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.2rem',
                 }}
               >
-                <FaTasks size={12} /> Add Task
+                <FaTasks size={14} />
               </button>
             </div>
             
@@ -392,19 +484,19 @@ export default function ContactCard({
                   onLogCallClick(contact);
                 }}
                 style={{
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   backgroundColor: '#78e08f',
                   color: 'white',
-                  padding: '0.25rem 0.5rem',
                   border: 'none',
                   borderRadius: '4px',
                   cursor: 'pointer',
-                  fontSize: '0.8rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.2rem',
                 }}
               >
-                <FaPhone size={12} /> Log Call
+                <FaPhone size={14} />
               </button>
             </div>
             

@@ -68,6 +68,15 @@ export default function Contacts() {
     }
   }
   
+  // Handle contact status update
+  const handleContactUpdate = (updatedContact) => {
+    setContacts(prevContacts => 
+      prevContacts.map(contact => 
+        contact.id === updatedContact.id ? updatedContact : contact
+      )
+    );
+  };
+  
   // Handle adding a new contact
   const handleAddContact = async (formData) => {
     try {
@@ -237,6 +246,16 @@ export default function Contacts() {
       const data = await response.json()
       
       if (data.success) {
+        // Update the contact in the list with new lastCallOutcome if necessary
+        const updatedContact = data.data.contact;
+        if (updatedContact) {
+          handleContactUpdate({
+            ...updatedContact,
+            lastCallOutcome: data.data.outcome,
+            lastCallDate: data.data.date
+          });
+        }
+        
         alert('Call logged successfully')
         return { success: true, data: data.data }
       } else {
@@ -444,6 +463,7 @@ export default function Contacts() {
                 onDeleteContact={handleDeleteContact}
                 onEditTask={handleEditTask}
                 onTaskStatusChange={handleTaskStatusChange}
+                onContactUpdate={handleContactUpdate}
               />
             ))}
           </div>
