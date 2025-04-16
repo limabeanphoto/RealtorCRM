@@ -387,7 +387,7 @@ export default function Calls() {
             <button
               onClick={handleNewCall}
               style={{
-                backgroundColor: '#4a69bd',
+                backgroundColor: '#8F9F3B',
                 color: 'white',
                 padding: '0.5rem 1rem',
                 border: 'none',
