@@ -173,8 +173,9 @@ export default function ContactCard({
       margin: '0 0 1rem 0',
       backgroundColor: 'white',
       boxShadow: theme.shadows.sm,
-      overflow: 'hidden',
+      overflow: 'visible', // Changed from 'hidden' to 'visible' to allow dropdown to show
       transition: 'box-shadow 0.2s ease',
+      position: 'relative', // Added to make sure child elements are positioned relative to this
       ':hover': {
         boxShadow: theme.shadows.md
       }
@@ -198,7 +199,7 @@ export default function ContactCard({
             </h3>
             
             {/* Status badges */}
-            <div style={{ display: 'flex', gap: '0.3rem' }}>
+            <div style={{ display: 'flex', gap: '0.3rem', position: 'relative' }}> {/* Added position relative */}
               {/* Assignment status badge */}
               {contact.status && (
                 <span style={{
@@ -242,7 +243,7 @@ export default function ContactCard({
                         backgroundColor: 'white',
                         borderRadius: '4px',
                         boxShadow: theme.shadows.md,
-                        zIndex: 10,
+                        zIndex: 100, // Increased z-index to make sure it appears on top
                         width: '180px',
                       }}
                       onClick={(e) => e.stopPropagation()}
