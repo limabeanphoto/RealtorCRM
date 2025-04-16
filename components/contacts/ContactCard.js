@@ -1,5 +1,5 @@
 // components/contacts/ContactCard.js
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FaCheck, FaPhone, FaEdit, FaEnvelope, FaBuilding, FaAngleDown, FaAngleUp, FaTasks, FaHistory, FaTrash } from 'react-icons/fa';
 import theme from '../../styles/theme';
 import MiniTaskCard from '../tasks/MiniTaskCard';
@@ -20,9 +20,13 @@ export default function ContactCard({
   const [calls, setCalls] = useState([]);
   const [isLoadingRelated, setIsLoadingRelated] = useState(false);
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false); // New state for status dropdown
+  const dropdownRef = useRef(null);
   
   // Toggle expanded state
   const toggleExpand = () => {
+    // Don't toggle if dropdown is open
+    if (isStatusDropdownOpen) return;
+    
     setIsExpanded(!isExpanded);
     
     // Load related data when expanding for the first time
@@ -69,8 +73,16 @@ export default function ContactCard({
     }
   };
   
-  // Handle status update
-  const handleStatusUpdate = async (newStatus) => {
+  // Handle status update - fixed to properly call API
+  const handleStatusUpdate = async (newStatus, e) => {
+    // Prevent the event from bubbling up
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    
+    console.log("Updating status to:", newStatus);
+    
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`/api/contacts/${contact.id}/status`, {
@@ -85,11 +97,19 @@ export default function ContactCard({
       const data = await response.json();
       
       if (data.success) {
+        console.log("Status updated successfully");
+        // Update the local contact data first
+        const updatedContact = {
+          ...contact,
+          lastCallOutcome: newStatus
+        };
+        
         // Update the contact in parent component
         if (onContactUpdate) {
-          onContactUpdate(data.data);
+          onContactUpdate(updatedContact);
         }
       } else {
+        console.error("Error updating status:", data.message);
         alert('Error updating contact status: ' + data.message);
       }
     } catch (error) {
@@ -155,16 +175,27 @@ export default function ContactCard({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (isStatusDropdownOpen) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsStatusDropdownOpen(false);
       }
     };
     
-    document.addEventListener('mousedown', handleClickOutside);
+    // Only add the listener when the dropdown is open
+    if (isStatusDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isStatusDropdownOpen]);
+  
+  // Toggle dropdown visibility
+  const toggleDropdown = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setIsStatusDropdownOpen(!isStatusDropdownOpen);
+  };
   
   return (
     <div style={{ 
@@ -176,6 +207,7 @@ export default function ContactCard({
       overflow: 'visible', // Changed from 'hidden' to 'visible' to allow dropdown to show
       transition: 'box-shadow 0.2s ease',
       position: 'relative', // Added to make sure child elements are positioned relative to this
+      zIndex: isStatusDropdownOpen ? 10 : 1, // Increase z-index when dropdown is open
       ':hover': {
         boxShadow: theme.shadows.md
       }
@@ -216,12 +248,9 @@ export default function ContactCard({
               
               {/* Last call outcome badge with dropdown */}
               {contact.lastCallOutcome && (
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative' }} ref={dropdownRef}>
                   <span 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsStatusDropdownOpen(!isStatusDropdownOpen);
-                    }}
+                    onClick={toggleDropdown}
                     style={{
                       display: 'inline-block',
                       padding: '0.2rem 0.5rem',
@@ -246,14 +275,11 @@ export default function ContactCard({
                         zIndex: 100, // Increased z-index to make sure it appears on top
                         width: '180px',
                       }}
-                      onClick={(e) => e.stopPropagation()}
                     >
                       {['Interested', 'Not Interested', 'Follow Up', 'No Answer', 'Left Message', 'Wrong Number', 'Deal Closed'].map(status => (
                         <div
                           key={status}
-                          onClick={(e) => {
-                            handleStatusUpdate(status);
-                          }}
+                          onClick={(e) => handleStatusUpdate(status, e)}
                           style={{
                             padding: '0.5rem',
                             cursor: 'pointer',
