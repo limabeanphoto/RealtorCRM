@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FaUser, FaBuilding, FaClock, FaPhone, FaEdit, FaAngleDown, FaAngleUp, FaTrash, FaClipboard, FaTasks } from 'react-icons/fa';
 import theme from '../../styles/theme';
+import MiniContactCard from '../contacts/MiniContactCard';
 
 export default function CallCard({ 
   call, 
@@ -9,10 +10,17 @@ export default function CallCard({
   onAddTaskClick
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isContactExpanded, setIsContactExpanded] = useState(false);
   
   // Toggle expanded state
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
+  };
+  
+  // Toggle contact expanded state
+  const toggleContactExpand = (e) => {
+    e.stopPropagation(); // Prevent main card from toggling
+    setIsContactExpanded(!isContactExpanded);
   };
   
   // Format date for display
@@ -136,46 +144,48 @@ export default function CallCard({
         </div>
         
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          {/* Square icon-only edit button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onEditClick(call);
             }}
             style={{
-              backgroundColor: '#4a69bd',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: theme.colors.brand.primary,
               color: 'white',
-              padding: '0.25rem 0.5rem',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '0.8rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.2rem',
             }}
           >
-            <FaEdit size={12} /> Edit
+            <FaEdit size={14} />
           </button>
           
+          {/* Square icon-only add task button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onAddTaskClick(call);
             }}
             style={{
-              backgroundColor: '#e58e26',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: theme.colors.brand.primary,
               color: 'white',
-              padding: '0.25rem 0.5rem',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '0.8rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.2rem',
             }}
           >
-            <FaTasks size={12} /> Add Task
+            <FaTasks size={14} />
           </button>
           
           <div style={{ 
@@ -191,23 +201,45 @@ export default function CallCard({
       
       {/* Card Expanded Content */}
       {isExpanded && (
-        <div style={{ padding: '1rem', backgroundColor: '#f9f9f9' }}>
-          {/* Contact Information */}
+        <div style={{ padding: '1rem', backgroundColor: '#f9f9fa' }}>
+          {/* Contact Information - Now Expandable */}
           <div style={{ marginBottom: '1.5rem' }}>
-            <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Contact Information</h4>
-            <div style={{ 
-              backgroundColor: 'white', 
-              padding: '0.75rem', 
-              borderRadius: theme.borderRadius.sm,
-              border: '1px solid #eee'
-            }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                <div><strong>Name:</strong> {call.contact.name}</div>
-                {call.contact.company && <div><strong>Company:</strong> {call.contact.company}</div>}
-                <div><strong>Phone:</strong> {call.contact.phone}</div>
-                {call.contact.email && <div><strong>Email:</strong> {call.contact.email}</div>}
+            <div 
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '0.5rem',
+                cursor: 'pointer'
+              }}
+              onClick={toggleContactExpand}
+            >
+              <h4 style={{ marginTop: 0, marginBottom: 0 }}>Contact Information</h4>
+              <div style={{ color: theme.colors.brand.text }}>
+                {isContactExpanded ? <FaAngleUp /> : <FaAngleDown />}
               </div>
             </div>
+            
+            {isContactExpanded ? (
+              <MiniContactCard 
+                contact={call.contact}
+                isExpanded={true}
+              />
+            ) : (
+              <div style={{ 
+                backgroundColor: 'white', 
+                padding: '0.75rem', 
+                borderRadius: theme.borderRadius.sm,
+                border: '1px solid #eee'
+              }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                  <div><strong>Name:</strong> {call.contact.name}</div>
+                  {call.contact.company && <div><strong>Company:</strong> {call.contact.company}</div>}
+                  <div><strong>Phone:</strong> {call.contact.phone}</div>
+                  {call.contact.email && <div><strong>Email:</strong> {call.contact.email}</div>}
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Call Details */}
@@ -254,7 +286,7 @@ export default function CallCard({
                 onAddTaskClick(call);
               }}
               style={{
-                backgroundColor: '#e58e26',
+                backgroundColor: theme.colors.brand.primary,
                 color: 'white',
                 padding: '0.5rem 1rem',
                 border: 'none',
