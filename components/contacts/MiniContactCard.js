@@ -1,133 +1,154 @@
+// components/contacts/MiniContactCard.js (complete file)
 import { useState } from 'react';
-import { FaUser, FaBuilding, FaPhone, FaEnvelope, FaAngleDown, FaAngleUp, FaFileAlt } from 'react-icons/fa';
+import { FaPhone, FaEdit, FaBuilding, FaEnvelope, FaHistory } from 'react-icons/fa';
 import theme from '../../styles/theme';
 
 export default function MiniContactCard({ 
-  contact
+  contact, 
+  onEditClick, 
+  onLogCallClick, 
+  onSelect,
+  isSelected = false
 }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  
-  // Toggle expanded state
-  const toggleExpand = (e) => {
-    e.stopPropagation(); // Stop propagation to prevent parent card from toggling
-    setIsExpanded(!isExpanded);
+  // Get outcome badge style
+  const getOutcomeStyle = (outcome) => {
+    const styles = {
+      'Interested': { backgroundColor: '#d4edda', color: '#155724' },
+      'Not Interested': { backgroundColor: '#f8d7da', color: '#721c24' },
+      'Follow Up': { backgroundColor: '#fff3cd', color: '#856404' },
+      'No Answer': { backgroundColor: '#e2e3e5', color: '#383d41' },
+      'Left Message': { backgroundColor: '#cce5ff', color: '#004085' },
+      'Wrong Number': { backgroundColor: '#f8d7da', color: '#721c24' },
+      'Deal Closed': { backgroundColor: '#d4edda', color: '#155724' }
+    };
+    
+    return styles[outcome] || { backgroundColor: '#e2e3e5', color: '#383d41' };
   };
   
-  // Safe check for contact and its properties
-  if (!contact) {
-    return null;
-  }
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return 'No calls yet';
+    
+    const options = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric'
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
   
   return (
-    <div style={{ 
-      backgroundColor: 'white', 
-      padding: '0.75rem', 
-      borderRadius: theme.borderRadius.sm,
-      border: '1px solid #eee',
-      marginBottom: '0.5rem',
-      cursor: 'pointer'
-    }} onClick={toggleExpand}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        {/* Contact Name and Company */}
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <div style={{ 
-            width: '32px', 
-            height: '32px', 
-            borderRadius: '50%', 
-            backgroundColor: theme.colors.brand.primary,
-            color: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <FaUser size={16} />
+    <div 
+      style={{ 
+        backgroundColor: isSelected ? '#f0f7ff' : 'white', 
+        padding: '0.75rem', 
+        borderRadius: theme.borderRadius.sm,
+        border: `1px solid ${isSelected ? theme.colors.brand.accent : '#eee'}`,
+        marginBottom: '0.5rem',
+        cursor: onSelect ? 'pointer' : 'default',
+        transition: 'all 0.2s ease'
+      }}
+      onClick={onSelect ? () => onSelect(contact) : undefined}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        {/* Contact Info */}
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+            <strong>{contact.name}</strong>
+            
+            {/* Last call outcome badge - NEW */}
+            {contact.lastCallOutcome && (
+              <span style={{
+                display: 'inline-block',
+                padding: '0.15rem 0.3rem',
+                borderRadius: '3px',
+                fontSize: '0.75rem',
+                ...getOutcomeStyle(contact.lastCallOutcome)
+              }}>
+                {contact.lastCallOutcome}
+              </span>
+            )}
           </div>
           
-          <div>
-            <div style={{ fontWeight: 'bold' }}>{contact.name || 'Unknown Contact'}</div>
-            {contact.company && <div style={{ fontSize: '0.85rem', color: theme.colors.brand.text }}>{contact.company}</div>}
+          <div style={{ fontSize: '0.9rem', color: theme.colors.brand.text }}>
+            {contact.company && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>
+                <FaBuilding size={12} />
+                {contact.company}
+              </div>
+            )}
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>
+              <FaPhone size={12} />
+              {contact.phone}
+            </div>
+            
+            {contact.email && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>
+                <FaEnvelope size={12} />
+                {contact.email}
+              </div>
+            )}
+            
+            {/* Last call date - NEW */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <FaHistory size={12} />
+              Last call: {formatDate(contact.lastCallDate)}
+            </div>
           </div>
         </div>
         
-        {/* Expand/Collapse Icon */}
-        <div style={{ color: theme.colors.brand.text }}>
-          {isExpanded ? <FaAngleUp size={14} /> : <FaAngleDown size={14} />}
-        </div>
-      </div>
-      
-      {/* Expanded Content */}
-      {isExpanded && (
-        <div style={{ 
-          marginTop: '0.75rem', 
-          paddingTop: '0.75rem', 
-          borderTop: '1px solid #eee'
-        }}>
-          {/* Contact Details */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {contact.phone && (
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.5rem',
-                fontSize: '0.9rem'
-              }}>
-                <FaPhone size={14} color={theme.colors.brand.accent} />
-                <span>{contact.phone}</span>
-              </div>
+        {/* Action Buttons */}
+        {(onEditClick || onLogCallClick) && (
+          <div style={{ display: 'flex', gap: '0.25rem' }}>
+            {onEditClick && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEditClick(contact);
+                }}
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#4a69bd',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: theme.borderRadius.sm,
+                  cursor: 'pointer',
+                }}
+              >
+                <FaEdit size={12} />
+              </button>
             )}
             
-            {contact.email && (
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.5rem',
-                fontSize: '0.9rem'
-              }}>
-                <FaEnvelope size={14} color={theme.colors.brand.accent} />
-                <span>{contact.email}</span>
-              </div>
-            )}
-            
-            {contact.company && (
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.5rem',
-                fontSize: '0.9rem'
-              }}>
-                <FaBuilding size={14} color={theme.colors.brand.accent} />
-                <span>{contact.company}</span>
-              </div>
+            {onLogCallClick && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onLogCallClick(contact);
+                }}
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#78e08f',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: theme.borderRadius.sm,
+                  cursor: 'pointer',
+                }}
+              >
+                <FaPhone size={12} />
+              </button>
             )}
           </div>
-          
-          {/* Notes Display */}
-          {typeof contact.notes === 'string' && contact.notes.trim() !== '' && (
-            <div style={{ marginTop: '0.75rem' }}>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.5rem',
-                fontWeight: 'bold', 
-                marginBottom: '0.5rem',
-                fontSize: '0.9rem'
-              }}>
-                <FaFileAlt size={14} color={theme.colors.brand.accent} />
-                <span>Notes:</span>
-              </div>
-              <div style={{ 
-                fontSize: '0.85rem', 
-                padding: '0.5rem', 
-                backgroundColor: '#f8f9fa',
-                borderRadius: '4px',
-                color: theme.colors.brand.text
-              }}>
-                {contact.notes}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

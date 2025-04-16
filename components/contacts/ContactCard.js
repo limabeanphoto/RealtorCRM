@@ -1,3 +1,4 @@
+// components/contacts/ContactCard.js (complete file)
 import { useState, useEffect } from 'react';
 import { FaCheck, FaPhone, FaEdit, FaEnvelope, FaBuilding, FaAngleDown, FaAngleUp, FaTasks, FaHistory, FaTrash } from 'react-icons/fa';
 import theme from '../../styles/theme';
@@ -91,6 +92,33 @@ export default function ContactCard({
       : { backgroundColor: '#4a69bd', color: 'white' };
   };
   
+  // Get call outcome badge style
+  const getOutcomeStyle = (outcome) => {
+    const styles = {
+      'Interested': { backgroundColor: '#d4edda', color: '#155724' },
+      'Not Interested': { backgroundColor: '#f8d7da', color: '#721c24' },
+      'Follow Up': { backgroundColor: '#fff3cd', color: '#856404' },
+      'No Answer': { backgroundColor: '#e2e3e5', color: '#383d41' },
+      'Left Message': { backgroundColor: '#cce5ff', color: '#004085' },
+      'Wrong Number': { backgroundColor: '#f8d7da', color: '#721c24' },
+      'Deal Closed': { backgroundColor: '#d4edda', color: '#155724' }
+    };
+    
+    return styles[outcome] || { backgroundColor: '#e2e3e5', color: '#383d41' };
+  };
+  
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    
+    const options = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+  
   return (
     <div style={{ 
       border: '1px solid #e2e8f0', 
@@ -122,19 +150,35 @@ export default function ContactCard({
               {contact.name}
             </h3>
             
-            {/* Only show if user is admin and we have status info */}
-            {contact.status && (
-              <span style={{
-                display: 'inline-block',
-                padding: '0.2rem 0.5rem',
-                borderRadius: '4px',
-                fontSize: '0.8rem',
-                ...getAssignedStyle(contact.status)
-              }}>
-                {contact.status}
-                {contact.assignedToUser && ` (${contact.assignedToUser.firstName})`}
-              </span>
-            )}
+            {/* Status badges */}
+            <div style={{ display: 'flex', gap: '0.3rem' }}>
+              {/* Assignment status badge */}
+              {contact.status && (
+                <span style={{
+                  display: 'inline-block',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '4px',
+                  fontSize: '0.8rem',
+                  ...getAssignedStyle(contact.status)
+                }}>
+                  {contact.status}
+                  {contact.assignedToUser && ` (${contact.assignedToUser.firstName})`}
+                </span>
+              )}
+              
+              {/* Last call outcome badge - NEW */}
+              {contact.lastCallOutcome && (
+                <span style={{
+                  display: 'inline-block',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '4px',
+                  fontSize: '0.8rem',
+                  ...getOutcomeStyle(contact.lastCallOutcome)
+                }}>
+                  {contact.lastCallOutcome}
+                </span>
+              )}
+            </div>
           </div>
           
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -174,74 +218,85 @@ export default function ContactCard({
                 {contact.email}
               </span>
             )}
+            
+            {/* Last call date - NEW */}
+            {contact.lastCallDate && (
+              <span style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.2rem',
+                fontSize: '0.9rem', 
+                color: theme.colors.brand.text
+              }}>
+                <FaHistory size={12} />
+                Last call: {formatDate(contact.lastCallDate)}
+              </span>
+            )}
           </div>
         </div>
         
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          {/* Square icon-only edit button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onEditClick(contact);
             }}
             style={{
-              width: '32px',
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: theme.colors.brand.primary,
+              backgroundColor: '#4a69bd',
               color: 'white',
+              padding: '0.25rem 0.5rem',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
+              fontSize: '0.8rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.2rem',
             }}
           >
-            <FaEdit size={14} />
+            <FaEdit size={12} /> Edit
           </button>
           
-          {/* Square icon-only log call button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onLogCallClick(contact);
             }}
             style={{
-              width: '32px',
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: theme.colors.brand.primary,
+              backgroundColor: '#78e08f',
               color: 'white',
+              padding: '0.25rem 0.5rem',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
+              fontSize: '0.8rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.2rem',
             }}
           >
-            <FaPhone size={14} />
+            <FaPhone size={12} /> Log Call
           </button>
           
-          {/* Square icon-only add task button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onAddTaskClick(contact);
             }}
             style={{
-              width: '32px',
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: theme.colors.brand.primary,
+              backgroundColor: '#e58e26',
               color: 'white',
+              padding: '0.25rem 0.5rem',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
+              fontSize: '0.8rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.2rem',
             }}
           >
-            <FaTasks size={14} />
+            <FaTasks size={12} /> Add Task
           </button>
           
           <div style={{ 
@@ -257,7 +312,7 @@ export default function ContactCard({
       
       {/* Card Expanded Content */}
       {isExpanded && (
-        <div style={{ padding: '1rem', backgroundColor: '#f9f9fa' }}>
+        <div style={{ padding: '1rem', backgroundColor: '#f9f9f9' }}>
           {/* Notes Section */}
           {contact.notes && (
             <div style={{ marginBottom: '1.5rem' }}>
@@ -283,7 +338,7 @@ export default function ContactCard({
                   onAddTaskClick(contact);
                 }}
                 style={{
-                  backgroundColor: theme.colors.brand.primary,
+                  backgroundColor: '#e58e26',
                   color: 'white',
                   padding: '0.25rem 0.5rem',
                   border: 'none',
@@ -337,7 +392,7 @@ export default function ContactCard({
                   onLogCallClick(contact);
                 }}
                 style={{
-                  backgroundColor: theme.colors.brand.primary,
+                  backgroundColor: '#78e08f',
                   color: 'white',
                   padding: '0.25rem 0.5rem',
                   border: 'none',
@@ -392,14 +447,14 @@ export default function ContactCard({
               style={{
                 backgroundColor: '#e74c3c',
                 color: 'white',
-                padding: '0.5rem 1rem',
+                padding: '0.25rem 0.5rem',
                 border: 'none',
                 borderRadius: '4px',
                 cursor: 'pointer',
                 fontSize: '0.8rem',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.3rem',
+                gap: '0.2rem',
               }}
             >
               <FaTrash size={12} /> Delete Contact

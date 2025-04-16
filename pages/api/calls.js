@@ -1,4 +1,4 @@
-// pages/api/calls.js (updated version)
+// pages/api/calls.js (complete file)
 import { PrismaClient } from '@prisma/client'
 import withAuth from '../../utils/withAuth'
 
@@ -109,16 +109,16 @@ async function handler(req, res) {
           }
         }),
         
-        // If contact is Open, assign it to the user making the call
-        ...(contact.status === 'Open' ? [
-          prisma.contact.update({
-            where: { id: contactId },
-            data: {
-              status: 'Assigned',
-              assignedTo: req.user.id
-            }
-          })
-        ] : [])
+        // Update contact with the outcome of this call
+        prisma.contact.update({
+          where: { id: contactId },
+          data: {
+            lastCallOutcome: outcome,
+            lastCallDate: new Date(),
+            status: contact.status === 'Open' ? 'Assigned' : contact.status,
+            assignedTo: contact.status === 'Open' ? req.user.id : contact.assignedTo
+          }
+        })
       ])
       
       return res.status(201).json({ success: true, data: newCall })

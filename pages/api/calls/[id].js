@@ -39,40 +39,71 @@ async function handler(req, res) {
   }
   
   // PUT - Update call
+
   else if (req.method === 'PUT') {
     try {
       const { duration, notes, outcome, isDeal, dealValue } = req.body
       
       // Check if call exists
       const existingCall = await prisma.call.findUnique({
-        where: { id }
+        where: { id },
+        include: {
+          contact: true
+        }
       })
       
       if (!existingCall) {
         return res.status(404).json({ success: false, message: 'Call not found' })
       }
       
-      // Update call
-      const updatedCall = await prisma.call.update({
-        where: { id },
-        data: {
-          duration: duration !== undefined ? duration : existingCall.duration,
-          notes: notes !== undefined ? notes : existingCall.notes,
-          outcome: outcome || existingCall.outcome,
-          isDeal: isDeal !== undefined ? isDeal : existingCall.isDeal,
-          dealValue: dealValue !== undefined ? dealValue : existingCall.dealValue
-        },
-        include: {
-          contact: {
-            select: {
-              id: true,
-              name: true,
-              company: true,
-              phone: true
+      // Start a transaction for updating both the call and potentially the contact
+      const [updatedCall, updatedContact] = await prisma.$transaction(async (tx) => {
+        // Update the call
+        const call = await tx.call.update({
+          where: { id },
+          data: {
+            duration: duration !== undefined ? duration : existingCall.duration,
+            notes: notes !== undefined ? notes : existingCall.notes,
+            outcome: outcome || existingCall.outcome,
+            isDeal: isDeal !== undefined ? isDeal : existingCall.isDeal,
+            dealValue: dealValue !== undefined ? dealValue : existingCall.dealValue
+          },
+          include: {
+            contact: {
+              select: {
+                id: true,
+                name: true,
+                company: true,
+                phone: true
+              }
             }
           }
+        });
+        
+        // Get the most recent call for this contact to determine if we should update the contact's status
+        const mostRecentCall = await tx.call.findFirst({
+          where: { 
+            contactId: existingCall.contactId
+          },
+          orderBy: {
+            date: 'desc'
+          }
+        });
+        
+        // If this is the most recent call, update the contact's status
+        let contact = null;
+        if (mostRecentCall.id === id) {
+          contact = await tx.contact.update({
+            where: { id: existingCall.contactId },
+            data: {
+              lastCallOutcome: outcome || existingCall.outcome,
+              lastCallDate: existingCall.date // Keep the original date
+            }
+          });
         }
-      })
+        
+        return [call, contact];
+      });
       
       return res.status(200).json({ success: true, data: updatedCall })
     } catch (error) {

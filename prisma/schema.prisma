@@ -17,6 +17,8 @@ model Contact {
   company         String?
   notes           String?
   createdAt       DateTime  @default(now())
+  lastCallOutcome String?   // New field to track the outcome of the most recent call
+  lastCallDate    DateTime? // New field to track when the last call was made
   calls           Call[]
   tasks           Task[]
   assignedTo      String?
