@@ -53,7 +53,7 @@ const SettingsForm = () => {
     }
   };
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <ProtectedRoute><form onSubmit={handleSubmit} className="space-y-4">
           {message && <div className="text-red-500">{message}</div>}
           {/* Name Field */}
           <div>
@@ -94,8 +94,8 @@ const SettingsForm = () => {
                 Save Changes
             </button>
           </div>
-        </form>   
-    </ProtectedRoute>
+        </form> 
+        </ProtectedRoute>  
   )
 }
 export default AccountSettings
