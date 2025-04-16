@@ -18,6 +18,8 @@ export default function Contacts() {
   const [isCallModalOpen, setIsCallModalOpen] = useState(false)
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState(null)
+  const [selectedCall, setSelectedCall] = useState(null)
+  const [selectedTask, setSelectedTask] = useState(null)
   
   // Added state for filters
   const [filter, setFilter] = useState('all') // all, open, assigned
@@ -160,7 +162,7 @@ export default function Contacts() {
     }
   }
 
-  // Handle opening the edit modal
+  // Handle opening the edit modal for a contact
   const handleOpenEditModal = (contact) => {
     setSelectedContact(contact)
     setIsEditModalOpen(true)
@@ -169,13 +171,54 @@ export default function Contacts() {
   // Handle logging a call
   const handleLogCall = (contact) => {
     setSelectedContact(contact)
+    setSelectedCall(null)
     setIsCallModalOpen(true)
   }
 
   // Handle adding a task
-  const handleAddTask = (contact) => {
+  const handleAddTask = (contact, call = null) => {
     setSelectedContact(contact)
+    setSelectedCall(call)
+    setSelectedTask(null)
     setIsTaskModalOpen(true)
+  }
+
+  // Handle editing a task
+  const handleEditTask = (task) => {
+    setSelectedTask(task)
+    setSelectedContact(null) // We'll get the contact from the task
+    setIsTaskModalOpen(true)
+  }
+
+  // Handle task status change
+  const handleTaskStatusChange = async (taskId, newStatus) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          status: newStatus,
+          completed: newStatus === 'Completed'
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        return { success: true, data: data.data }
+      } else {
+        alert('Error updating task status: ' + data.message)
+        return { success: false, message: data.message }
+      }
+    } catch (error) {
+      console.error('Error updating task status:', error)
+      alert('Error updating task status')
+      return { success: false, message: error.message }
+    }
   }
 
   // Handle call form submission
@@ -211,8 +254,15 @@ export default function Contacts() {
   const handleTaskSubmit = async (formData) => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('/api/tasks', {
-        method: 'POST',
+      
+      // Check if we're updating an existing task or creating a new one
+      const isUpdating = !!formData.id
+      
+      const url = isUpdating ? `/api/tasks/${formData.id}` : '/api/tasks'
+      const method = isUpdating ? 'PUT' : 'POST'
+      
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -223,15 +273,15 @@ export default function Contacts() {
       const data = await response.json()
       
       if (data.success) {
-        alert('Task created successfully')
+        alert(`Task ${isUpdating ? 'updated' : 'created'} successfully`)
         return { success: true, data: data.data }
       } else {
-        alert('Error creating task: ' + data.message)
+        alert(`Error ${isUpdating ? 'updating' : 'creating'} task: ` + data.message)
         return { success: false, message: data.message }
       }
     } catch (error) {
-      console.error('Error creating task:', error)
-      alert('Error creating task')
+      console.error(`Error ${formData.id ? 'updating' : 'creating'} task:`, error)
+      alert(`Error ${formData.id ? 'updating' : 'creating'} task`)
       return { success: false, message: error.message }
     }
   }
@@ -265,6 +315,31 @@ export default function Contacts() {
     }
     return true
   })
+  
+  // Prepare initial task data for task modal when creating from a call
+  const getInitialTaskData = () => {
+    let initialData = {}
+    
+    if (selectedContact) {
+      initialData.contactId = selectedContact.id
+    }
+    
+    if (selectedCall) {
+      initialData.callId = selectedCall.id
+      initialData.title = `Follow up with ${selectedContact.name}`
+      initialData.description = `Follow-up from call on ${new Date(selectedCall.date).toLocaleDateString()}${selectedCall.notes ? `: ${selectedCall.notes}` : ''}`
+    }
+    
+    if (selectedTask) {
+      // If editing a task, use all its data
+      initialData = {
+        ...selectedTask,
+        dueDate: new Date(selectedTask.dueDate).toISOString().slice(0, 16)
+      }
+    }
+    
+    return initialData
+  }
   
   return (
     <ProtectedRoute>
@@ -367,6 +442,8 @@ export default function Contacts() {
                 onLogCallClick={handleLogCall}
                 onAddTaskClick={handleAddTask}
                 onDeleteContact={handleDeleteContact}
+                onEditTask={handleEditTask}
+                onTaskStatusChange={handleTaskStatusChange}
               />
             ))}
           </div>
@@ -430,6 +507,7 @@ export default function Contacts() {
           onClose={() => setIsTaskModalOpen(false)}
           contact={selectedContact}
           contacts={contacts}
+          initialData={getInitialTaskData()}
           onSubmit={handleTaskSubmit}
         />
       </div>

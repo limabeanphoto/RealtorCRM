@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { FaCheck, FaPhone, FaEdit, FaEnvelope, FaBuilding, FaAngleDown, FaAngleUp, FaTasks, FaHistory, FaTrash } from 'react-icons/fa';
 import theme from '../../styles/theme';
+import MiniTaskCard from '../tasks/MiniTaskCard';
+import MiniCallCard from '../calls/MiniCallCard';
 
 export default function ContactCard({ 
   contact, 
   onEditClick, 
   onLogCallClick, 
   onAddTaskClick,
-  onDeleteContact
+  onDeleteContact,
+  onEditTask,
+  onTaskStatusChange
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [tasks, setTasks] = useState([]);
@@ -62,42 +66,22 @@ export default function ContactCard({
     }
   };
   
-  // Format date for display
-  const formatDate = (dateString) => {
-    const options = { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
-  
-  // Get color and style for call outcome badge
-  const getOutcomeStyle = (outcome) => {
-    const styles = {
-      'Interested': { backgroundColor: '#d4edda', color: '#155724' },
-      'Not Interested': { backgroundColor: '#f8d7da', color: '#721c24' },
-      'Follow Up': { backgroundColor: '#fff3cd', color: '#856404' },
-      'No Answer': { backgroundColor: '#e2e3e5', color: '#383d41' },
-      'Left Message': { backgroundColor: '#cce5ff', color: '#004085' },
-      'Wrong Number': { backgroundColor: '#f8d7da', color: '#721c24' },
-      'Deal Closed': { backgroundColor: '#d4edda', color: '#155724' }
-    };
-    
-    return styles[outcome] || { backgroundColor: '#e2e3e5', color: '#383d41' };
-  };
-  
-  // Get color and style for task status
-  const getStatusStyle = (status) => {
-    const styles = {
-      'Open': { backgroundColor: '#cce5ff', color: '#004085' },
-      'In Progress': { backgroundColor: '#fff3cd', color: '#856404' },
-      'Completed': { backgroundColor: '#d4edda', color: '#155724' }
-    };
-    
-    return styles[status] || { backgroundColor: '#e2e3e5', color: '#383d41' };
+  // Handle task status change from within the contact card
+  const handleTaskStatusChange = async (taskId, newStatus) => {
+    try {
+      const result = await onTaskStatusChange(taskId, newStatus);
+      
+      if (result.success) {
+        // Update the task in our local state
+        setTasks(prevTasks => 
+          prevTasks.map(task => 
+            task.id === taskId ? { ...task, status: newStatus, completed: newStatus === 'Completed' } : task
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error updating task status:', error);
+    }
   };
   
   // Get assigned status badge style (for admin view)
@@ -317,29 +301,12 @@ export default function ContactCard({
             ) : tasks.length > 0 ? (
               <div>
                 {tasks.map(task => (
-                  <div key={task.id} style={{ 
-                    backgroundColor: 'white', 
-                    padding: '0.75rem', 
-                    borderRadius: theme.borderRadius.sm,
-                    border: '1px solid #eee',
-                    marginBottom: '0.5rem'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ fontWeight: 'bold' }}>{task.title}</div>
-                      <span style={{ 
-                        display: 'inline-block',
-                        padding: '0.2rem 0.5rem',
-                        borderRadius: '4px',
-                        fontSize: '0.7rem',
-                        ...getStatusStyle(task.status)
-                      }}>
-                        {task.status}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>
-                      Due: {formatDate(task.dueDate)}
-                    </div>
-                  </div>
+                  <MiniTaskCard
+                    key={task.id}
+                    task={task}
+                    onStatusChange={handleTaskStatusChange}
+                    onEdit={onEditTask}
+                  />
                 ))}
               </div>
             ) : (
@@ -388,31 +355,11 @@ export default function ContactCard({
             ) : calls.length > 0 ? (
               <div>
                 {calls.map(call => (
-                  <div key={call.id} style={{ 
-                    backgroundColor: 'white', 
-                    padding: '0.75rem', 
-                    borderRadius: theme.borderRadius.sm,
-                    border: '1px solid #eee',
-                    marginBottom: '0.5rem'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>{formatDate(call.date)} <span style={{ color: theme.colors.brand.text }}>({call.duration} min)</span></div>
-                      <span style={{ 
-                        display: 'inline-block',
-                        padding: '0.2rem 0.5rem',
-                        borderRadius: '4px',
-                        fontSize: '0.7rem',
-                        ...getOutcomeStyle(call.outcome)
-                      }}>
-                        {call.outcome}
-                      </span>
-                    </div>
-                    {call.notes && (
-                      <div style={{ fontSize: '0.8rem', marginTop: '0.25rem', fontStyle: 'italic' }}>
-                        {call.notes}
-                      </div>
-                    )}
-                  </div>
+                  <MiniCallCard
+                    key={call.id}
+                    call={call}
+                    onAddTask={() => onAddTaskClick(contact, call)}
+                  />
                 ))}
               </div>
             ) : (
