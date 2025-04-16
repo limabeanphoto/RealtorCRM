@@ -10,6 +10,20 @@ export default function CallCard({
   onAddTaskClick
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [enhancedContact, setEnhancedContact] = useState(null);
+  
+  // Effect to ensure contact includes notes from the call when relevant
+  useEffect(() => {
+    if (call && call.contact) {
+      // Create enhanced contact object with notes if not present
+      const contactWithNotes = { 
+        ...call.contact,
+        // Only add notes from call if contact doesn't have notes
+        notes: call.contact.notes || (call.notes ? `Call notes: ${call.notes}` : '')
+      };
+      setEnhancedContact(contactWithNotes);
+    }
+  }, [call]);
   
   // Toggle expanded state
   const toggleExpand = () => {
@@ -42,6 +56,11 @@ export default function CallCard({
     
     return styles[outcome] || { backgroundColor: '#e2e3e5', color: '#383d41' };
   };
+  
+  // If call data isn't available yet, don't render
+  if (!call || !call.contact) {
+    return null;
+  }
   
   return (
     <div style={{ 
@@ -195,10 +214,10 @@ export default function CallCard({
       {/* Card Expanded Content */}
       {isExpanded && (
         <div style={{ padding: '1rem', backgroundColor: '#f9f9fa' }}>
-          {/* Contact Information - Using MiniContactCard */}
+          {/* Contact Information - Using MiniContactCard with enhanced contact */}
           <div style={{ marginBottom: '1.5rem' }}>
             <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Contact Information</h4>
-            <MiniContactCard contact={call.contact} />
+            {enhancedContact && <MiniContactCard contact={enhancedContact} />}
           </div>
           
           {/* Call Details */}

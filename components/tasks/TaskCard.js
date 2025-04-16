@@ -12,6 +12,20 @@ export default function TaskCard({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false); // Animation state for both check/uncheck
   const [animatingToComplete, setAnimatingToComplete] = useState(false); // Direction of animation
+  const [enhancedContact, setEnhancedContact] = useState(null);
+  
+  // Effect to ensure contact includes all relevant information
+  useEffect(() => {
+    if (task && task.contact) {
+      // Make sure contact notes are preserved
+      // Most task-related contacts might not have notes from original call
+      // If contact data comes through differently in tasks vs. calls/contacts
+      setEnhancedContact({
+        ...task.contact,
+        notes: task.contact.notes || ''
+      });
+    }
+  }, [task]);
   
   // Toggle expanded state
   const toggleExpand = () => {
@@ -97,6 +111,11 @@ export default function TaskCard({
   
   // Is visually completed
   const isVisuallyCompleted = visualStatus() === 'Completed';
+  
+  // If no task data yet, return null
+  if (!task) {
+    return null;
+  }
   
   return (
     <div style={{ 
@@ -283,10 +302,10 @@ export default function TaskCard({
             </div>
           </div>
           
-          {task.contact && (
+          {enhancedContact && (
             <div style={{ marginBottom: '1rem' }}>
               <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>Contact:</div>
-              <MiniContactCard contact={task.contact} />
+              <MiniContactCard contact={enhancedContact} />
             </div>
           )}
           

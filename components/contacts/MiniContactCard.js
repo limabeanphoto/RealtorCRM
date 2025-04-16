@@ -13,6 +13,11 @@ export default function MiniContactCard({
     setIsExpanded(!isExpanded);
   };
   
+  // Safe check for contact and its properties
+  if (!contact) {
+    return null;
+  }
+  
   return (
     <div style={{ 
       backgroundColor: 'white', 
@@ -39,7 +44,7 @@ export default function MiniContactCard({
           </div>
           
           <div>
-            <div style={{ fontWeight: 'bold' }}>{contact.name}</div>
+            <div style={{ fontWeight: 'bold' }}>{contact.name || 'Unknown Contact'}</div>
             {contact.company && <div style={{ fontSize: '0.85rem', color: theme.colors.brand.text }}>{contact.company}</div>}
           </div>
         </div>
@@ -96,8 +101,8 @@ export default function MiniContactCard({
             )}
           </div>
           
-          {/* Notes if available */}
-          {contact.notes && (
+          {/* Notes Display */}
+          {typeof contact.notes === 'string' && contact.notes.trim() !== '' && (
             <div style={{ marginTop: '0.75rem' }}>
               <div style={{ 
                 display: 'flex', 
