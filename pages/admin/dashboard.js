@@ -106,7 +106,7 @@ export default function AdminDashboard() {
           <button
             onClick={() => router.push('/admin/contacts?status=Open')}
             style={{
-              backgroundColor: '#6187BC',
+              backgroundColor: theme.colors.brand.primary,
               color: 'white',
               padding: '0.5rem 1rem',
               border: 'none',
@@ -132,7 +132,7 @@ export default function AdminDashboard() {
           <button
             onClick={() => router.push('/admin/contacts?status=Assigned')}
             style={{
-              backgroundColor: '#6187BC',
+              backgroundColor: theme.colors.brand.primary,
               color: 'white',
               padding: '0.5rem 1rem',
               border: 'none',
@@ -163,7 +163,7 @@ export default function AdminDashboard() {
           <button
             onClick={() => router.push('/admin/users')}
             style={{
-              backgroundColor: '#6187BC',
+              backgroundColor: theme.colors.brand.primary,
               color: 'white',
               padding: '0.5rem 1rem',
               border: 'none',
@@ -200,7 +200,7 @@ export default function AdminDashboard() {
                     <button
                       onClick={() => router.push('/admin/users/new')}
                       style={{
-                        backgroundColor: '#6187BC',
+                        backgroundColor: theme.colors.brand.primary,
                         color: 'white',
                         padding: '0.25rem 0.5rem',
                         border: 'none',
@@ -236,7 +236,7 @@ export default function AdminDashboard() {
           <button
             onClick={() => router.push('/admin/users/new')}
             style={{
-              backgroundColor: '#6187BC',
+              backgroundColor: theme.colors.brand.primary,
               color: 'white',
               padding: '0.75rem 1.5rem',
               border: 'none',
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
           <button
             onClick={() => router.push('/admin/contacts/import')}
             style={{
-              backgroundColor: '#6187BC',
+              backgroundColor: theme.colors.brand.primary,
               color: 'white',
               padding: '0.75rem 1.5rem',
               border: 'none',
@@ -262,7 +262,7 @@ export default function AdminDashboard() {
           <button
             onClick={() => router.push('/admin/contacts/assign')}
             style={{
-              backgroundColor: '#6187BC',
+              backgroundColor: theme.colors.brand.primary,
               color: 'white',
               padding: '0.75rem 1.5rem',
               border: 'none',
@@ -275,7 +275,7 @@ export default function AdminDashboard() {
           <button
             onClick={() => router.push('/admin/analytics')}
             style={{
-              backgroundColor: '#6187BC',
+              backgroundColor: theme.colors.brand.primary,
               color: 'white',
               padding: '0.75rem 1.5rem',
               border: 'none',
