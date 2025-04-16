@@ -5,7 +5,7 @@ import ProtectedRoute from '../components/auth/ProtectedRoute'
 const AccountSettings = () => {
   return (
     <ProtectedRoute>
-      <div className="container mx-auto p-4 max-w-2xl">
+      <div className="container mx-auto p-4">
          <h1 className="text-2xl font-bold mb-6">Account Settings</h1>
         <SettingsForm />
       </div>
