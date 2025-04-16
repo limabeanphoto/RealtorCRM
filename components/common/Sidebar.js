@@ -36,8 +36,12 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
     setUser(userData);
   }, []);
   
-  // Navigation items 
+  // Navigation items with conditional admin dashboard
   const navItems = [
+    // Add Admin Dashboard only for admin users
+    ...(user?.role === 'admin' ? [
+      { href: '/admin/dashboard', label: 'Admin Dashboard', icon: <FaHome size={18} /> }
+    ] : []),
     { href: '/', label: 'Dashboard', icon: <FaHome size={18} /> },
     { href: '/contacts', label: 'Contacts', icon: <FaUsers size={18} /> },
     { href: '/calls', label: 'Calls', icon: <FaPhone size={18} /> },
@@ -45,10 +49,17 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
     { href: '/stats', label: 'Analytics', icon: <FaChartBar size={18} /> },
   ];
   
-  // Check if the current path matches
+  // Improved isActive function to handle more specific path matching
   const isActive = (path) => {
+    // Exact match for root path
     if (path === '/' && router.pathname === '/') return true;
-    if (path !== '/' && router.pathname.startsWith(path)) return true;
+    
+    // Special case for admin dashboard
+    if (path === '/admin/dashboard' && router.pathname.startsWith('/admin/dashboard')) return true;
+    
+    // For other paths, check if the pathname starts with the path but is not the root
+    if (path !== '/' && path !== '/admin/dashboard' && router.pathname.startsWith(path)) return true;
+    
     return false;
   };
   
@@ -178,12 +189,7 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
             <button 
               onClick={() => {
-                if (isCollapsed) {
-                  toggleSidebar();
-                  setTimeout(() => setIsSearchOpen(true), 300);
-                } else {
-                  setIsSearchOpen(true);
-                }
+                setIsSearchOpen(true);
               }}
               style={{
                 backgroundColor: 'transparent',
@@ -211,12 +217,12 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
           </div>
         )}
         
-        {/* Search Modal */}
-        {isSearchOpen && !isCollapsed && (
+        {/* Search Modal - Updated for better positioning */}
+        {isSearchOpen && (
           <div 
             ref={searchRef}
             style={{
-              position: 'absolute',
+              position: 'fixed',
               top: 0,
               left: isCollapsed ? 70 : 240,
               right: 0,
@@ -226,6 +232,8 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
               boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
               display: 'flex',
               flexDirection: 'column',
+              height: '100vh',
+              overflowY: 'auto'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
