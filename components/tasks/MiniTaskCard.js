@@ -8,6 +8,7 @@ export default function MiniTaskCard({
   onEdit
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false); // New state for animation
   
   // Toggle expanded state
   const toggleExpand = (e) => {
@@ -60,10 +61,24 @@ export default function MiniTaskCard({
   
   const timeStatus = getTimeStatus();
   
-  // Handle status change - simplified to toggle between Active/Completed
+  // Handle status change - with animation
   const handleStatusChange = (e) => {
     e.stopPropagation(); // Prevent card from toggling
-    onStatusChange(task.id, task.status === 'Completed' ? 'Active' : 'Completed');
+    
+    // Only animate when marking as complete
+    if (task.status !== 'Completed') {
+      // Set completing state for animation
+      setIsCompleting(true);
+      
+      // Delay the actual status change
+      setTimeout(() => {
+        onStatusChange(task.id, 'Completed');
+        setIsCompleting(false);
+      }, 300); // 300ms delay for animation
+    } else {
+      // No animation when marking as active
+      onStatusChange(task.id, 'Active');
+    }
   };
   
   return (
@@ -73,7 +88,8 @@ export default function MiniTaskCard({
       borderRadius: theme.borderRadius.sm,
       border: '1px solid #eee',
       marginBottom: '0.5rem',
-      cursor: 'pointer'
+      cursor: 'pointer',
+      transition: 'all 0.3s ease', // Add transition for the whole card
     }} onClick={toggleExpand}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         {/* Task Title and Status */}
@@ -84,21 +100,32 @@ export default function MiniTaskCard({
               width: '18px',
               height: '18px',
               borderRadius: '50%',
-              border: `2px solid ${task.status === 'Completed' ? theme.colors.brand.primary : '#ddd'}`,
-              backgroundColor: task.status === 'Completed' ? theme.colors.brand.primary : 'white',
+              border: `2px solid ${task.status === 'Completed' || isCompleting ? theme.colors.brand.primary : '#ddd'}`,
+              backgroundColor: task.status === 'Completed' || isCompleting ? theme.colors.brand.primary : 'white',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
+              transition: 'all 0.3s ease', // Add transition for the checkbox
             }}
           >
-            {task.status === 'Completed' && <FaCheck size={10} color="white" />}
+            {(task.status === 'Completed' || isCompleting) && (
+              <FaCheck 
+                size={10} 
+                color="white"
+                style={{ 
+                  opacity: isCompleting ? 0 : 1,
+                  animation: isCompleting ? 'fadeIn 0.3s forwards' : 'none',
+                }}
+              />
+            )}
           </div>
           
           <div style={{ 
             fontWeight: 'bold',
-            textDecoration: task.status === 'Completed' ? 'line-through' : 'none',
-            color: task.status === 'Completed' ? theme.colors.brand.text : 'inherit'
+            textDecoration: task.status === 'Completed' || isCompleting ? 'line-through' : 'none',
+            color: task.status === 'Completed' || isCompleting ? theme.colors.brand.text : 'inherit',
+            transition: 'all 0.3s ease', // Add transition for the text
           }}>
             {task.title}
           </div>
@@ -178,7 +205,10 @@ export default function MiniTaskCard({
             </button>
             
             <button
-              onClick={handleStatusChange}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleStatusChange(e);
+              }}
               style={{
                 backgroundColor: task.status === 'Completed' ? '#6c757d' : theme.colors.brand.primary,
                 color: 'white',
@@ -194,6 +224,14 @@ export default function MiniTaskCard({
           </div>
         </div>
       )}
+      
+      {/* CSS animations */}
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }

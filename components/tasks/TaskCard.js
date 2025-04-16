@@ -9,6 +9,7 @@ export default function TaskCard({
   onEdit
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false); // New state for animation
   
   // Toggle expanded state
   const toggleExpand = () => {
@@ -60,10 +61,24 @@ export default function TaskCard({
   
   const timeStatus = getTimeStatus();
   
-  // Handle status change - simplified to toggle between Active/Completed
+  // Handle status change - with animation
   const handleStatusChange = (e) => {
     e.stopPropagation();
-    onStatusChange(task.id, task.status === 'Completed' ? 'Active' : 'Completed');
+    
+    // Only animate when marking as complete
+    if (task.status !== 'Completed') {
+      // Set completing state for animation
+      setIsCompleting(true);
+      
+      // Delay the actual status change
+      setTimeout(() => {
+        onStatusChange(task.id, 'Completed');
+        setIsCompleting(false);
+      }, 300); // 300ms delay for animation
+    } else {
+      // No animation when marking as active
+      onStatusChange(task.id, 'Active');
+    }
   };
   
   return (
@@ -75,7 +90,7 @@ export default function TaskCard({
       opacity: task.status === 'Completed' ? 0.8 : 1,
       boxShadow: theme.shadows.sm,
       overflow: 'hidden',
-      transition: 'box-shadow 0.2s ease',
+      transition: 'all 0.3s ease', // Add transition for whole card
       ':hover': {
         boxShadow: theme.shadows.md
       }
@@ -100,21 +115,32 @@ export default function TaskCard({
                 width: '22px',
                 height: '22px',
                 borderRadius: '50%',
-                border: `2px solid ${task.status === 'Completed' ? theme.colors.brand.primary : '#ddd'}`,
-                backgroundColor: task.status === 'Completed' ? theme.colors.brand.primary : 'white',
+                border: `2px solid ${task.status === 'Completed' || isCompleting ? theme.colors.brand.primary : '#ddd'}`,
+                backgroundColor: task.status === 'Completed' || isCompleting ? theme.colors.brand.primary : 'white',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
+                transition: 'all 0.3s ease', // Add transition for checkbox
               }}
             >
-              {task.status === 'Completed' && <FaCheck size={12} color="white" />}
+              {(task.status === 'Completed' || isCompleting) && (
+                <FaCheck 
+                  size={12} 
+                  color="white" 
+                  style={{ 
+                    opacity: isCompleting ? 0 : 1,
+                    animation: isCompleting ? 'fadeIn 0.3s forwards' : 'none',
+                  }} 
+                />
+              )}
             </div>
             
             <h3 style={{ 
               margin: 0, 
-              textDecoration: task.status === 'Completed' ? 'line-through' : 'none',
-              color: task.status === 'Completed' ? theme.colors.brand.text : theme.colors.brand.primary
+              textDecoration: task.status === 'Completed' || isCompleting ? 'line-through' : 'none',
+              color: task.status === 'Completed' || isCompleting ? theme.colors.brand.text : theme.colors.brand.primary,
+              transition: 'all 0.3s ease', // Add transition for text
             }}>
               {task.title}
             </h3>
@@ -261,6 +287,14 @@ export default function TaskCard({
           </div>
         </div>
       )}
+      
+      {/* CSS animations */}
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
