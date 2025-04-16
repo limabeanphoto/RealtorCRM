@@ -10,17 +10,10 @@ export default function CallCard({
   onAddTaskClick
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isContactExpanded, setIsContactExpanded] = useState(false);
   
   // Toggle expanded state
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
-  };
-  
-  // Toggle contact expanded state
-  const toggleContactExpand = (e) => {
-    e.stopPropagation(); // Prevent main card from toggling
-    setIsContactExpanded(!isContactExpanded);
   };
   
   // Format date for display
@@ -202,44 +195,10 @@ export default function CallCard({
       {/* Card Expanded Content */}
       {isExpanded && (
         <div style={{ padding: '1rem', backgroundColor: '#f9f9fa' }}>
-          {/* Contact Information - Now Expandable */}
+          {/* Contact Information - Using MiniContactCard */}
           <div style={{ marginBottom: '1.5rem' }}>
-            <div 
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '0.5rem',
-                cursor: 'pointer'
-              }}
-              onClick={toggleContactExpand}
-            >
-              <h4 style={{ marginTop: 0, marginBottom: 0 }}>Contact Information</h4>
-              <div style={{ color: theme.colors.brand.text }}>
-                {isContactExpanded ? <FaAngleUp /> : <FaAngleDown />}
-              </div>
-            </div>
-            
-            {isContactExpanded ? (
-              <MiniContactCard 
-                contact={call.contact}
-                isExpanded={true}
-              />
-            ) : (
-              <div style={{ 
-                backgroundColor: 'white', 
-                padding: '0.75rem', 
-                borderRadius: theme.borderRadius.sm,
-                border: '1px solid #eee'
-              }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                  <div><strong>Name:</strong> {call.contact.name}</div>
-                  {call.contact.company && <div><strong>Company:</strong> {call.contact.company}</div>}
-                  <div><strong>Phone:</strong> {call.contact.phone}</div>
-                  {call.contact.email && <div><strong>Email:</strong> {call.contact.email}</div>}
-                </div>
-              </div>
-            )}
+            <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Contact Information</h4>
+            <MiniContactCard contact={call.contact} />
           </div>
           
           {/* Call Details */}

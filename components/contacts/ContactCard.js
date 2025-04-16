@@ -178,67 +178,70 @@ export default function ContactCard({
         </div>
         
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          {/* Square icon-only edit button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onEditClick(contact);
             }}
             style={{
-              backgroundColor: '#4a69bd',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: theme.colors.brand.primary,
               color: 'white',
-              padding: '0.25rem 0.5rem',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '0.8rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.2rem',
             }}
           >
-            <FaEdit size={12} /> Edit
+            <FaEdit size={14} />
           </button>
           
+          {/* Square icon-only log call button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onLogCallClick(contact);
             }}
             style={{
-              backgroundColor: '#78e08f',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: theme.colors.brand.primary,
               color: 'white',
-              padding: '0.25rem 0.5rem',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '0.8rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.2rem',
             }}
           >
-            <FaPhone size={12} /> Log Call
+            <FaPhone size={14} />
           </button>
           
+          {/* Square icon-only add task button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onAddTaskClick(contact);
             }}
             style={{
-              backgroundColor: '#e58e26',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: theme.colors.brand.primary,
               color: 'white',
-              padding: '0.25rem 0.5rem',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '0.8rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.2rem',
             }}
           >
-            <FaTasks size={12} /> Add Task
+            <FaTasks size={14} />
           </button>
           
           <div style={{ 
@@ -254,7 +257,7 @@ export default function ContactCard({
       
       {/* Card Expanded Content */}
       {isExpanded && (
-        <div style={{ padding: '1rem', backgroundColor: '#f9f9f9' }}>
+        <div style={{ padding: '1rem', backgroundColor: '#f9f9fa' }}>
           {/* Notes Section */}
           {contact.notes && (
             <div style={{ marginBottom: '1.5rem' }}>
@@ -280,7 +283,7 @@ export default function ContactCard({
                   onAddTaskClick(contact);
                 }}
                 style={{
-                  backgroundColor: '#e58e26',
+                  backgroundColor: theme.colors.brand.primary,
                   color: 'white',
                   padding: '0.25rem 0.5rem',
                   border: 'none',
@@ -334,7 +337,7 @@ export default function ContactCard({
                   onLogCallClick(contact);
                 }}
                 style={{
-                  backgroundColor: '#78e08f',
+                  backgroundColor: theme.colors.brand.primary,
                   color: 'white',
                   padding: '0.25rem 0.5rem',
                   border: 'none',
@@ -389,14 +392,14 @@ export default function ContactCard({
               style={{
                 backgroundColor: '#e74c3c',
                 color: 'white',
-                padding: '0.25rem 0.5rem',
+                padding: '0.5rem 1rem',
                 border: 'none',
                 borderRadius: '4px',
                 cursor: 'pointer',
                 fontSize: '0.8rem',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.2rem',
+                gap: '0.3rem',
               }}
             >
               <FaTrash size={12} /> Delete Contact

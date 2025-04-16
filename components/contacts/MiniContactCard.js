@@ -3,15 +3,14 @@ import { FaUser, FaBuilding, FaPhone, FaEnvelope, FaAngleDown, FaAngleUp } from 
 import theme from '../../styles/theme';
 
 export default function MiniContactCard({ 
-  contact,
-  isExpanded = false
+  contact
 }) {
-  const [expanded, setExpanded] = useState(isExpanded);
+  const [isExpanded, setIsExpanded] = useState(false);
   
   // Toggle expanded state
   const toggleExpand = (e) => {
     e.stopPropagation(); // Stop propagation to prevent parent card from toggling
-    setExpanded(!expanded);
+    setIsExpanded(!isExpanded);
   };
   
   return (
@@ -47,12 +46,12 @@ export default function MiniContactCard({
         
         {/* Expand/Collapse Icon */}
         <div style={{ color: theme.colors.brand.text }}>
-          {expanded ? <FaAngleUp size={14} /> : <FaAngleDown size={14} />}
+          {isExpanded ? <FaAngleUp size={14} /> : <FaAngleDown size={14} />}
         </div>
       </div>
       
       {/* Expanded Content */}
-      {expanded && (
+      {isExpanded && (
         <div style={{ 
           marginTop: '0.75rem', 
           paddingTop: '0.75rem', 
