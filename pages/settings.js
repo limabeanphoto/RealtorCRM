@@ -12,16 +12,14 @@ const AccountSettings = () => {
   )
 }
 
-const SettingsForm = () => {
-  const [formData, setFormData] = useState({   
-    currentPassword: '',
-    newPassword: '',
-  });
+const SettingsForm = () => {  
+    const [formData, setFormData] = useState({
+      name: '',
+      email: '',
+      currentPassword: '',
+      newPassword: '',
+    });
 
-  const [initialFormData, setInitialFormData] = useState({
-    name: '',
-    email: '',
-  });
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -34,8 +32,7 @@ const SettingsForm = () => {
         });
         const data = await response.json();
         if (data.success) {
-          setInitialFormData(data.data);
-          setFormData(prev => ({ ...prev, name: data.data.name, email: data.data.email }));
+            setFormData(data.data);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -87,7 +84,7 @@ const SettingsForm = () => {
               type="text" 
               id="name" 
               name="name" 
-              value={formData.name}
+              value={formData.name || ''}
                 onChange={handleChange} 
               style={{ width: '100%', padding: '0.5rem' }} 
             />
@@ -96,7 +93,7 @@ const SettingsForm = () => {
           {/* Email Field */}
           <div style={{ marginBottom: '1rem' }}>
             <label htmlFor="email" style={{ display: 'block', marginBottom: '0.5rem' }}>Email</label>
-            <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} style={{ width: '100%', padding: '0.5rem' }} />
+            <input type="email" id="email" name="email" value={formData.email || ''} onChange={handleChange} style={{ width: '100%', padding: '0.5rem' }} />
           </div>
 
           {/* Current Password Field */}
