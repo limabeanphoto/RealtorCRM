@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaUser, FaBuilding, FaPhone, FaEnvelope, FaAngleDown, FaAngleUp } from 'react-icons/fa';
+import { FaUser, FaBuilding, FaPhone, FaEnvelope, FaAngleDown, FaAngleUp, FaFileAlt } from 'react-icons/fa';
 import theme from '../../styles/theme';
 
 export default function MiniContactCard({ 
@@ -98,13 +98,24 @@ export default function MiniContactCard({
           
           {/* Notes if available */}
           {contact.notes && (
-            <div style={{ marginTop: '1rem' }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem' }}>Notes:</div>
+            <div style={{ marginTop: '0.75rem' }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem',
+                fontWeight: 'bold', 
+                marginBottom: '0.5rem',
+                fontSize: '0.9rem'
+              }}>
+                <FaFileAlt size={14} color={theme.colors.brand.accent} />
+                <span>Notes:</span>
+              </div>
               <div style={{ 
                 fontSize: '0.85rem', 
                 padding: '0.5rem', 
                 backgroundColor: '#f8f9fa',
-                borderRadius: '4px'
+                borderRadius: '4px',
+                color: theme.colors.brand.text
               }}>
                 {contact.notes}
               </div>

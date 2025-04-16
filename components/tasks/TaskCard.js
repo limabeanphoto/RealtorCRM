@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FaCheck, FaClock, FaEdit, FaTrash, FaAngleDown, FaAngleUp } from 'react-icons/fa';
 import theme from '../../styles/theme';
+import MiniContactCard from '../contacts/MiniContactCard';
 
 export default function TaskCard({ 
   task, 
@@ -285,16 +286,7 @@ export default function TaskCard({
           {task.contact && (
             <div style={{ marginBottom: '1rem' }}>
               <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>Contact:</div>
-              <div style={{ 
-                backgroundColor: 'white', 
-                padding: '0.75rem', 
-                borderRadius: theme.borderRadius.sm,
-                border: '1px solid #eee'
-              }}>
-                <div>{task.contact.name}</div>
-                {task.contact.company && <div style={{ color: theme.colors.brand.text }}>{task.contact.company}</div>}
-                <div style={{ color: theme.colors.brand.accent }}>{task.contact.phone}</div>
-              </div>
+              <MiniContactCard contact={task.contact} />
             </div>
           )}
           
