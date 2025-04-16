@@ -3,12 +3,11 @@ import ProtectedRoute from '../components/auth/ProtectedRoute'
 
 const AccountSettings = () => {
   return (
-    <ProtectedRoute>
-      <div>
+    <ProtectedRoute>      
       <div style={{ marginBottom: '2rem' }}>
-         <h1 className="text-2xl font-bold mb-6">Account Settings</h1>
-        <SettingsForm />
-      </div>
+        <h1 className="text-2xl font-bold mb-6">Account Settings</h1>
+          <SettingsForm />
+        </div>
     </ProtectedRoute>
   )
 }
