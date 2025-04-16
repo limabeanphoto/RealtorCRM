@@ -5,7 +5,15 @@ export default function TaskModal({ isOpen, onClose, task, onSubmit, contact, co
   if (!isOpen) return null;
 
   const handleSubmit = async (formData) => {
-    const result = await onSubmit(formData);
+    // Convert status to match our new system
+    const updatedFormData = {
+      ...formData,
+      // Ensure API compatibility with Active/Open mapping
+      status: formData.status === 'Active' ? 'Active' : 'Completed',
+      completed: formData.status === 'Completed'
+    };
+    
+    const result = await onSubmit(updatedFormData);
     if (result && result.success) {
       onClose();
     }
@@ -17,6 +25,11 @@ export default function TaskModal({ isOpen, onClose, task, onSubmit, contact, co
   const initialData = task || {};
   if (contact && !initialData.contactId) {
     initialData.contactId = contact.id;
+  }
+  
+  // Ensure status is properly mapped for our simplified system
+  if (initialData.status) {
+    initialData.status = initialData.status === 'Completed' ? 'Completed' : 'Active';
   }
 
   const title = task && task.id ? 'Edit Task' : 'Create Task';

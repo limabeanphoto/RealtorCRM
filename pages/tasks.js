@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import TaskModal from '../components/tasks/TaskModal'
 import TaskCard from '../components/tasks/TaskCard'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
+import { FaTrash } from 'react-icons/fa'
+import theme from '../styles/theme'
 
 export default function Tasks() {
   const [tasks, setTasks] = useState([])
@@ -10,7 +12,8 @@ export default function Tasks() {
   const [loading, setLoading] = useState(true)
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
-  const [filter, setFilter] = useState('all') // all, open, completed
+  const [filter, setFilter] = useState('todo') // Changed default from 'all' to 'todo'
+  const [purging, setPurging] = useState(false) // New state for purge operation
   
   // Fetch tasks and contacts
   useEffect(() => {
@@ -118,7 +121,7 @@ export default function Tasks() {
     }
   }
   
-  // Handle task status change
+  // Handle task status change - updated for Active/Completed
   const handleStatusChange = async (taskId, newStatus) => {
     try {
       const token = localStorage.getItem('token')
@@ -175,6 +178,47 @@ export default function Tasks() {
     }
   }
 
+  // NEW FUNCTION: Handle purging all completed tasks
+  const handlePurgeCompleted = async () => {
+    if (!confirm('Are you sure you want to delete ALL completed tasks? This cannot be undone.')) {
+      return;
+    }
+    
+    setPurging(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const completedTasks = tasks.filter(task => task.status === 'Completed');
+      
+      if (completedTasks.length === 0) {
+        alert('No completed tasks to purge');
+        setPurging(false);
+        return;
+      }
+      
+      // Delete each completed task one by one
+      const deletePromises = completedTasks.map(task => 
+        fetch(`/api/tasks/${task.id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+      );
+      
+      await Promise.all(deletePromises);
+      
+      // Remove the completed tasks from state
+      setTasks(tasks.filter(task => task.status !== 'Completed'));
+      alert(`${completedTasks.length} completed tasks have been deleted`);
+    } catch (error) {
+      console.error('Error purging completed tasks:', error);
+      alert('Error purging completed tasks');
+    } finally {
+      setPurging(false);
+    }
+  };
+  
   // Handle opening the edit modal
   const handleOpenEditModal = (task) => {
     setEditingTask({
@@ -195,16 +239,14 @@ export default function Tasks() {
   
   // Filter tasks based on status
   const filteredTasks = tasks.filter(task => {
-    if (filter === 'all') return true
-    if (filter === 'open') return task.status !== 'Completed'
+    if (filter === 'todo') return task.status !== 'Completed'
     if (filter === 'completed') return task.status === 'Completed'
     return true
   })
   
   // Get counts for filters
   const counts = {
-    all: tasks.length,
-    open: tasks.filter(task => task.status !== 'Completed').length,
+    todo: tasks.filter(task => task.status !== 'Completed').length,
     completed: tasks.filter(task => task.status === 'Completed').length
   }
   
@@ -231,49 +273,65 @@ export default function Tasks() {
           </button>
         </div>
         
-        {/* Task Filters */}
-        <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem' }}>
-          <button
-            onClick={() => setFilter('all')}
-            style={{
-              backgroundColor: filter === 'all' ? '#4a69bd' : '#e2e8f0',
-              color: filter === 'all' ? 'white' : '#4a5568',
-              padding: '0.5rem 1rem',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            All Tasks ({counts.all})
-          </button>
+        {/* Task Filters - Updated to To-Do/Completed */}
+        <div style={{ 
+          marginBottom: '1.5rem', 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center'
+        }}>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <button
+              onClick={() => setFilter('todo')}
+              style={{
+                backgroundColor: filter === 'todo' ? theme.colors.brand.primary : '#e2e8f0',
+                color: filter === 'todo' ? 'white' : '#4a5568',
+                padding: '0.5rem 1rem',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              To-Do ({counts.todo})
+            </button>
+            
+            <button
+              onClick={() => setFilter('completed')}
+              style={{
+                backgroundColor: filter === 'completed' ? theme.colors.brand.primary : '#e2e8f0',
+                color: filter === 'completed' ? 'white' : '#4a5568',
+                padding: '0.5rem 1rem',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Completed ({counts.completed})
+            </button>
+          </div>
           
-          <button
-            onClick={() => setFilter('open')}
-            style={{
-              backgroundColor: filter === 'open' ? '#4a69bd' : '#e2e8f0',
-              color: filter === 'open' ? 'white' : '#4a5568',
-              padding: '0.5rem 1rem',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Open ({counts.open})
-          </button>
-          
-          <button
-            onClick={() => setFilter('completed')}
-            style={{
-              backgroundColor: filter === 'completed' ? '#4a69bd' : '#e2e8f0',
-              color: filter === 'completed' ? 'white' : '#4a5568',
-              padding: '0.5rem 1rem',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Completed ({counts.completed})
-          </button>
+          {/* Purge button - only visible in Completed view */}
+          {filter === 'completed' && counts.completed > 0 && (
+            <button
+              onClick={handlePurgeCompleted}
+              disabled={purging}
+              style={{
+                backgroundColor: '#e74c3c',
+                color: 'white',
+                padding: '0.5rem 1rem',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: purging ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                opacity: purging ? 0.7 : 1
+              }}
+            >
+              <FaTrash size={14} />
+              {purging ? 'Purging...' : 'Purge All Completed'}
+            </button>
+          )}
         </div>
         
         {/* Task List */}
@@ -293,23 +351,29 @@ export default function Tasks() {
           </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '2rem', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-            <p style={{ marginBottom: '1rem' }}>No tasks found with the current filter.</p>
-            <button
-              onClick={() => {
-                setEditingTask(null)
-                setIsTaskModalOpen(true)
-              }}
-              style={{
-                backgroundColor: '#4a69bd',
-                color: 'white',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Create Your First Task
-            </button>
+            <p style={{ marginBottom: '1rem' }}>
+              {filter === 'todo' 
+                ? 'No tasks to do. Create your first task to get started!' 
+                : 'No completed tasks.'}
+            </p>
+            {filter === 'todo' && (
+              <button
+                onClick={() => {
+                  setEditingTask(null)
+                  setIsTaskModalOpen(true)
+                }}
+                style={{
+                  backgroundColor: '#4a69bd',
+                  color: 'white',
+                  padding: '0.5rem 1rem',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Create Your First Task
+              </button>
+            )}
           </div>
         )}
 

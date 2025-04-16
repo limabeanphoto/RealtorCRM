@@ -1,3 +1,4 @@
+// pages/api/tasks.js - Updated for simplified Active/Completed status
 import { PrismaClient } from '@prisma/client'
 
 // Initialize Prisma client
@@ -70,16 +71,20 @@ export default async function handler(req, res) {
         })
       }
       
+      // Map 'Active' status to 'Open' for backward compatibility
+      const mappedStatus = status === 'Active' ? 'Active' : status || 'Active'
+      
       // Create task
       const newTask = await prisma.task.create({
         data: {
           title,
           description: description || null,
-          status: status || 'Open',
+          status: mappedStatus,
           priority: priority || 'Medium',
           dueDate: new Date(dueDate),
           contactId: contactId || null,
-          callId: callId || null
+          callId: callId || null,
+          completed: mappedStatus === 'Completed' // Set completed based on status
         },
         include: {
           contact: {
@@ -125,7 +130,7 @@ export default async function handler(req, res) {
         return res.status(404).json({ success: false, message: 'Task not found' })
       }
       
-      // Handle completion status
+      // Handle completion status based on simplified system
       const wasCompleted = existingTask.status === 'Completed'
       const isNowCompleted = status === 'Completed'
       let completedAt = existingTask.completedAt
@@ -138,18 +143,21 @@ export default async function handler(req, res) {
         completedAt = null
       }
       
+      // Map status for compatibility
+      const mappedStatus = status === 'Active' ? 'Active' : status
+      
       // Update task
       const updatedTask = await prisma.task.update({
         where: { id },
         data: {
           title: title || undefined,
           description: description !== undefined ? description : undefined,
-          status: status || undefined,
+          status: mappedStatus || undefined,
           priority: priority || undefined,
           dueDate: dueDate ? new Date(dueDate) : undefined,
           contactId: contactId !== undefined ? contactId : undefined,
           callId: callId !== undefined ? callId : undefined,
-          completed: completed !== undefined ? completed : undefined,
+          completed: completed !== undefined ? completed : isNowCompleted,
           completedAt
         },
         include: {

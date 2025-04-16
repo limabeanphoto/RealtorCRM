@@ -61,7 +61,7 @@ export default async function handler(req, res) {
         return res.status(404).json({ success: false, message: 'Task not found' })
       }
       
-      // Handle completion status
+      // Handle completion status with simplified Active/Completed system
       const wasCompleted = existingTask.status === 'Completed'
       const isNowCompleted = status === 'Completed'
       let completedAt = existingTask.completedAt
@@ -85,7 +85,7 @@ export default async function handler(req, res) {
           dueDate: dueDate ? new Date(dueDate) : undefined,
           contactId: contactId !== undefined ? contactId : undefined,
           callId: callId !== undefined ? callId : undefined,
-          completed: completed !== undefined ? completed : undefined,
+          completed: completed !== undefined ? completed : isNowCompleted,
           completedAt
         },
         include: {
