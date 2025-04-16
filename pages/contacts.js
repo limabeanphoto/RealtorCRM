@@ -373,7 +373,7 @@ export default function Contacts() {
             <button
               onClick={() => setFilter('all')}
               style={{
-                backgroundColor: filter === 'all' ? '#4a69bd' : '#e2e8f0',
+                backgroundColor: filter === 'all' ? '#8F9F3B' : '#e2e8f0',
                 color: filter === 'all' ? 'white' : '#4a5568',
                 padding: '0.5rem 1rem',
                 border: 'none',
@@ -387,7 +387,7 @@ export default function Contacts() {
             <button
               onClick={() => setFilter('open')}
               style={{
-                backgroundColor: filter === 'open' ? '#4a69bd' : '#e2e8f0',
+                backgroundColor: filter === 'open' ? '#8F9F3B' : '#e2e8f0',
                 color: filter === 'open' ? 'white' : '#4a5568',
                 padding: '0.5rem 1rem',
                 border: 'none',
@@ -401,7 +401,7 @@ export default function Contacts() {
             <button
               onClick={() => setFilter('assigned')}
               style={{
-                backgroundColor: filter === 'assigned' ? '#4a69bd' : '#e2e8f0',
+                backgroundColor: filter === 'assigned' ? '#8F9F3B' : '#e2e8f0',
                 color: filter === 'assigned' ? 'white' : '#4a5568',
                 padding: '0.5rem 1rem',
                 border: 'none',
@@ -462,7 +462,7 @@ export default function Contacts() {
             <button
               onClick={() => setIsAddModalOpen(true)}
               style={{
-                backgroundColor: '#4a69bd',
+                backgroundColor: '#8F9F3B',
                 color: 'white',
                 padding: '0.5rem 1rem',
                 border: 'none',

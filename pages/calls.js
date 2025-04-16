@@ -276,7 +276,7 @@ export default function Calls() {
           <button
             onClick={handleNewCall}
             style={{
-              backgroundColor: '#4a69bd',
+              backgroundColor: '#8F9F3B',
               color: 'white',
               padding: '0.5rem 1rem',
               border: 'none',
@@ -301,7 +301,7 @@ export default function Calls() {
             <button
               onClick={() => setFilter('all')}
               style={{
-                backgroundColor: filter === 'all' ? '#4a69bd' : '#e2e8f0',
+                backgroundColor: filter === 'all' ? '#8F9F3B' : '#e2e8f0',
                 color: filter === 'all' ? 'white' : '#4a5568',
                 padding: '0.5rem 1rem',
                 border: 'none',
@@ -315,7 +315,7 @@ export default function Calls() {
             <button
               onClick={() => setFilter('deals')}
               style={{
-                backgroundColor: filter === 'deals' ? '#4a69bd' : '#e2e8f0',
+                backgroundColor: filter === 'deals' ? '#8F9F3B' : '#e2e8f0',
                 color: filter === 'deals' ? 'white' : '#4a5568',
                 padding: '0.5rem 1rem',
                 border: 'none',
@@ -329,7 +329,7 @@ export default function Calls() {
             <button
               onClick={() => setFilter('recent')}
               style={{
-                backgroundColor: filter === 'recent' ? '#4a69bd' : '#e2e8f0',
+                backgroundColor: filter === 'recent' ? '#8F9F3B' : '#e2e8f0',
                 color: filter === 'recent' ? 'white' : '#4a5568',
                 padding: '0.5rem 1rem',
                 border: 'none',
