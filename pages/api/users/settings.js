@@ -33,18 +33,18 @@ export default async function handler(req, res) {
   }
 
 
-  try {
+  try{
+    
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Validate current password if password change is requested
-
+    if (currentPassword) {
       const passwordMatch = await bcrypt.compare(currentPassword, user.password);
 
-      if (!passwordMatch) {
+      if (!passwordMatch){
         return res.status(401).json({ message: 'Incorrect current password' });
       }
     }
@@ -53,7 +53,7 @@ export default async function handler(req, res) {
     if (newPassword) {
       const hashedPassword = await bcrypt.hash(newPassword, 10);
       updatedData.password = hashedPassword;
-    }
+    };
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
@@ -63,12 +63,14 @@ export default async function handler(req, res) {
     return res.status(200).json({ message: 'Settings updated successfully', user: updatedUser });
   } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2002') {
-        return res.status(400).json({ message: 'Email is already in use' });
-      }
+        if (error.code === 'P2002') {
+          return res.status(400).json({ message: 'Email is already in use' });
+        }
     } else {
-        console.error('Error updating settings:', error);
-    }
-    return res.status(500).json({ message: 'Error updating settings' });
+      console.error('Error updating settings:', error);
+      }
+      
+      return res.status(500).json({ message: 'Error updating settings' });
   }
-}
+};
+

@@ -67,7 +67,7 @@ const SettingsForm = () => {
           {/* Email Field */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-            <input type="email" id="email" name="email" className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+            <input type="email" id="email" name="email" className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" value={formData.email} onChange={handleChange}/>
           </div>
 
           {/* Current Password Field */}
@@ -94,8 +94,7 @@ const SettingsForm = () => {
                 Save Changes
             </button>
           </div>
-        </form>
-      </div>
+        </form>   
     </ProtectedRoute>
   )
 }
