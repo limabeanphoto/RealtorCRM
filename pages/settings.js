@@ -13,13 +13,14 @@ const AccountSettings = () => {
 }
 
 const SettingsForm = () => {  
-    const [formData, setFormData] = useState({ 
-      name: "",
-      email: "",
-      currentPassword: '', 
-      newPassword: '',
-    });
-
+  const [formData, setFormData] = useState({
+    currentPassword: '',
+    newPassword: '',
+  });
+  const [userData, setUserData] = useState({
+    name: '',
+    email: '',
+  });
   const [message, setMessage] = useState('');
   
   useEffect(() => {
@@ -33,10 +34,8 @@ const SettingsForm = () => {
         });
         const data = await response.json();
         if (data.success) {
-            setFormData(prevFormData => ({
-                ...prevFormData,
-                name: data.data.name || '',
-                email: data.data.email || ''
+          setUserData(data.data);
+          setFormData(prevFormData => ({ ...prevFormData,
             }));
         }
       } catch (error) {
@@ -77,13 +76,20 @@ const SettingsForm = () => {
     }
   };
   return (
+    <>
+      <div style={{ marginBottom: '2rem' }}>
+        <p>
+          <strong>Current Name:</strong> {userData.name}
+        </p>
+        <p>
+          <strong>Current Email:</strong> {userData.email}
+        </p>
+      </div>
     <form onSubmit={handleSubmit} style={{ maxWidth: '500px', margin: '0 auto' }}>
           {message && <div style={{ color: 'red', marginBottom: '1rem' }}>{message}</div>}
           {/* Name Field */}
           <div style={{ marginBottom: '1rem' }}>
-            <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem' }}>
-              Name
-            </label>          
+            <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem' }}>Name</label>          
             <input 
               type="text" 
               id="name" 
@@ -97,7 +103,7 @@ const SettingsForm = () => {
           {/* Email Field */}
           <div style={{ marginBottom: '1rem' }}>
             <label htmlFor="email" style={{ display: 'block', marginBottom: '0.5rem' }}>Email</label>
-            <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} style={{ width: '100%', padding: '0.5rem' }} />
+            <input type="email" id="email" name="email" onChange={handleChange} style={{ width: '100%', padding: '0.5rem' }} />
           </div>
 
           {/* Current Password Field */}
@@ -130,7 +136,8 @@ const SettingsForm = () => {
                 Save Changes
             </button>
           </div>
-        </form> 
+        </form>
+      </>
   
   )
 }
