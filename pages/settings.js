@@ -14,14 +14,14 @@ const AccountSettings = () => {
 
 const SettingsForm = () => {  
     const [formData, setFormData] = useState({ 
-      name: '', 
-      email: '', 
+      name: "",
+      email: "",
       currentPassword: '', 
-
       newPassword: '',
     });
 
-
+  const [message, setMessage] = useState('');
+  
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -33,20 +33,18 @@ const SettingsForm = () => {
         });
         const data = await response.json();
         if (data.success) {
-          setFormData({
-            name: data.data.name || "",
-            email: data.data.email || "",
-            currentPassword: "",
-            newPassword: "",
-          });
+            setFormData(prevFormData => ({
+                ...prevFormData,
+                name: data.data.name || '',
+                email: data.data.email || ''
+            }));
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
     };
     fetchUserData();
-  }, []);
-  const [message, setMessage] = useState('');
+  }, []);  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
