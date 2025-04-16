@@ -117,16 +117,6 @@ export default function Layout({ children, customHeader }) {
         </main>
         
         {/* Footer */}
-        <footer style={{
-          padding: '1.5rem',
-          backgroundColor: 'white',
-          borderTop: `1px solid ${theme.colors.brand.secondary}`,
-          textAlign: 'center',
-          color: theme.colors.brand.text,
-          flexShrink: 0, // Prevent footer from shrinking
-        }}>
-          <p style={{ margin: 0 }}>Realtor CRM • Simplifying sales tracking since 2024</p>
-        </footer>
       </div>
     </div>
   );
