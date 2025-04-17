@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import Button from '../common/Button'; // Import Button
 
 export default function CallForm({ onSubmit, contact, onCancel, initialData = {} }) {
   const [formData, setFormData] = useState({
@@ -11,49 +12,74 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
     ...initialData
   })
   
-  const [createFollowUp, setCreateFollowUp] = useState(initialData?.outcome === 'Follow Up')
+  // State for follow-up task creation (only relevant for new calls)
+  const [createFollowUp, setCreateFollowUp] = useState(initialData?.outcome === 'Follow Up');
   const [followUpData, setFollowUpData] = useState({
     title: `Follow up with ${contact?.name || ''}`,
     priority: 'Medium',
-    dueDate: new Date(new Date().setHours(17, 0, 0, 0) + 86400000).toISOString().slice(0, 16), // Tomorrow at 5 PM
-  })
+    dueDate: new Date(new Date().setHours(17, 0, 0, 0) + 86400000).toISOString().slice(0, 16), // Default: Tomorrow at 5 PM
+  });
+
+  // Update follow-up defaults if contact changes (for new calls)
+  useEffect(() => {
+    if (!initialData.id && contact) { // Only for new calls when contact is present
+      setFollowUpData(prev => ({ ...prev, title: `Follow up with ${contact.name}` }));
+    }
+  }, [contact, initialData.id]);
   
   const handleChange = (e) => {
-    const value = e.target.name === 'duration' 
-      ? parseInt(e.target.value) || 0 
-      : e.target.name === 'dealValue'
-        ? parseFloat(e.target.value) || ''
-        : e.target.value
-    
-    setFormData({
-      ...formData,
-      [e.target.name]: value
-    })
-    
-    // Auto-set follow up checkbox if outcome is 'Follow Up'
-    if (e.target.name === 'outcome' && e.target.value === 'Follow Up') {
-      setCreateFollowUp(true)
+    const { name, value, type, checked } = e.target;
+    let processedValue;
+
+    if (type === 'checkbox') {
+      processedValue = checked;
+    } else if (name === 'duration') {
+      processedValue = parseInt(value) || 0;
+    } else if (name === 'dealValue') {
+      processedValue = value === '' ? '' : parseFloat(value) || 0; // Allow empty string or parse float
+    } else {
+      processedValue = value;
     }
-    
-    // Auto-set isDeal if outcome is 'Deal Closed'
-    if (e.target.name === 'outcome') {
-      setFormData(prev => ({
+
+    setFormData(prev => {
+      const newState = {
         ...prev,
-        isDeal: e.target.value === 'Deal Closed'
-      }))
-    }
-  }
+        [name]: processedValue
+      };
+
+      // Auto-set follow up checkbox if outcome is 'Follow Up'
+      if (name === 'outcome' && value === 'Follow Up') {
+        setCreateFollowUp(true);
+      }
+      
+      // Auto-set isDeal if outcome is 'Deal Closed'
+      if (name === 'outcome') {
+        newState.isDeal = value === 'Deal Closed';
+        if (value !== 'Deal Closed') {
+            newState.dealValue = ''; // Clear deal value if not a deal
+        }
+      }
+
+      return newState;
+    });
+  };
   
   const handleFollowUpChange = (e) => {
     setFollowUpData({
       ...followUpData,
       [e.target.name]: e.target.value
-    })
-  }
+    });
+  };
   
   const handleSubmit = async (e) => {
     e.preventDefault()
     
+    // Ensure contactId is set before submitting
+    if (!formData.contactId) {
+        alert("Please select a contact before logging the call.");
+        return;
+    }
+
     // Submit call data first
     const callResult = await onSubmit(formData)
     
@@ -73,9 +99,9 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
             description: `Follow-up from call on ${new Date().toLocaleDateString()}${formData.notes ? `: ${formData.notes}` : ''}`,
             priority: followUpData.priority,
             dueDate: followUpData.dueDate,
-            contactId: contact.id,
+            contactId: formData.contactId,
             callId: callResult.data.id,
-            status: 'Open'
+            status: 'Open' // Tasks are always 'Open' initially
           })
         })
         
@@ -83,6 +109,7 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
         
         if (!taskData.success) {
           console.error('Failed to create follow-up task:', taskData.message)
+          // Don't alert here, as the main call was successful
         }
       } catch (error) {
         console.error('Error creating follow-up task:', error)
@@ -97,43 +124,50 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
           padding: '1rem', 
           marginBottom: '1rem', 
           backgroundColor: '#f8f9fa', 
-          borderRadius: '4px'
+          borderRadius: '4px',
+          border: '1px solid #ddd'
         }}>
           <h3 style={{ margin: '0 0 0.5rem 0' }}>{contact.name}</h3>
-          {contact.company && <p style={{ margin: '0 0 0.5rem 0' }}>Company: {contact.company}</p>}
-          <p style={{ margin: '0' }}>Phone: {contact.phone}</p>
+          {contact.company && <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: '#555' }}>{contact.company}</p>}
+          <p style={{ margin: '0', fontSize: '0.9rem', color: '#555' }}>{contact.phone}</p>
         </div>
       )}
       
       <div style={{ marginBottom: '1rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-          Call Duration (minutes)
+        <label htmlFor="duration" style={{ display: 'block', marginBottom: '0.5rem' }}>
+          Call Duration (minutes)*
         </label>
         <input
+          id="duration"
           type="number"
           name="duration"
           value={formData.duration}
           onChange={handleChange}
           min="0"
-          style={{ width: '100%', padding: '0.5rem' }}
+          required
+          style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
         />
       </div>
       
       <div style={{ marginBottom: '1rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+        <label htmlFor="outcome" style={{ display: 'block', marginBottom: '0.5rem' }}>
           Outcome*
         </label>
         <select
+          id="outcome"
           name="outcome"
           value={formData.outcome}
           onChange={handleChange}
           required
-          style={{ width: '100%', padding: '0.5rem' }}
+          style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
         >
+          <option value="Interested">Interested</option>
+          <option value="Not Interested">Not Interested</option>
           <option value="Follow Up">Follow Up</option>
           <option value="No Answer">No Answer</option>
+          <option value="Left Message">Left Message</option>
+          <option value="Wrong Number">Wrong Number</option>
           <option value="Deal Closed">Deal Closed</option>
-          <option value="Not Interested">Not Interested</option>
         </select>
       </div>
       
@@ -144,18 +178,20 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
             id="isDeal"
             name="isDeal"
             checked={formData.isDeal}
-            onChange={(e) => setFormData({...formData, isDeal: e.target.checked})}
+            onChange={handleChange} // Use the main handler
             style={{ marginRight: '0.5rem' }}
+            disabled={formData.outcome !== 'Deal Closed'} // Disable if outcome is not Deal Closed
           />
           <label htmlFor="isDeal">Mark as Deal</label>
         </div>
         
         {formData.isDeal && (
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+            <label htmlFor="dealValue" style={{ display: 'block', marginBottom: '0.5rem' }}>
               Deal Value ($)
             </label>
             <input
+              id="dealValue"
               type="number"
               name="dealValue"
               value={formData.dealValue}
@@ -163,21 +199,22 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
               placeholder="0.00"
               min="0"
               step="0.01"
-              style={{ width: '100%', padding: '0.5rem' }}
+              style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
             />
           </div>
         )}
       </div>
       
       <div style={{ marginBottom: '1rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+        <label htmlFor="notes" style={{ display: 'block', marginBottom: '0.5rem' }}>
           Notes
         </label>
         <textarea
+          id="notes"
           name="notes"
           value={formData.notes}
           onChange={handleChange}
-          style={{ width: '100%', padding: '0.5rem' }}
+          style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
           rows="4"
         />
       </div>
@@ -194,7 +231,7 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
-            marginBottom: '1rem'
+            marginBottom: createFollowUp ? '1rem' : '0' // Remove bottom margin if details are hidden
           }}>
             <input
               type="checkbox"
@@ -209,29 +246,31 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
           </div>
           
           {createFollowUp && (
-            <div>
+            <div style={{ marginTop: '1rem' }}> {/* Added margin top for spacing */}
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                <label htmlFor="followUpTitle" style={{ display: 'block', marginBottom: '0.5rem' }}>
                   Task Title
                 </label>
                 <input
+                  id="followUpTitle"
                   type="text"
                   name="title"
                   value={followUpData.title}
                   onChange={handleFollowUpChange}
-                  style={{ width: '100%', padding: '0.5rem' }}
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
                 />
               </div>
               
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                <label htmlFor="followUpPriority" style={{ display: 'block', marginBottom: '0.5rem' }}>
                   Priority
                 </label>
                 <select
+                  id="followUpPriority"
                   name="priority"
                   value={followUpData.priority}
                   onChange={handleFollowUpChange}
-                  style={{ width: '100%', padding: '0.5rem' }}
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
                 >
                   <option value="Low">Low</option>
                   <option value="Medium">Medium</option>
@@ -240,15 +279,17 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
               </div>
               
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                <label htmlFor="followUpDueDate" style={{ display: 'block', marginBottom: '0.5rem' }}>
                   Due Date/Time
                 </label>
                 <input
+                  id="followUpDueDate"
                   type="datetime-local"
                   name="dueDate"
                   value={followUpData.dueDate}
                   onChange={handleFollowUpChange}
-                  style={{ width: '100%', padding: '0.5rem' }}
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
+                  min={new Date().toISOString().slice(0, 16)} // Prevent setting past due dates
                 />
               </div>
             </div>
@@ -256,37 +297,25 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
         </div>
       )}
       
-      <div style={{ display: 'flex', gap: '0.5rem' }}>
-        <button
-          type="submit"
-          style={{
-            backgroundColor: '#4a69bd',
-            color: 'white',
-            padding: '0.5rem 1rem',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          {initialData.id ? 'Update Call' : 'Log Call'}
-        </button>
-        
+      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
         {onCancel && (
-          <button
+          <Button
             type="button"
             onClick={onCancel}
-            style={{
-              backgroundColor: '#e74c3c',
-              color: 'white',
-              padding: '0.5rem 1rem',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
+            variant="outline"
+            tooltip="Cancel logging this call and close window"
           >
             Cancel
-          </button>
+          </Button>
         )}
+        <Button
+          type="submit"
+          variant="primary"
+          tooltip={initialData.id ? 'Save changes to this call record' : 'Save this call record'}
+          disabled={!formData.contactId} // Disable if no contact is selected
+        >
+          {initialData.id ? 'Update Call' : 'Log Call'}
+        </Button>
       </div>
     </form>
   );

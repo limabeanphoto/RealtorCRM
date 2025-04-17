@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FaCheck, FaClock, FaEdit, FaTrash, FaAngleDown, FaAngleUp } from 'react-icons/fa';
 import theme from '../../styles/theme';
 import MiniContactCard from '../contacts/MiniContactCard';
+import Button from '../common/Button'; // Import Button
 
 export default function TaskCard({ 
   task, 
@@ -18,8 +19,6 @@ export default function TaskCard({
   useEffect(() => {
     if (task && task.contact) {
       // Make sure contact notes are preserved
-      // Most task-related contacts might not have notes from original call
-      // If contact data comes through differently in tasks vs. calls/contacts
       setEnhancedContact({
         ...task.contact,
         notes: task.contact.notes || ''
@@ -66,7 +65,7 @@ export default function TaskCard({
       return { text: 'Completed', style: { color: theme.colors.brand.primary } };
     } else if (diffTime < 0) {
       return { text: `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''}`, style: { color: '#dc3545' } };
-    } else if (diffDays === 0) {
+    } else if (diffDays <= 0) { // Check if less than or equal to zero to handle same day
       return { text: 'Due today', style: { color: '#ffc107' } };
     } else if (diffDays === 1) {
       return { text: 'Due tomorrow', style: { color: theme.colors.brand.accent } };
@@ -116,6 +115,17 @@ export default function TaskCard({
   if (!task) {
     return null;
   }
+
+  // Custom styles for square icon buttons
+  const iconButtonStyle = {
+    width: '32px',
+    height: '32px',
+    padding: '0',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '32px'
+  };
   
   return (
     <div style={{ 
@@ -140,7 +150,7 @@ export default function TaskCard({
         alignItems: 'flex-start',
         cursor: 'pointer'
       }} onClick={toggleExpand}>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, marginRight: '0.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
             <div 
               onClick={(e) => {
@@ -159,6 +169,7 @@ export default function TaskCard({
                 cursor: 'pointer',
                 transition: 'all 0.3s ease', // Add transition for checkbox
               }}
+              title={isVisuallyCompleted ? 'Mark as To-Do' : 'Mark as Completed'}
             >
               {isVisuallyCompleted && (
                 <FaCheck 
@@ -214,49 +225,31 @@ export default function TaskCard({
         </div>
         
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <button
+          <Button
             onClick={(e) => {
               e.stopPropagation();
               onEdit(task);
             }}
-            style={{
-              width: '32px',
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: theme.colors.brand.primary, // Lima Bean Green (#8F9F3B)
-              color: 'white',
-              border: 'none',
-              borderRadius: theme.borderRadius.sm,
-              cursor: 'pointer',
-            }}
+            style={iconButtonStyle}
+            variant="secondary"
+            tooltip="Edit this task"
           >
             <FaEdit size={14} />
-          </button>
+          </Button>
           
-          <button
+          <Button
             onClick={(e) => {
               e.stopPropagation();
               if (confirm('Are you sure you want to delete this task?')) {
                 onDelete(task.id);
               }
             }}
-            style={{
-              width: '32px',
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: theme.colors.brand.primary, // Lima Bean Green (#8F9F3B)
-              color: 'white',
-              border: 'none',
-              borderRadius: theme.borderRadius.sm,
-              cursor: 'pointer',
-            }}
+            style={iconButtonStyle}
+            variant="outline"
+            tooltip="Delete this task"
           >
-            <FaTrash size={14} />
-          </button>
+            <FaTrash size={14} style={{ color: '#e74c3c' }}/> {/* Red icon for delete */}
+          </Button>
           
           <div style={{ 
             display: 'flex', 

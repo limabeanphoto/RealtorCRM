@@ -9,6 +9,9 @@ import MetricCard from '../components/stats/MetricCard'
 import ChartContainer from '../components/stats/ChartContainer'
 import DataTable from '../components/stats/DataTable'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
+import Button from '../components/common/Button'
+import Spinner from '../components/common/Spinner'
+import theme from '../styles/theme'
 
 export default function Stats() {
   // State for date range and metrics
@@ -57,7 +60,8 @@ export default function Stats() {
         endDate = new Date(new Date().setHours(23, 59, 59, 999))
         break
       case 'week':
-        startDate = new Date(now.setDate(now.getDate() - now.getDay()))
+        startDate = new Date(now)
+        startDate.setDate(now.getDate() - now.getDay()) // Start of current week (Sunday)
         startDate.setHours(0, 0, 0, 0)
         endDate = new Date(new Date().setHours(23, 59, 59, 999))
         break
@@ -77,6 +81,11 @@ export default function Stats() {
       case 'custom':
         startDate = customRange.startDate
         endDate = customRange.endDate
+        if (!startDate || !endDate) {
+          // Use this month as fallback
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+          endDate = new Date(new Date().setHours(23, 59, 59, 999))
+        }
         break
       default:
         startDate = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -97,22 +106,36 @@ export default function Stats() {
       const { startDate, endDate } = getDateParams()
       const token = localStorage.getItem('token')
       
-      const response = await fetch(`/api/stats/metrics?startDate=${startDate}&endDate=${endDate}`, {
+      if (!token) {
+        console.error('Authentication token not found')
+        setMetricsData(prev => ({ ...prev, loading: false }))
+        return
+      }
+      
+      console.log(`Fetching metrics from ${startDate} to ${endDate}`)
+      
+      const response = await fetch(`/api/stats/metrics?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
       
       if (data.success) {
+        console.log('Metrics data received:', data)
         setMetricsData({
-          callsMetrics: data.callsMetrics,
-          dealsMetrics: data.dealsMetrics,
-          dealValueMetrics: data.dealValueMetrics,
-          contactsMetrics: data.contactsMetrics,
-          tasksMetrics: data.tasksMetrics,
-          callOutcomes: data.callOutcomes,
-          conversionRates: data.conversionRates,
+          callsMetrics: data.callsMetrics || { total: 0, data: [] },
+          dealsMetrics: data.dealsMetrics || { total: 0, data: [] },
+          dealValueMetrics: data.dealValueMetrics || { totalValue: '0.00', averageValue: '0.00', count: 0 },
+          contactsMetrics: data.contactsMetrics || { total: 0, data: [] },
+          tasksMetrics: data.tasksMetrics || { total: 0, data: [] },
+          callOutcomes: data.callOutcomes || [],
+          conversionRates: data.conversionRates || { calls: 0, deals: 0, rate: 0 },
           loading: false
         })
       } else {
@@ -133,17 +156,31 @@ export default function Stats() {
       const { startDate, endDate } = getDateParams()
       const token = localStorage.getItem('token')
       
-      const response = await fetch(`/api/stats/raw-data?type=${type}&startDate=${startDate}&endDate=${endDate}`, {
+      if (!token) {
+        console.error('Authentication token not found')
+        setRawData(prev => ({ ...prev, loading: false }))
+        return
+      }
+      
+      console.log(`Fetching ${type} data from ${startDate} to ${endDate}`)
+      
+      const response = await fetch(`/api/stats/raw-data?type=${type}&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
       
       if (data.success) {
+        console.log(`${type} data received:`, data)
         setRawData(prev => ({
           ...prev,
-          [type]: data.data,
+          [type]: data.data || [],
           loading: false
         }))
       } else {
@@ -169,11 +206,13 @@ export default function Stats() {
   
   // Handle date range change
   const handleDateRangeChange = (range) => {
+    console.log('Date range changed to:', range)
     setDateRange(range)
   }
   
   // Handle custom date range change
   const handleCustomDateChange = (startDate, endDate) => {
+    console.log('Custom date range changed:', startDate, endDate)
     setCustomRange({ startDate, endDate })
     setDateRange('custom')
   }
@@ -210,13 +249,22 @@ export default function Stats() {
       case 'ytd': return 'Year to Date'
       case 'year': return 'Last 365 Days'
       case 'custom': 
-        return `${formatDate(customRange.startDate)} - ${formatDate(customRange.endDate)}`
+        return customRange.startDate && customRange.endDate
+          ? `${formatDate(customRange.startDate)} - ${formatDate(customRange.endDate)}`
+          : 'Custom Range'
       default: return 'This Month'
     }
   }
   
   // COLORS
-  const COLORS = ['#4a69bd', '#60a3bc', '#e58e26', '#78e08f', '#b71540', '#ef5777']
+  const COLORS = [
+    theme.colors.brand.primary,
+    theme.colors.brand.secondary,
+    theme.colors.brand.accent,
+    theme.colors.brand.highlight,
+    '#e74c3c',
+    '#3498db'
+  ]
  
   return (
     <ProtectedRoute>
@@ -235,7 +283,10 @@ export default function Stats() {
         </div>
         
         {metricsData.loading ? (
-          <p>Loading metrics data...</p>
+          <div style={{ textAlign: 'center', padding: '3rem' }}>
+            <Spinner size="large" />
+            <p>Loading metrics data...</p>
+          </div>
         ) : (
           <>
             {/* Metrics Overview Cards */}
@@ -259,10 +310,10 @@ export default function Stats() {
               />
               <MetricCard 
                 title="Total Deal Value" 
-                value={`$${metricsData.dealValueMetrics?.totalValue || '0.00'}`} 
+                value={`$${parseFloat(metricsData.dealValueMetrics?.totalValue || 0).toFixed(2)}`} 
                 icon="💰"
                 color="#e58e26"
-                subtext={`Avg: $${metricsData.dealValueMetrics?.averageValue || '0.00'} per deal`}
+                subtext={`Avg: $${parseFloat(metricsData.dealValueMetrics?.averageValue || 0).toFixed(2)} per deal`}
               />
               <MetricCard 
                 title="Contacts Added" 
@@ -301,19 +352,19 @@ export default function Stats() {
               >
                 <ResponsiveContainer width="100%" height="100%">
                   {activeChartTypes.calls === 'bar' ? (
-                    <BarChart data={metricsData.callsMetrics.data}>
+                    <BarChart data={metricsData.callsMetrics.data} margin={{ top: 10, right: 30, left: 0, bottom: 15 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
-                      <YAxis />
+                      <YAxis allowDecimals={false} />
                       <Tooltip />
                       <Legend />
                       <Bar dataKey="count" fill="#4a69bd" name="Calls" />
                     </BarChart>
                   ) : (
-                    <LineChart data={metricsData.callsMetrics.data}>
+                    <LineChart data={metricsData.callsMetrics.data} margin={{ top: 10, right: 30, left: 0, bottom: 15 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
-                      <YAxis />
+                      <YAxis allowDecimals={false} />
                       <Tooltip />
                       <Legend />
                       <Line type="monotone" dataKey="count" stroke="#4a69bd" name="Calls" />
@@ -330,19 +381,19 @@ export default function Stats() {
               >
                 <ResponsiveContainer width="100%" height="100%">
                   {activeChartTypes.deals === 'bar' ? (
-                    <BarChart data={metricsData.dealsMetrics.data}>
+                    <BarChart data={metricsData.dealsMetrics.data} margin={{ top: 10, right: 30, left: 0, bottom: 15 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
-                      <YAxis />
+                      <YAxis allowDecimals={false} />
                       <Tooltip />
                       <Legend />
                       <Bar dataKey="count" fill="#78e08f" name="Deals" />
                     </BarChart>
                   ) : (
-                    <LineChart data={metricsData.dealsMetrics.data}>
+                    <LineChart data={metricsData.dealsMetrics.data} margin={{ top: 10, right: 30, left: 0, bottom: 15 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
-                      <YAxis />
+                      <YAxis allowDecimals={false} />
                       <Tooltip />
                       <Legend />
                       <Line type="monotone" dataKey="count" stroke="#78e08f" name="Deals" />
@@ -359,19 +410,19 @@ export default function Stats() {
               >
                 <ResponsiveContainer width="100%" height="100%">
                   {activeChartTypes.contacts === 'bar' ? (
-                    <BarChart data={metricsData.contactsMetrics.data}>
+                    <BarChart data={metricsData.contactsMetrics.data} margin={{ top: 10, right: 30, left: 0, bottom: 15 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
-                      <YAxis />
+                      <YAxis allowDecimals={false} />
                       <Tooltip />
                       <Legend />
                       <Bar dataKey="count" fill="#e58e26" name="Contacts" />
                     </BarChart>
                   ) : (
-                    <LineChart data={metricsData.contactsMetrics.data}>
+                    <LineChart data={metricsData.contactsMetrics.data} margin={{ top: 10, right: 30, left: 0, bottom: 15 }}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
-                      <YAxis />
+                      <YAxis allowDecimals={false} />
                       <Tooltip />
                       <Legend />
                       <Line type="monotone" dataKey="count" stroke="#e58e26" name="Contacts" />
@@ -383,25 +434,31 @@ export default function Stats() {
               {/* Call Outcomes Distribution */}
               <ChartContainer title="Call Outcome Distribution">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={metricsData.callOutcomes}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={true}
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                      nameKey="name"
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {metricsData.callOutcomes.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value, name) => [`${value} calls`, name]} />
-                    <Legend />
-                  </PieChart>
+                  {metricsData.callOutcomes && metricsData.callOutcomes.length > 0 ? (
+                    <PieChart>
+                      <Pie
+                        data={metricsData.callOutcomes}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={true}
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="value"
+                        nameKey="name"
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {metricsData.callOutcomes.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value, name) => [`${value} calls`, name]} />
+                      <Legend />
+                    </PieChart>
+                  ) : (
+                    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <p style={{ color: theme.colors.brand.text }}>No call outcome data available for the selected period</p>
+                    </div>
+                  )}
                 </ResponsiveContainer>
               </ChartContainer>
             </div>
@@ -410,62 +467,44 @@ export default function Stats() {
             <h2>Detailed Data</h2>
             <div style={{ marginBottom: '1rem' }}>
               <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                <button
+                <Button
                   onClick={() => handleTabChange('calls')}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    backgroundColor: rawData.activeTab === 'calls' ? '#4a69bd' : '#e2e8f0',
-                    color: rawData.activeTab === 'calls' ? 'white' : 'black',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
+                  variant={rawData.activeTab === 'calls' ? 'primary' : 'outline'}
+                  tooltip="View detailed call data"
                 >
                   Calls
-                </button>
-                <button
+                </Button>
+                
+                <Button
                   onClick={() => handleTabChange('deals')}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    backgroundColor: rawData.activeTab === 'deals' ? '#4a69bd' : '#e2e8f0',
-                    color: rawData.activeTab === 'deals' ? 'white' : 'black',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
+                  variant={rawData.activeTab === 'deals' ? 'primary' : 'outline'}
+                  tooltip="View detailed deal data"
                 >
                   Deals
-                </button>
-                <button
+                </Button>
+                
+                <Button
                   onClick={() => handleTabChange('contacts')}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    backgroundColor: rawData.activeTab === 'contacts' ? '#4a69bd' : '#e2e8f0',
-                    color: rawData.activeTab === 'contacts' ? 'white' : 'black',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
+                  variant={rawData.activeTab === 'contacts' ? 'primary' : 'outline'}
+                  tooltip="View detailed contact data"
                 >
                   Contacts
-                </button>
-                <button
+                </Button>
+                
+                <Button
                   onClick={() => handleTabChange('tasks')}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    backgroundColor: rawData.activeTab === 'tasks' ? '#4a69bd' : '#e2e8f0',
-                    color: rawData.activeTab === 'tasks' ? 'white' : 'black',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
+                  variant={rawData.activeTab === 'tasks' ? 'primary' : 'outline'}
+                  tooltip="View detailed task data"
                 >
                   Tasks
-                </button>
+                </Button>
               </div>
               
               {rawData.loading ? (
-                <p>Loading data...</p>
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                  <Spinner />
+                  <p>Loading data...</p>
+                </div>
               ) : (
                 <DataTable 
                   data={rawData[rawData.activeTab]} 

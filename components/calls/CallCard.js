@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FaUser, FaBuilding, FaClock, FaPhone, FaEdit, FaAngleDown, FaAngleUp, FaTrash, FaClipboard, FaTasks } from 'react-icons/fa';
 import theme from '../../styles/theme';
 import MiniContactCard from '../contacts/MiniContactCard';
+import Button from '../common/Button'; // Import Button
 
 export default function CallCard({ 
   call, 
@@ -59,6 +60,17 @@ export default function CallCard({
     return null;
   }
   
+  // Custom styles for square icon buttons
+  const iconButtonStyle = {
+    width: '32px',
+    height: '32px',
+    padding: '0',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '32px'
+  };
+
   return (
     <div style={{ 
       border: '1px solid #e2e8f0', 
@@ -81,7 +93,7 @@ export default function CallCard({
         alignItems: 'flex-start',
         cursor: 'pointer'
       }} onClick={toggleExpand}>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, marginRight: '0.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
             <h3 style={{ 
               margin: 0, 
@@ -106,7 +118,7 @@ export default function CallCard({
                 padding: '0.25rem 0.5rem',
                 borderRadius: '4px',
                 fontSize: '0.8rem',
-                backgroundColor: '#4a69bd',
+                backgroundColor: theme.colors.brand.secondary, // Use secondary color for deal
                 color: 'white'
               }}>
                 Deal {call.dealValue ? `($${parseFloat(call.dealValue).toFixed(2)})` : ''}
@@ -153,49 +165,28 @@ export default function CallCard({
         </div>
         
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          {/* Square icon-only edit button */}
-          <button
+          <Button
             onClick={(e) => {
               e.stopPropagation();
               onEditClick(call);
             }}
-            style={{
-              width: '32px',
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: theme.colors.brand.primary,
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
+            style={iconButtonStyle}
+            variant="secondary" // Use secondary for edit
+            tooltip="Edit this call record"
           >
             <FaEdit size={14} />
-          </button>
+          </Button>
           
-          {/* Square icon-only add task button */}
-          <button
+          <Button
             onClick={(e) => {
               e.stopPropagation();
               onAddTaskClick(call);
             }}
-            style={{
-              width: '32px',
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: theme.colors.brand.primary,
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
+            style={iconButtonStyle}
+            tooltip="Create a follow-up task for this call"
           >
             <FaTasks size={14} />
-          </button>
+          </Button>
           
           <div style={{ 
             display: 'flex', 
@@ -211,7 +202,7 @@ export default function CallCard({
       {/* Card Expanded Content */}
       {isExpanded && (
         <div style={{ padding: '1rem', backgroundColor: '#f9f9fa' }}>
-          {/* Contact Information - Using MiniContactCard with enhanced contact */}
+          {/* Contact Information */}
           <div style={{ marginBottom: '1.5rem' }}>
             <h4 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Contact Information</h4>
             {enhancedContact && <MiniContactCard contact={enhancedContact} />}
@@ -255,47 +246,32 @@ export default function CallCard({
           
           {/* Action Buttons Section */}
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.5rem' }}>
-            <button
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 onAddTaskClick(call);
               }}
-              style={{
-                backgroundColor: theme.colors.brand.primary,
-                color: 'white',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.3rem',
-              }}
+              variant="primary"
+              size="medium"
+              tooltip="Create a task related to this call"
             >
-              <FaTasks size={14} /> Create Follow-up Task
-            </button>
+              <FaTasks size={14} style={{ marginRight: '0.3rem' }} /> Create Follow-up Task
+            </Button>
             
-            <button
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 if (window.confirm('Are you sure you want to delete this call record? This cannot be undone.')) {
                   onDeleteClick(call.id);
                 }
               }}
-              style={{
-                backgroundColor: '#e74c3c',
-                color: 'white',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.3rem',
-              }}
+              variant="outline"
+              size="medium"
+              style={{ color: '#e74c3c', borderColor: '#e74c3c' }} // Danger color
+              tooltip="Permanently delete this call record"
             >
-              <FaTrash size={14} /> Delete Call
-            </button>
+              <FaTrash size={14} style={{ marginRight: '0.3rem' }} /> Delete Call
+            </Button>
           </div>
         </div>
       )}

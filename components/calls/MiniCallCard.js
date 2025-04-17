@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FaClock, FaPhone, FaAngleDown, FaAngleUp, FaTasks } from 'react-icons/fa';
 import theme from '../../styles/theme';
+import Button from '../common/Button'; // Import Button
 
 export default function MiniCallCard({ 
   call, 
@@ -29,10 +30,13 @@ export default function MiniCallCard({
   // Get color based on outcome
   const getOutcomeStyle = (outcome) => {
     const styles = {
+      'Interested': { backgroundColor: '#d4edda', color: '#155724' },
+      'Not Interested': { backgroundColor: '#f8d7da', color: '#721c24' },
       'Follow Up': { backgroundColor: '#fff3cd', color: '#856404' },
       'No Answer': { backgroundColor: '#e2e3e5', color: '#383d41' },
-      'Deal Closed': { backgroundColor: '#d4edda', color: '#155724' },
-      'Not Interested': { backgroundColor: '#f8d7da', color: '#721c24' }
+      'Left Message': { backgroundColor: '#cce5ff', color: '#004085' },
+      'Wrong Number': { backgroundColor: '#f8d7da', color: '#721c24' },
+      'Deal Closed': { backgroundColor: '#d4edda', color: '#155724' }
     };
     
     return styles[outcome] || { backgroundColor: '#e2e3e5', color: '#383d41' };
@@ -91,7 +95,7 @@ export default function MiniCallCard({
               padding: '0.2rem 0.4rem',
               borderRadius: '4px',
               fontSize: '0.75rem',
-              backgroundColor: '#4a69bd',
+              backgroundColor: theme.colors.brand.secondary,
               color: 'white'
             }}>
               Deal {call.dealValue ? `($${parseFloat(call.dealValue).toFixed(2)})` : ''}
@@ -132,26 +136,17 @@ export default function MiniCallCard({
           
           {/* Action Button */}
           <div style={{ textAlign: 'right', marginTop: '0.75rem' }}>
-            <button
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 onAddTask(call);
               }}
-              style={{
-                backgroundColor: '#e58e26',
-                color: 'white',
-                padding: '0.25rem 0.5rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.25rem',
-              }}
+              variant="secondary" // Example: Secondary variant
+              size="small"
+              tooltip="Create a follow-up task based on this call"
             >
-              <FaTasks size={12} /> Create Follow-up Task
-            </button>
+              <FaTasks size={12} style={{ marginRight: '0.25rem' }} /> Create Follow-up Task
+            </Button>
           </div>
         </div>
       )}
