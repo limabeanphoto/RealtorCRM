@@ -4,6 +4,7 @@ import CallModal from '../components/calls/CallModal'
 import CallCard from '../components/calls/CallCard'
 import TaskModal from '../components/tasks/TaskModal'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
+import Button from '../components/common/Button' // Import Button
 
 export default function Calls() {
   const [calls, setCalls] = useState([])
@@ -50,7 +51,7 @@ export default function Calls() {
       const contactsData = await contactsResponse.json()
       
       if (callsData.success) {
-        // Filter calls based on the selected filter
+        // Filter calls based on the selected filter (client-side for now)
         let filteredCalls = callsData.data
         
         if (filter === 'deals') {
@@ -173,7 +174,7 @@ export default function Calls() {
 
   // Open modal to select a contact
   const handleNewCall = () => {
-    setSelectedContact(null)
+    setSelectedContact(null) // Clear any selected contact first
     setIsCallModalOpen(true)
   }
 
@@ -273,20 +274,12 @@ export default function Calls() {
           marginBottom: '1.5rem'
         }}>
           <h1>Calls</h1>
-          <button
+          <Button 
             onClick={handleNewCall}
-            style={{
-              backgroundColor: '#8F9F3B',
-              color: 'white',
-              padding: '0.5rem 1rem',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap'
-            }}
+            tooltip="Open the form to log a new call"
           >
             Log New Call
-          </button>
+          </Button>
         </div>
         
         {/* Filters and Search */}
@@ -298,47 +291,29 @@ export default function Calls() {
           marginBottom: '1.5rem' 
         }}>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
+            <Button
               onClick={() => setFilter('all')}
-              style={{
-                backgroundColor: filter === 'all' ? '#8F9F3B' : '#e2e8f0',
-                color: filter === 'all' ? 'white' : '#4a5568',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
+              variant={filter === 'all' ? 'primary' : 'outline'}
+              tooltip={`Show all recorded calls (${counts.all})`}
             >
               All Calls ({counts.all})
-            </button>
+            </Button>
             
-            <button
+            <Button
               onClick={() => setFilter('deals')}
-              style={{
-                backgroundColor: filter === 'deals' ? '#8F9F3B' : '#e2e8f0',
-                color: filter === 'deals' ? 'white' : '#4a5568',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
+              variant={filter === 'deals' ? 'primary' : 'outline'}
+              tooltip={`Show only calls marked as deals (${counts.deals})`}
             >
               Deals ({counts.deals})
-            </button>
+            </Button>
             
-            <button
+            <Button
               onClick={() => setFilter('recent')}
-              style={{
-                backgroundColor: filter === 'recent' ? '#8F9F3B' : '#e2e8f0',
-                color: filter === 'recent' ? 'white' : '#4a5568',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
+              variant={filter === 'recent' ? 'primary' : 'outline'}
+              tooltip={`Show calls from the last 7 days (${counts.recent})`}
             >
               Recent ({counts.recent})
-            </button>
+            </Button>
           </div>
           
           <div>
@@ -384,27 +359,25 @@ export default function Calls() {
                 ? 'No calls found matching your search.' 
                 : 'No calls recorded yet. Log your first call to get started.'}
             </p>
-            <button
+            <Button
               onClick={handleNewCall}
-              style={{
-                backgroundColor: '#8F9F3B',
-                color: 'white',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
+              tooltip="Open the form to log your first call"
             >
               Log New Call
-            </button>
+            </Button>
           </div>
         )}
 
         {/* New Call Modal */}
         <CallModal
           isOpen={isCallModalOpen}
-          onClose={() => setIsCallModalOpen(false)}
-          contact={selectedContact}
+          onClose={() => {
+            setIsCallModalOpen(false);
+            setSelectedContact(null); // Clear selected contact on close
+          }}
+          contact={selectedContact} // Pass selected contact
+          contacts={contacts} // Pass full contact list
+          onContactSelect={handleContactSelect} // Pass handler for selection
           onSubmit={handleCallSubmit}
           mode="new"
         />
@@ -414,6 +387,7 @@ export default function Calls() {
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           call={selectedCall}
+          contacts={contacts} // Pass contacts for editing too
           onSubmit={handleEditCall}
           mode="edit"
         />
@@ -433,67 +407,7 @@ export default function Calls() {
           onSubmit={handleTaskSubmit}
         />
 
-        {/* Contact Selection Modal (when no contact is selected) */}
-        {isCallModalOpen && !selectedContact && (
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 1000,
-            }}
-            onClick={() => setIsCallModalOpen(false)}
-          >
-            <div
-              style={{
-                backgroundColor: 'white',
-                padding: '2rem',
-                borderRadius: '8px',
-                maxWidth: '600px',
-                width: '100%',
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h2 style={{ margin: 0 }}>Select Contact</h2>
-                <button
-                  onClick={() => setIsCallModalOpen(false)}
-                  style={{
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    fontSize: '1.5rem',
-                    cursor: 'pointer',
-                  }}
-                >
-                  &times;
-                </button>
-              </div>
-              
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-                  Select Contact for Call
-                </label>
-                <select
-                  onChange={handleContactSelect}
-                  style={{ width: '100%', padding: '0.5rem' }}
-                >
-                  <option value="">-- Select a contact --</option>
-                  {contacts.map(contact => (
-                    <option key={contact.id} value={contact.id}>
-                      {contact.name} {contact.company ? `(${contact.company})` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Contact Selection part removed as it's integrated into CallModal */}
       </div>
     </ProtectedRoute>
   )

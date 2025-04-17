@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import TaskModal from '../components/tasks/TaskModal'
 import TaskCard from '../components/tasks/TaskCard'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
+import Button from '../components/common/Button' // Import Button
 import { FaTrash, FaSearch } from 'react-icons/fa'
 import theme from '../styles/theme'
 
@@ -274,22 +275,15 @@ export default function Tasks() {
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <h1>Tasks</h1>
-          <button
+          <Button
             onClick={() => {
               setEditingTask(null)
               setIsTaskModalOpen(true)
             }}
-            style={{
-              backgroundColor: '#8F9F3B',
-              color: 'white',
-              padding: '0.5rem 1rem',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
+            tooltip="Open the form to create a new task"
           >
             New Task
-          </button>
+          </Button>
         </div>
         
         {/* Task Filters and Search - Updated layout with search box */}
@@ -302,33 +296,21 @@ export default function Tasks() {
           gap: '1rem'
         }}>
           <div style={{ display: 'flex', gap: '1rem' }}>
-            <button
+            <Button
               onClick={() => setFilter('todo')}
-              style={{
-                backgroundColor: filter === 'todo' ? theme.colors.brand.primary : '#e2e8f0',
-                color: filter === 'todo' ? 'white' : '#4a5568',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
+              variant={filter === 'todo' ? 'primary' : 'outline'}
+              tooltip={`Show tasks that are not completed (${counts.todo})`}
             >
               To-Do ({counts.todo})
-            </button>
+            </Button>
             
-            <button
+            <Button
               onClick={() => setFilter('completed')}
-              style={{
-                backgroundColor: filter === 'completed' ? theme.colors.brand.primary : '#e2e8f0',
-                color: filter === 'completed' ? 'white' : '#4a5568',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
+              variant={filter === 'completed' ? 'primary' : 'outline'}
+              tooltip={`Show tasks that have been completed (${counts.completed})`}
             >
               Completed ({counts.completed})
-            </button>
+            </Button>
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -362,25 +344,16 @@ export default function Tasks() {
             
             {/* Purge button - only visible in Completed view */}
             {filter === 'completed' && counts.completed > 0 && (
-              <button
+              <Button
                 onClick={handlePurgeCompleted}
                 disabled={purging}
-                style={{
-                  backgroundColor: '#e74c3c',
-                  color: 'white',
-                  padding: '0.5rem 1rem',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: purging ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  opacity: purging ? 0.7 : 1
-                }}
+                variant="outline"
+                style={{ color: '#e74c3c', borderColor: '#e74c3c' }} // Danger color
+                tooltip="Permanently delete all completed tasks"
               >
-                <FaTrash size={14} />
+                <FaTrash size={14} style={{ marginRight: '0.5rem' }} />
                 {purging ? 'Purging...' : 'Purge All Completed'}
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -410,22 +383,15 @@ export default function Tasks() {
                   : 'No completed tasks.'}
             </p>
             {filter === 'todo' && !searchTerm && (
-              <button
+              <Button
                 onClick={() => {
                   setEditingTask(null)
                   setIsTaskModalOpen(true)
                 }}
-                style={{
-                  backgroundColor: '#8F9F3B',
-                  color: 'white',
-                  padding: '0.5rem 1rem',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
+                tooltip="Create your very first task"
               >
                 Create Your First Task
-              </button>
+              </Button>
             )}
           </div>
         )}
