@@ -8,7 +8,6 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
     notes: '',
     outcome: 'Follow Up', // Default value
     isDeal: false,
-    dealValue: '',
     ...initialData
   })
   
@@ -35,8 +34,6 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
       processedValue = checked;
     } else if (name === 'duration') {
       processedValue = parseInt(value) || 0;
-    } else if (name === 'dealValue') {
-      processedValue = value === '' ? '' : parseFloat(value) || 0; // Allow empty string or parse float
     } else {
       processedValue = value;
     }
@@ -55,9 +52,6 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
       // Auto-set isDeal if outcome is 'Deal Closed'
       if (name === 'outcome') {
         newState.isDeal = value === 'Deal Closed';
-        if (value !== 'Deal Closed') {
-            newState.dealValue = ''; // Clear deal value if not a deal
-        }
       }
 
       return newState;
@@ -184,25 +178,6 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
           />
           <label htmlFor="isDeal">Mark as Deal</label>
         </div>
-        
-        {formData.isDeal && (
-          <div>
-            <label htmlFor="dealValue" style={{ display: 'block', marginBottom: '0.5rem' }}>
-              Deal Value ($)
-            </label>
-            <input
-              id="dealValue"
-              type="number"
-              name="dealValue"
-              value={formData.dealValue}
-              onChange={handleChange}
-              placeholder="0.00"
-              min="0"
-              step="0.01"
-              style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
-            />
-          </div>
-        )}
       </div>
       
       <div style={{ marginBottom: '1rem' }}>

@@ -38,6 +38,7 @@ async function handler(req, res) {
         data = await getCallsData(start, end, userId)
         break
       case 'deals':
+        // Updated to use contacts with Deal Closed outcome
         data = await getDealsData(start, end, userId)
         break
       case 'contacts':
@@ -106,7 +107,7 @@ async function getCallsData(startDate, endDate, userId = null) {
       }
     })
 
-    // Format data for display
+    // Format data for display - removed dealValue from the result
     return calls.map(call => ({
       id: call.id,
       date: call.date,
@@ -117,7 +118,6 @@ async function getCallsData(startDate, endDate, userId = null) {
       outcome: call.outcome,
       notes: call.notes || '',
       isDeal: call.isDeal || false,
-      dealValue: call.dealValue || null,
       user: call.user ? `${call.user.firstName} ${call.user.lastName}` : 'Unknown',
       userId: call.userId
     }))
@@ -127,60 +127,53 @@ async function getCallsData(startDate, endDate, userId = null) {
   }
 }
 
-// Get deals data
+// Get deals data - UPDATED to use contacts with "Deal Closed" outcome instead of calls
 async function getDealsData(startDate, endDate, userId = null) {
   try {
-    // Build where clause
+    // Changed to search for contacts with "Deal Closed" outcome with lastCallDate in range
     const whereClause = {
-      date: {
+      lastCallOutcome: 'Deal Closed',
+      lastCallDate: {
         gte: startDate,
         lte: endDate
-      },
-      isDeal: true
+      }
     }
     
-    // Add userId filter if provided
+    // For contacts, user ID corresponds to assignedTo
     if (userId) {
-      whereClause.userId = userId
+      whereClause.assignedTo = userId
     }
     
-    const deals = await prisma.call.findMany({
+    const dealsFromContacts = await prisma.contact.findMany({
       where: whereClause,
       include: {
-        contact: {
-          select: {
-            id: true,
-            name: true,
-            company: true,
-            phone: true
-          }
-        },
-        user: {
+        assignedToUser: {
           select: {
             id: true,
             firstName: true,
-            lastName: true
+            lastName: true,
+            email: true
           }
         }
       },
       orderBy: {
-        date: 'desc'
+        lastCallDate: 'desc'
       }
     })
 
     // Format data for display
-    return deals.map(deal => ({
-      id: deal.id,
-      date: deal.date,
-      contactId: deal.contactId,
-      contactName: deal.contact?.name || 'Unknown',
-      contactCompany: deal.contact?.company || '',
-      outcome: deal.outcome,
-      duration: deal.duration,
-      notes: deal.notes || '',
-      value: deal.dealValue ? `$${parseFloat(deal.dealValue).toFixed(2)}` : 'N/A',
-      user: deal.user ? `${deal.user.firstName} ${deal.user.lastName}` : 'Unknown',
-      userId: deal.userId
+    return dealsFromContacts.map(contact => ({
+      id: contact.id,
+      date: contact.lastCallDate,
+      contactId: contact.id,
+      contactName: contact.name || 'Unknown',
+      contactCompany: contact.company || '',
+      outcome: contact.lastCallOutcome,
+      notes: contact.notes || '',
+      user: contact.assignedToUser ? 
+        `${contact.assignedToUser.firstName} ${contact.assignedToUser.lastName}` : 
+        'Unassigned',
+      userId: contact.assignedTo
     }))
   } catch (error) {
     console.error('Error fetching deals data:', error)
@@ -210,7 +203,7 @@ async function getContactsData(startDate, endDate) {
       orderBy: {
         createdAt: 'desc'
       }
-    })
+    });
 
     return contacts.map(contact => ({
       id: contact.id,

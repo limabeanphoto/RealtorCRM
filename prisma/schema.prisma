@@ -17,12 +17,13 @@ model Contact {
   company         String?
   notes           String?
   createdAt       DateTime  @default(now())
-  lastCallOutcome String?   // New field to track the outcome of the most recent call
-  lastCallDate    DateTime? // New field to track when the last call was made
+  lastCallOutcome String?   // Track the outcome of the most recent call
+  lastCallDate    DateTime? // Track when the last call was made
   calls           Call[]
   tasks           Task[]
   assignedTo      String?
   assignedToUser  User?     @relation("AssignedContacts", fields: [assignedTo], references: [id])
+  status          String?   @default("Open")
 }
 
 model Call {
@@ -33,8 +34,7 @@ model Call {
   duration        Int       // Duration in minutes
   notes           String?
   outcome         String    // e.g., "Interested", "Not interested", "Follow up"
-  isDeal          Boolean   @default(false) // New field to explicitly track deals
-  dealValue       Float?    // Optional field for tracking monetary value of deals
+  isDeal          Boolean   @default(false) // Track deals
   createdAt       DateTime  @default(now())
   tasks           Task[]
   userId          String?

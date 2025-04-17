@@ -23,7 +23,6 @@ export default function Stats() {
   const [metricsData, setMetricsData] = useState({
     callsMetrics: { total: 0, data: [] },
     dealsMetrics: { total: 0, data: [] },
-    dealValueMetrics: { totalValue: '0.00', averageValue: '0.00', count: 0 },
     contactsMetrics: { total: 0, data: [] },
     tasksMetrics: { total: 0, data: [] },
     callOutcomes: [],
@@ -131,7 +130,6 @@ export default function Stats() {
         setMetricsData({
           callsMetrics: data.callsMetrics || { total: 0, data: [] },
           dealsMetrics: data.dealsMetrics || { total: 0, data: [] },
-          dealValueMetrics: data.dealValueMetrics || { totalValue: '0.00', averageValue: '0.00', count: 0 },
           contactsMetrics: data.contactsMetrics || { total: 0, data: [] },
           tasksMetrics: data.tasksMetrics || { total: 0, data: [] },
           callOutcomes: data.callOutcomes || [],
@@ -307,13 +305,6 @@ export default function Stats() {
                 value={metricsData.dealsMetrics.total} 
                 icon="🤝"
                 color="#78e08f"
-              />
-              <MetricCard 
-                title="Total Deal Value" 
-                value={`$${parseFloat(metricsData.dealValueMetrics?.totalValue || 0).toFixed(2)}`} 
-                icon="💰"
-                color="#e58e26"
-                subtext={`Avg: $${parseFloat(metricsData.dealValueMetrics?.averageValue || 0).toFixed(2)} per deal`}
               />
               <MetricCard 
                 title="Contacts Added" 

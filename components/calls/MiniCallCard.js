@@ -98,7 +98,7 @@ export default function MiniCallCard({
               backgroundColor: theme.colors.brand.secondary,
               color: 'white'
             }}>
-              Deal {call.dealValue ? `($${parseFloat(call.dealValue).toFixed(2)})` : ''}
+              Deal
             </span>
           )}
           
@@ -121,9 +121,6 @@ export default function MiniCallCard({
             <div><strong>Duration:</strong> {call.duration} minutes</div>
             <div><strong>Outcome:</strong> {call.outcome}</div>
             <div><strong>Deal:</strong> {call.isDeal ? 'Yes' : 'No'}</div>
-            {call.isDeal && call.dealValue && (
-              <div><strong>Deal Value:</strong> ${parseFloat(call.dealValue).toFixed(2)}</div>
-            )}
           </div>
           
           {/* Notes */}
