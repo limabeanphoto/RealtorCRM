@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import theme from '../../styles/theme';
+import Button from '../../components/common/Button'; // <-- Import Button
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -22,11 +23,11 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '50vh' 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '50vh'
       }}>
         <p>Loading dashboard data...</p>
       </div>
@@ -36,15 +37,15 @@ export default function AdminDashboard() {
   return (
     <div style={{ width: '100%' }}>
       {/* Metrics Cards - Fixed 3-column layout with proper spacing */}
-      <div style={{ 
+      <div style={{
         display: 'flex',
         flexWrap: 'wrap',
         marginBottom: '20px',
         gap: '20px',
       }}>
         {/* Card 1 */}
-        <div style={{ 
-          flex: '1 1 calc(33.333% - 14px)', 
+        <div style={{
+          flex: '1 1 calc(33.333% - 14px)',
           minWidth: '250px',
           backgroundColor: 'white',
           borderRadius: '8px',
@@ -55,10 +56,10 @@ export default function AdminDashboard() {
           <h3>Weekly Team Calls</h3>
           <p style={{ fontSize: '2rem', fontWeight: 'bold' }}>0</p>
         </div>
-        
+
         {/* Card 2 */}
-        <div style={{ 
-          flex: '1 1 calc(33.333% - 14px)', 
+        <div style={{
+          flex: '1 1 calc(33.333% - 14px)',
           minWidth: '250px',
           backgroundColor: 'white',
           borderRadius: '8px',
@@ -69,10 +70,10 @@ export default function AdminDashboard() {
           <h3>Weekly Team Deals</h3>
           <p style={{ fontSize: '2rem', fontWeight: 'bold' }}>0</p>
         </div>
-        
+
         {/* Card 3 */}
-        <div style={{ 
-          flex: '1 1 calc(33.333% - 14px)', 
+        <div style={{
+          flex: '1 1 calc(33.333% - 14px)',
           minWidth: '250px',
           backgroundColor: 'white',
           borderRadius: '8px',
@@ -84,17 +85,17 @@ export default function AdminDashboard() {
           <p style={{ fontSize: '2rem', fontWeight: 'bold' }}>0%</p>
         </div>
       </div>
-      
+
       {/* Contacts Cards - 2-column layout with proper spacing */}
-      <div style={{ 
+      <div style={{
         display: 'flex',
         flexWrap: 'wrap',
         marginBottom: '20px',
         gap: '20px',
       }}>
         {/* Open Contacts Card */}
-        <div style={{ 
-          flex: '1 1 calc(50% - 10px)', 
+        <div style={{
+          flex: '1 1 calc(50% - 10px)',
           minWidth: '300px',
           backgroundColor: 'white',
           borderRadius: '8px',
@@ -103,24 +104,18 @@ export default function AdminDashboard() {
         }}>
           <h3>Open Contacts</h3>
           <p>0 contacts available</p>
-          <button
+          {/* Replace with Button component */}
+           <Button
             onClick={() => router.push('/admin/contacts?status=Open')}
-            style={{
-              backgroundColor: theme.colors.brand.primary,
-              color: 'white',
-              padding: '0.5rem 1rem',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
+            tooltip="View and manage contacts that are not yet assigned"
+           >
             Manage Open Contacts
-          </button>
+          </Button>
         </div>
-        
+
         {/* Assigned Contacts Card */}
-        <div style={{ 
-          flex: '1 1 calc(50% - 10px)', 
+        <div style={{
+          flex: '1 1 calc(50% - 10px)',
           minWidth: '300px',
           backgroundColor: 'white',
           borderRadius: '8px',
@@ -129,52 +124,40 @@ export default function AdminDashboard() {
         }}>
           <h3>Assigned Contacts</h3>
           <p>0 contacts available</p>
-          <button
+           {/* Replace with Button component */}
+          <Button
             onClick={() => router.push('/admin/contacts?status=Assigned')}
-            style={{
-              backgroundColor: theme.colors.brand.primary,
-              color: 'white',
-              padding: '0.5rem 1rem',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
+            tooltip="View and manage contacts assigned to team members"
           >
             Manage Assigned Contacts
-          </button>
+          </Button>
         </div>
       </div>
-      
+
       {/* Team Performance Section */}
-      <div style={{ 
+      <div style={{
         backgroundColor: 'white',
         borderRadius: '8px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
         padding: '20px',
         marginBottom: '20px',
       }}>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
           marginBottom: '1rem',
         }}>
           <h3 style={{ margin: 0 }}>Team Performance</h3>
-          <button
+          {/* Use Button component with tooltip */}
+          <Button
             onClick={() => router.push('/admin/users')}
-            style={{
-              backgroundColor: theme.colors.brand.primary,
-              color: 'white',
-              padding: '0.5rem 1rem',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
+            tooltip="Go to the user management page" // <-- Add tooltip
           >
             Manage Users
-          </button>
+          </Button>
         </div>
-        
+
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
@@ -190,27 +173,21 @@ export default function AdminDashboard() {
             <tbody>
               <tr>
                 <td colSpan="6" style={{ textAlign: 'center', padding: '1rem' }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
                     justifyContent: 'center',
                     gap: '0.5rem'
                   }}>
                     <span>No team members found.</span>
-                    <button
+                    {/* Replace with Button component */}
+                    <Button
                       onClick={() => router.push('/admin/users/new')}
-                      style={{
-                        backgroundColor: theme.colors.brand.primary,
-                        color: 'white',
-                        padding: '0.25rem 0.5rem',
-                        border: 'none',
-                        borderRadius: '4px',
-                        fontSize: '0.8rem',
-                        cursor: 'pointer',
-                      }}
+                      size="small" // Use size prop for smaller button
+                      tooltip="Add a new user to the team"
                     >
                       Add User
-                    </button>
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -218,9 +195,9 @@ export default function AdminDashboard() {
           </table>
         </div>
       </div>
-      
+
       {/* Admin Actions Section */}
-      <div style={{ 
+      <div style={{
         backgroundColor: 'white',
         borderRadius: '8px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
@@ -228,63 +205,43 @@ export default function AdminDashboard() {
         marginBottom: '20px',
       }}>
         <h3 style={{ margin: '0 0 1rem 0' }}>Admin Actions</h3>
-        <div style={{ 
-          display: 'flex', 
+        <div style={{
+          display: 'flex',
           gap: '1rem',
           flexWrap: 'wrap',
         }}>
-          <button
+           {/* Replace with Button component */}
+          <Button
             onClick={() => router.push('/admin/users/new')}
-            style={{
-              backgroundColor: theme.colors.brand.primary,
-              color: 'white',
-              padding: '0.75rem 1.5rem',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
+            size="large" // Use size prop for larger button
+            tooltip="Navigate to the page for creating a new user"
           >
             Add New User
-          </button>
-          <button
+          </Button>
+           {/* Replace with Button component */}
+          <Button
             onClick={() => router.push('/admin/contacts/import')}
-            style={{
-              backgroundColor: theme.colors.brand.primary,
-              color: 'white',
-              padding: '0.75rem 1.5rem',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
+            size="large"
+            tooltip="Import contacts from a CSV file"
           >
             Import Contacts
-          </button>
-          <button
+          </Button>
+           {/* Replace with Button component */}
+          <Button
             onClick={() => router.push('/admin/contacts/assign')}
-            style={{
-              backgroundColor: theme.colors.brand.primary,
-              color: 'white',
-              padding: '0.75rem 1.5rem',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
+            size="large"
+            tooltip="Assign contacts to team members"
           >
             Assign Contacts
-          </button>
-          <button
+          </Button>
+           {/* Replace with Button component */}
+          <Button
             onClick={() => router.push('/admin/analytics')}
-            style={{
-              backgroundColor: theme.colors.brand.primary,
-              color: 'white',
-              padding: '0.75rem 1.5rem',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
+            size="large"
+            tooltip="View detailed team performance analytics"
           >
             Team Analytics
-          </button>
+          </Button>
         </div>
       </div>
     </div>
