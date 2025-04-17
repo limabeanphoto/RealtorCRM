@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '../../styles/theme'; // Assuming theme context is used
+import theme from '../../styles/theme'; // <-- Import the theme object directly
 
 function Button({
   children,
@@ -10,29 +10,30 @@ function Button({
   disabled = false,
   fullWidth = false,
   style = {},
-  tooltip = '', // <-- Add tooltip prop
-  ...props // Capture any other props
+  tooltip = '',
+  ...props
 }) {
-  const theme = useTheme(); // Assuming theme context hook
+  // No need for useTheme() hook anymore
+  // const theme = useTheme();
 
   const variants = {
     primary: {
-      backgroundColor: theme.colors.brand.primary,
-      color: theme.colors.white,
+      backgroundColor: theme.colors.brand.primary, // Use imported theme
+      color: theme.colors.white || '#ffffff', // Add fallback for white if not in theme
     },
     secondary: {
-      backgroundColor: theme.colors.brand.secondary,
-      color: theme.colors.white,
+      backgroundColor: theme.colors.brand.secondary, // Use imported theme
+      color: theme.colors.white || '#ffffff', // Add fallback for white
     },
     outline: {
       backgroundColor: 'transparent',
-      color: theme.colors.brand.primary,
-      border: `1px solid ${theme.colors.brand.primary}`,
+      color: theme.colors.brand.primary, // Use imported theme
+      border: `1px solid ${theme.colors.brand.primary}`, // Use imported theme
     },
     text: {
       backgroundColor: 'transparent',
-      color: theme.colors.brand.text,
-      padding: 0, // Adjust as needed for text buttons
+      color: theme.colors.brand.text, // Use imported theme
+      padding: 0,
     }
   };
 
@@ -41,35 +42,35 @@ function Button({
       padding: '0.25rem 0.75rem',
       fontSize: '0.9rem',
     },
-        medium: {
-          padding: '0.5rem 1rem',
-          fontSize: '1rem',
-        },
-        large: {
-          padding: '0.75rem 1.5rem',
-          fontSize: '1.1rem',
-        }
-      };
+    medium: {
+      padding: '0.5rem 1rem',
+      fontSize: '1rem',
+    },
+    large: {
+      padding: '0.75rem 1.5rem',
+      fontSize: '1.1rem',
+    }
+  };
 
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled}
-      title={tooltip} // <-- Use the tooltip prop here
+      title={tooltip}
       style={{
         ...variants[variant],
         ...sizes[size],
         width: fullWidth ? '100%' : 'auto',
-        border: variant === 'outline' ? `1px solid ${theme.colors.brand.primary}` : 'none',
-        borderRadius: theme.borderRadius.sm,
+        border: variants[variant].border || 'none', // Access border from variant if exists
+        borderRadius: theme.borderRadius.sm, // Use imported theme
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.7 : 1,
         transition: 'all 0.2s ease',
         fontWeight: '500',
         ...style
       }}
-      {...props} // Spread any other props
+      {...props}
     >
       {children}
     </button>
