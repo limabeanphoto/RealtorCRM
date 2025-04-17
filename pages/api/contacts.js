@@ -1,4 +1,4 @@
-// pages/api/contacts.js (updated version)
+// pages/api/contacts.js
 import { PrismaClient } from '@prisma/client'
 import withAuth from '../../utils/withAuth'
 
@@ -93,7 +93,34 @@ async function handler(req, res) {
         return res.status(400).json({ success: false, message: 'Name and phone are required' })
       }
       
-      // Create contact
+      // Check for duplicate contacts based on phone number or email
+      const duplicateChecks = []
+      
+      // Always check phone number
+      duplicateChecks.push({ phone })
+      
+      // Check email if provided
+      if (email) {
+        duplicateChecks.push({ email })
+      }
+      
+      // Look for potential duplicates
+      const existingContacts = await prisma.contact.findMany({
+        where: {
+          OR: duplicateChecks
+        }
+      })
+      
+      // If duplicates are found, return them to the frontend
+      if (existingContacts.length > 0) {
+        return res.status(409).json({ 
+          success: false, 
+          message: 'Potential duplicate contacts found',
+          duplicates: existingContacts
+        })
+      }
+      
+      // If no duplicates, create the contact
       const newContact = await prisma.contact.create({
         data: {
           name,

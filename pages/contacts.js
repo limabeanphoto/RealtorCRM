@@ -104,6 +104,53 @@ export default function Contacts() {
       
       const data = await response.json()
       
+      // Handle duplicate detection response
+      if (response.status === 409 && data.duplicates) {
+        return { 
+          success: false, 
+          message: data.message,
+          duplicates: data.duplicates
+        }
+      }
+      
+      // Handle force create with duplicates
+      if (formData.forceCreate && !data.success) {
+        // If force create is requested but original request failed, 
+        // retry with the special flag to skip duplicate checks
+        const forceResponse = await fetch('/api/contacts/force-create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            ...formData,
+            skipDuplicateCheck: true
+          })
+        })
+        
+        const forceData = await forceResponse.json()
+        
+        if (forceData.success) {
+          // Add the new contact to the list if it matches current filter
+          const statusMap = {
+            followUp: 'Follow Up',
+            noAnswer: 'No Answer',
+            dealClosed: 'Deal Closed',
+            notInterested: 'Not Interested'
+          }
+          
+          if (filter === 'all' || 
+              (filter !== 'all' && forceData.data.lastCallOutcome === statusMap[filter])) {
+            setContacts([forceData.data, ...contacts])
+          }
+          return { success: true, data: forceData.data }
+        } else {
+          alert('Error creating contact: ' + forceData.message)
+          return { success: false, message: forceData.message }
+        }
+      }
+      
       if (data.success) {
         // Add the new contact to the list if it matches current filter
         const statusMap = {
@@ -127,6 +174,12 @@ export default function Contacts() {
       alert('Error creating contact')
       return { success: false, message: error.message }
     }
+  }
+
+  const handleViewExistingContact = (contact) => {
+    // Open the edit modal with the existing contact
+    setSelectedContact(contact);
+    setIsEditModalOpen(true);
   }
 
   // Handle editing a contact
@@ -523,6 +576,7 @@ export default function Contacts() {
           contact={{}}
           onSubmit={handleAddContact}
           mode="add"
+          onViewExistingContact={handleViewExistingContact}
         />
 
         {/* Edit Contact Modal */}
