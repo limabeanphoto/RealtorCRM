@@ -422,7 +422,15 @@ export default function Contacts() {
             >
               All ({counts.all})
             </Button>
-
+            
+            <Button
+              onClick={() => setFilter('mine')}
+              variant={filter === 'mine' ? 'primary' : 'outline'}
+              tooltip={`Show contacts assigned to you (${counts.mine})`}
+            >
+              My Contacts ({counts.mine})
+            </Button>
+            
             <Button
               onClick={() => setFilter('interested')}
               variant={filter === 'interested' ? 'primary' : 'outline'}
