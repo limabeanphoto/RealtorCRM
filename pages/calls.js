@@ -1,262 +1,87 @@
-// pages/contacts.js
+// pages/calls.js
 import { useState, useEffect } from 'react'
-import ContactForm from '../components/contacts/ContactForm'
-import ContactModal from '../components/contacts/ContactModal'
-import ContactCard from '../components/contacts/ContactCard'
 import CallModal from '../components/calls/CallModal'
+import CallCard from '../components/calls/CallCard'
 import TaskModal from '../components/tasks/TaskModal'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
 import Button from '../components/common/Button' // Import Button
 
-export default function Contacts() {
+export default function Calls() {
+  const [calls, setCalls] = useState([])
   const [contacts, setContacts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState(null)
-  
-  // State for modals
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isCallModalOpen, setIsCallModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState(null)
   const [selectedCall, setSelectedCall] = useState(null)
-  const [selectedTask, setSelectedTask] = useState(null)
   
-  // Changed filter state to use status-based filtering
-  const [filter, setFilter] = useState('all') // all, interested, notInterested, followUp, etc.
+  // Added for filtering calls
+  const [filter, setFilter] = useState('all') // all, deals, recent
+  const [searchTerm, setSearchTerm] = useState('')
   
-  // Get user from localStorage
+  // Fetch calls and contacts
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('user') || '{}')
-    setUser(userData)
-  }, [])
-  
-  // Fetch contacts
-  useEffect(() => {
-    fetchContacts()
-  }, [filter]) // Re-fetch when filter changes
+    fetchData()
+  }, [filter])
 
-  const fetchContacts = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true)
       const token = localStorage.getItem('token')
       
-      // Build URL with filter parameters
-      let url = '/api/contacts'
+      // Build URL with filter parameters (in a real implementation, 
+      // you might add query params to the API to filter on the server side)
+      let url = '/api/calls'
       
-      // Only add status filter if not "all"
-      if (filter !== 'all' && filter !== 'mine') {
-        // Convert filter to proper status format (e.g., "followUp" to "Follow Up")
-        const statusMap = {
-          interested: 'Interested',
-          notInterested: 'Not Interested',
-          followUp: 'Follow Up',
-          noAnswer: 'No Answer',
-          leftMessage: 'Left Message',
-          wrongNumber: 'Wrong Number',
-          dealClosed: 'Deal Closed'
-        }
-        
-        if (statusMap[filter]) {
-          url += `?lastCallOutcome=${encodeURIComponent(statusMap[filter])}`
-        }
-      } else if (filter === 'mine' && user?.id) {
-        url += `?assignedTo=${user.id}`
-      }
-      
-      const response = await fetch(url, {
-         headers: {
+      // Fetch calls
+      const callsResponse = await fetch(url, {
+        headers: {
           'Authorization': `Bearer ${token}`
         }
       })
-      const data = await response.json()
+      const callsData = await callsResponse.json()
       
-      if (data.success) {
-        setContacts(data.data)
+      // Fetch contacts for the dropdown
+      const contactsResponse = await fetch('/api/contacts', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      const contactsData = await contactsResponse.json()
+      
+      if (callsData.success) {
+        // Filter calls based on the selected filter (client-side for now)
+        let filteredCalls = callsData.data
+        
+        if (filter === 'deals') {
+          filteredCalls = filteredCalls.filter(call => call.isDeal)
+        } else if (filter === 'recent') {
+          // Get calls from the last 7 days
+          const oneWeekAgo = new Date()
+          oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+          filteredCalls = filteredCalls.filter(call => new Date(call.date) >= oneWeekAgo)
+        }
+        
+        setCalls(filteredCalls)
       } else {
-        console.error('Error fetching contacts:', data.message)
+        console.error('Error fetching calls:', callsData.message)
+      }
+      
+      if (contactsData.success) {
+        setContacts(contactsData.data)
+      } else {
+        console.error('Error fetching contacts:', contactsData.message)
       }
       
       setLoading(false)
     } catch (error) {
-      console.error('Error fetching contacts:', error)
+      console.error('Error fetching data:', error)
       setLoading(false)
     }
   }
   
-  // Handle contact status update
-  const handleContactUpdate = (updatedContact) => {
-    setContacts(prevContacts => 
-      prevContacts.map(contact => 
-        contact.id === updatedContact.id ? updatedContact : contact
-      )
-    );
-  };
-  
-  // Handle adding a new contact
-  const handleAddContact = async (formData) => {
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch('/api/contacts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      })
-      
-      const data = await response.json()
-      
-      if (data.success) {
-        // Add the new contact to the list if it matches current filter
-        const statusMap = {
-          interested: 'Interested',
-          notInterested: 'Not Interested',
-          followUp: 'Follow Up',
-          noAnswer: 'No Answer',
-          leftMessage: 'Left Message',
-          wrongNumber: 'Wrong Number',
-          dealClosed: 'Deal Closed'
-        }
-        
-        if (filter === 'all' || 
-            (filter !== 'mine' && data.data.lastCallOutcome === statusMap[filter]) ||
-            (filter === 'mine' && data.data.assignedTo === user?.id)) {
-          setContacts([data.data, ...contacts])
-        }
-        return { success: true, data: data.data }
-      } else {
-        alert('Error creating contact: ' + data.message)
-        return { success: false, message: data.message }
-      }
-    } catch (error) {
-      console.error('Error creating contact:', error)
-      alert('Error creating contact')
-      return { success: false, message: error.message }
-    }
-  }
-
-  // Handle editing a contact
-  const handleEditContact = async (formData) => {
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch(`/api/contacts/${formData.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      })
-      
-      const data = await response.json()
-      
-      if (data.success) {
-        // Update the contact in the list
-        setContacts(contacts.map(contact => 
-          contact.id === data.data.id ? data.data : contact
-        ))
-        return { success: true, data: data.data }
-      } else {
-        alert('Error updating contact: ' + data.message)
-        return { success: false, message: data.message }
-      }
-    } catch (error) {
-      console.error('Error updating contact:', error)
-      alert('Error updating contact')
-      return { success: false, message: error.message }
-    }
-  }
-
-  // Handle deleting a contact
-  const handleDeleteContact = async (contactId) => {
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch(`/api/contacts/${contactId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      
-      const data = await response.json()
-      
-      if (data.success) {
-        // Remove the contact from the list
-        setContacts(contacts.filter(contact => contact.id !== contactId))
-        return { success: true }
-      } else {
-        alert('Error deleting contact: ' + data.message)
-        return { success: false, message: data.message }
-      }
-    } catch (error) {
-      console.error('Error deleting contact:', error)
-      alert('Error deleting contact')
-      return { success: false, message: error.message }
-    }
-  }
-
-  // Handle opening the edit modal for a contact
-  const handleOpenEditModal = (contact) => {
-    setSelectedContact(contact)
-    setIsEditModalOpen(true)
-  }
-
-  // Handle logging a call
-  const handleLogCall = (contact) => {
-    setSelectedContact(contact)
-    setSelectedCall(null)
-    setIsCallModalOpen(true)
-  }
-
-  // Handle adding a task
-  const handleAddTask = (contact, call = null) => {
-    setSelectedContact(contact)
-    setSelectedCall(call)
-    setSelectedTask(null)
-    setIsTaskModalOpen(true)
-  }
-
-  // Handle editing a task
-  const handleEditTask = (task) => {
-    setSelectedTask(task)
-    setSelectedContact(null) // We'll get the contact from the task
-    setIsTaskModalOpen(true)
-  }
-
-  // Handle task status change
-  const handleTaskStatusChange = async (taskId, newStatus) => {
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch(`/api/tasks/${taskId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ 
-          status: newStatus,
-          completed: newStatus === 'Completed'
-        })
-      })
-      
-      const data = await response.json()
-      
-      if (data.success) {
-        return { success: true, data: data.data }
-      } else {
-        alert('Error updating task status: ' + data.message)
-        return { success: false, message: data.message }
-      }
-    } catch (error) {
-      console.error('Error updating task status:', error)
-      alert('Error updating task status')
-      return { success: false, message: error.message }
-    }
-  }
-
-  // Handle call form submission
+  // Handle creating a new call
   const handleCallSubmit = async (formData) => {
     try {
       const token = localStorage.getItem('token')
@@ -272,17 +97,12 @@ export default function Contacts() {
       const data = await response.json()
       
       if (data.success) {
-        // Update the contact in the list with new lastCallOutcome if necessary
-        const updatedContact = data.data.contact;
-        if (updatedContact) {
-          handleContactUpdate({
-            ...updatedContact,
-            lastCallOutcome: data.data.outcome,
-            lastCallDate: data.data.date
-          });
+        // Add the new call to the list if it matches current filter
+        if (filter === 'all' || 
+            (filter === 'deals' && data.data.isDeal) ||
+            (filter === 'recent')) { // New calls are always recent
+          setCalls([data.data, ...calls])
         }
-        
-        alert('Call logged successfully')
         return { success: true, data: data.data }
       } else {
         alert('Error logging call: ' + data.message)
@@ -295,19 +115,12 @@ export default function Contacts() {
     }
   }
 
-  // Handle task form submission
-  const handleTaskSubmit = async (formData) => {
+  // Handle editing a call
+  const handleEditCall = async (formData) => {
     try {
       const token = localStorage.getItem('token')
-      
-      // Check if we're updating an existing task or creating a new one
-      const isUpdating = !!formData.id
-      
-      const url = isUpdating ? `/api/tasks/${formData.id}` : '/api/tasks'
-      const method = isUpdating ? 'PUT' : 'POST'
-      
-      const response = await fetch(url, {
-        method: method,
+      const response = await fetch(`/api/calls/${formData.id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -318,95 +131,158 @@ export default function Contacts() {
       const data = await response.json()
       
       if (data.success) {
-        alert(`Task ${isUpdating ? 'updated' : 'created'} successfully`)
+        // Update the call in the list
+        setCalls(calls.map(call => 
+          call.id === data.data.id ? data.data : call
+        ))
         return { success: true, data: data.data }
       } else {
-        alert(`Error ${isUpdating ? 'updating' : 'creating'} task: ` + data.message)
+        alert('Error updating call: ' + data.message)
         return { success: false, message: data.message }
       }
     } catch (error) {
-      console.error(`Error ${formData.id ? 'updating' : 'creating'} task:`, error)
-      alert(`Error ${formData.id ? 'updating' : 'creating'} task`)
+      console.error('Error updating call:', error)
+      alert('Error updating call')
+      return { success: false, message: error.message }
+    }
+  }
+
+  // Handle deleting a call
+  const handleDeleteCall = async (callId) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`/api/calls/${callId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        // Remove the call from the list
+        setCalls(calls.filter(call => call.id !== callId))
+      } else {
+        alert('Error deleting call: ' + data.message)
+      }
+    } catch (error) {
+      console.error('Error deleting call:', error)
+      alert('Error deleting call')
+    }
+  }
+
+  // Open modal to select a contact
+  const handleNewCall = () => {
+    setSelectedContact(null) // Clear any selected contact first
+    setIsCallModalOpen(true)
+  }
+
+  // Handle opening the edit modal
+  const handleOpenEditModal = (call) => {
+    setSelectedCall(call)
+    setIsEditModalOpen(true)
+  }
+
+  // Handle opening task modal for a call
+  const handleAddTask = (call) => {
+    setSelectedCall(call)
+    setIsTaskModalOpen(true)
+  }
+
+  // Handle contact selection for new call
+  const handleContactSelect = (e) => {
+    const contactId = e.target.value
+    
+    if (contactId) {
+      const contact = contacts.find(c => c.id === contactId)
+      setSelectedContact(contact)
+    } else {
+      setSelectedContact(null)
+    }
+  }
+  
+  // Handle task submission
+  const handleTaskSubmit = async (formData) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        alert('Task created successfully')
+        return { success: true, data: data.data }
+      } else {
+        alert('Error creating task: ' + data.message)
+        return { success: false, message: data.message }
+      }
+    } catch (error) {
+      console.error('Error creating task:', error)
+      alert('Error creating task')
       return { success: false, message: error.message }
     }
   }
   
-  // Get counts for filter badges
+  // Get counts for filters
   const getCounts = () => {
-    // Calculate counts for each status
-    const counts = {
-      all: contacts.length,
-      mine: contacts.filter(contact => contact.assignedTo === user?.id).length,
-      interested: contacts.filter(contact => contact.lastCallOutcome === 'Interested').length,
-      notInterested: contacts.filter(contact => contact.lastCallOutcome === 'Not Interested').length,
-      followUp: contacts.filter(contact => contact.lastCallOutcome === 'Follow Up').length,
-      noAnswer: contacts.filter(contact => contact.lastCallOutcome === 'No Answer').length,
-      leftMessage: contacts.filter(contact => contact.lastCallOutcome === 'Left Message').length,
-      wrongNumber: contacts.filter(contact => contact.lastCallOutcome === 'Wrong Number').length,
-      dealClosed: contacts.filter(contact => contact.lastCallOutcome === 'Deal Closed').length,
-      noStatus: contacts.filter(contact => !contact.lastCallOutcome).length
-    }
+    const allCount = calls.length
+    const dealsCount = calls.filter(call => call.isDeal).length
     
-    return counts
+    // Count calls from the last 7 days
+    const oneWeekAgo = new Date()
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+    const recentCount = calls.filter(call => new Date(call.date) >= oneWeekAgo).length
+    
+    return {
+      all: allCount,
+      deals: dealsCount,
+      recent: recentCount
+    }
   }
   
   const counts = getCounts()
   
-  // Filter contacts based on search term
-  const [searchTerm, setSearchTerm] = useState('')
-  
-  const filteredContacts = contacts.filter(contact => {
+  // Filter calls based on search term
+  const filteredCalls = calls.filter(call => {
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase()
       return (
-        contact.name.toLowerCase().includes(searchLower) ||
-        (contact.company && contact.company.toLowerCase().includes(searchLower)) ||
-        contact.phone.includes(searchTerm) ||
-        (contact.email && contact.email.toLowerCase().includes(searchLower))
+        call.contact.name.toLowerCase().includes(searchLower) ||
+        (call.contact.company && call.contact.company.toLowerCase().includes(searchLower)) ||
+        call.notes?.toLowerCase().includes(searchLower) ||
+        call.outcome.toLowerCase().includes(searchLower)
       )
     }
     return true
   })
   
-  // Prepare initial task data for task modal when creating from a call
-  const getInitialTaskData = () => {
-    let initialData = {}
-    
-    if (selectedContact) {
-      initialData.contactId = selectedContact.id
-    }
-    
-    if (selectedCall) {
-      initialData.callId = selectedCall.id
-      initialData.title = `Follow up with ${selectedContact.name}`
-      initialData.description = `Follow-up from call on ${new Date(selectedCall.date).toLocaleDateString()}${selectedCall.notes ? `: ${selectedCall.notes}` : ''}`
-    }
-    
-    if (selectedTask) {
-      // If editing a task, use all its data
-      initialData = {
-        ...selectedTask,
-        dueDate: new Date(selectedTask.dueDate).toISOString().slice(0, 16)
-      }
-    }
-    
-    return initialData
-  }
-  
   return (
     <ProtectedRoute>
       <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h1>Contacts</h1>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          marginBottom: '1.5rem'
+        }}>
+          <h1>Calls</h1>
           <Button 
-            onClick={() => setIsAddModalOpen(true)}
-            tooltip="Create a new contact"
+            onClick={handleNewCall}
+            tooltip="Open the form to log a new call"
           >
-            Add Contact
+            Log New Call
           </Button>
         </div>
         
-        {/* Filters and Search - Updated with status-based filters */}
+        {/* Filters and Search */}
         <div style={{ 
           display: 'flex', 
           flexWrap: 'wrap', 
@@ -414,92 +290,36 @@ export default function Contacts() {
           gap: '1rem', 
           marginBottom: '1.5rem' 
         }}>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
             <Button
               onClick={() => setFilter('all')}
               variant={filter === 'all' ? 'primary' : 'outline'}
-              tooltip={`Show all contacts (${counts.all})`}
+              tooltip={`Show all recorded calls (${counts.all})`}
             >
-              All ({counts.all})
+              All Calls ({counts.all})
             </Button>
             
             <Button
-              onClick={() => setFilter('mine')}
-              variant={filter === 'mine' ? 'primary' : 'outline'}
-              tooltip={`Show contacts assigned to you (${counts.mine})`}
+              onClick={() => setFilter('deals')}
+              variant={filter === 'deals' ? 'primary' : 'outline'}
+              tooltip={`Show only calls marked as deals (${counts.deals})`}
             >
-              My Contacts ({counts.mine})
+              Deals ({counts.deals})
             </Button>
             
             <Button
-              onClick={() => setFilter('interested')}
-              variant={filter === 'interested' ? 'primary' : 'outline'}
-              tooltip={`Show interested contacts (${counts.interested})`}
+              onClick={() => setFilter('recent')}
+              variant={filter === 'recent' ? 'primary' : 'outline'}
+              tooltip={`Show calls from the last 7 days (${counts.recent})`}
             >
-              Interested ({counts.interested})
-            </Button>
-            
-            <Button
-              onClick={() => setFilter('followUp')}
-              variant={filter === 'followUp' ? 'primary' : 'outline'}
-              tooltip={`Show contacts to follow up with (${counts.followUp})`}
-            >
-              Follow Up ({counts.followUp})
-            </Button>
-            
-            <Button
-              onClick={() => setFilter('noAnswer')}
-              variant={filter === 'noAnswer' ? 'primary' : 'outline'}
-              tooltip={`Show contacts who didn't answer (${counts.noAnswer})`}
-            >
-              No Answer ({counts.noAnswer})
-            </Button>
-            
-            <Button
-              onClick={() => setFilter('leftMessage')}
-              variant={filter === 'leftMessage' ? 'primary' : 'outline'}
-              tooltip={`Show contacts with left messages (${counts.leftMessage})`}
-            >
-              Left Msg ({counts.leftMessage})
-            </Button>
-            
-            <Button
-              onClick={() => setFilter('dealClosed')}
-              variant={filter === 'dealClosed' ? 'primary' : 'outline'}
-              tooltip={`Show contacts with closed deals (${counts.dealClosed})`}
-            >
-              Deals ({counts.dealClosed})
-            </Button>
-            
-            <Button
-              onClick={() => setFilter('notInterested')}
-              variant={filter === 'notInterested' ? 'primary' : 'outline'}
-              tooltip={`Show contacts not interested (${counts.notInterested})`}
-            >
-              Not Interested ({counts.notInterested})
-            </Button>
-            
-            <Button
-              onClick={() => setFilter('wrongNumber')}
-              variant={filter === 'wrongNumber' ? 'primary' : 'outline'}
-              tooltip={`Show wrong numbers (${counts.wrongNumber})`}
-            >
-              Wrong # ({counts.wrongNumber})
-            </Button>
-            
-            <Button
-              onClick={() => setFilter('noStatus')}
-              variant={filter === 'noStatus' ? 'primary' : 'outline'}
-              tooltip={`Show contacts with no status (${counts.noStatus})`}
-            >
-              No Status ({counts.noStatus})
+              Recent ({counts.recent})
             </Button>
           </div>
           
           <div>
             <input
               type="text"
-              placeholder="Search contacts..."
+              placeholder="Search calls..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{
@@ -512,22 +332,18 @@ export default function Contacts() {
           </div>
         </div>
         
-        {/* Contact Cards List */}
+        {/* Call Cards List */}
         {loading ? (
-          <p>Loading contacts...</p>
-        ) : filteredContacts.length > 0 ? (
+          <p>Loading calls...</p>
+        ) : filteredCalls.length > 0 ? (
           <div>
-            {filteredContacts.map(contact => (
-              <ContactCard
-                key={contact.id}
-                contact={contact}
+            {filteredCalls.map(call => (
+              <CallCard
+                key={call.id}
+                call={call}
                 onEditClick={handleOpenEditModal}
-                onLogCallClick={handleLogCall}
+                onDeleteClick={handleDeleteCall}
                 onAddTaskClick={handleAddTask}
-                onDeleteContact={handleDeleteContact}
-                onEditTask={handleEditTask}
-                onTaskStatusChange={handleTaskStatusChange}
-                onContactUpdate={handleContactUpdate}
               />
             ))}
           </div>
@@ -540,55 +356,58 @@ export default function Contacts() {
           }}>
             <p style={{ marginBottom: '1rem' }}>
               {searchTerm 
-                ? 'No contacts found matching your search.' 
-                : filter !== 'all' 
-                  ? `No contacts with ${filter === 'mine' ? 'assignment to you' : filter === 'noStatus' ? 'no status' : filter + ' status'}.` 
-                  : 'No contacts found. Add your first contact to get started.'}
+                ? 'No calls found matching your search.' 
+                : 'No calls recorded yet. Log your first call to get started.'}
             </p>
             <Button
-              onClick={() => setIsAddModalOpen(true)}
-              tooltip="Create your first contact"
+              onClick={handleNewCall}
+              tooltip="Open the form to log your first call"
             >
-              Add Contact
+              Log New Call
             </Button>
           </div>
         )}
 
-        {/* Add Contact Modal */}
-        <ContactModal
-          isOpen={isAddModalOpen}
-          onClose={() => setIsAddModalOpen(false)}
-          contact={{}}
-          onSubmit={handleAddContact}
-          mode="add"
+        {/* New Call Modal */}
+        <CallModal
+          isOpen={isCallModalOpen}
+          onClose={() => {
+            setIsCallModalOpen(false);
+            setSelectedContact(null); // Clear selected contact on close
+          }}
+          contact={selectedContact} // Pass selected contact
+          contacts={contacts} // Pass full contact list
+          onContactSelect={handleContactSelect} // Pass handler for selection
+          onSubmit={handleCallSubmit}
+          mode="new"
         />
 
-        {/* Edit Contact Modal */}
-        <ContactModal
+        {/* Edit Call Modal */}
+        <CallModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          contact={selectedContact || {}}
-          onSubmit={handleEditContact}
+          call={selectedCall}
+          contacts={contacts} // Pass contacts for editing too
+          onSubmit={handleEditCall}
           mode="edit"
         />
 
-        {/* Call Modal */}
-        <CallModal
-          isOpen={isCallModalOpen}
-          onClose={() => setIsCallModalOpen(false)}
-          contact={selectedContact}
-          onSubmit={handleCallSubmit}
-        />
-
-        {/* Task Modal */}
+        {/* Task Modal for Call Follow-up */}
         <TaskModal
           isOpen={isTaskModalOpen}
           onClose={() => setIsTaskModalOpen(false)}
-          contact={selectedContact}
+          contact={selectedCall?.contact}
           contacts={contacts}
-          initialData={getInitialTaskData()}
+          initialData={{
+            contactId: selectedCall?.contact?.id,
+            callId: selectedCall?.id,
+            title: selectedCall ? `Follow up with ${selectedCall.contact.name}` : '',
+            description: selectedCall ? `Follow-up from call on ${new Date(selectedCall.date).toLocaleDateString()}${selectedCall.notes ? `: ${selectedCall.notes}` : ''}` : '',
+          }}
           onSubmit={handleTaskSubmit}
         />
+
+        {/* Contact Selection part removed as it's integrated into CallModal */}
       </div>
     </ProtectedRoute>
   )
