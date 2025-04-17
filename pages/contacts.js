@@ -7,6 +7,7 @@ import CallModal from '../components/calls/CallModal'
 import TaskModal from '../components/tasks/TaskModal'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
 import Button from '../components/common/Button'
+import { FaSearch } from 'react-icons/fa'
 
 export default function Contacts() {
   const [contacts, setContacts] = useState([])
@@ -330,8 +331,7 @@ export default function Contacts() {
       followUp: contacts.filter(contact => contact.lastCallOutcome === 'Follow Up').length,
       noAnswer: contacts.filter(contact => contact.lastCallOutcome === 'No Answer').length,
       dealClosed: contacts.filter(contact => contact.lastCallOutcome === 'Deal Closed').length,
-      notInterested: contacts.filter(contact => contact.lastCallOutcome === 'Not Interested').length,
-      noStatus: contacts.filter(contact => !contact.lastCallOutcome).length
+      notInterested: contacts.filter(contact => contact.lastCallOutcome === 'Not Interested').length
     }
     
     return counts
@@ -393,19 +393,29 @@ export default function Contacts() {
           </Button>
         </div>
         
-        {/* Simplified filter bar with status-based filters */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+        {/* Filters and Search all in one row */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          marginBottom: '1.5rem',
+          flexWrap: 'wrap',
+          gap: '0.5rem'
+        }}>
+          {/* Status Filter Buttons */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <Button
               onClick={() => setFilter('all')}
               variant={filter === 'all' ? 'primary' : 'outline'}
+              size="small"
             >
-              All Contacts ({counts.all})
+              All ({counts.all})
             </Button>
             
             <Button
               onClick={() => setFilter('followUp')}
               variant={filter === 'followUp' ? 'primary' : 'outline'}
+              size="small"
             >
               Follow Up ({counts.followUp})
             </Button>
@@ -413,6 +423,7 @@ export default function Contacts() {
             <Button
               onClick={() => setFilter('noAnswer')}
               variant={filter === 'noAnswer' ? 'primary' : 'outline'}
+              size="small"
             >
               No Answer ({counts.noAnswer})
             </Button>
@@ -420,6 +431,7 @@ export default function Contacts() {
             <Button
               onClick={() => setFilter('dealClosed')}
               variant={filter === 'dealClosed' ? 'primary' : 'outline'}
+              size="small"
             >
               Deal Closed ({counts.dealClosed})
             </Button>
@@ -427,34 +439,40 @@ export default function Contacts() {
             <Button
               onClick={() => setFilter('notInterested')}
               variant={filter === 'notInterested' ? 'primary' : 'outline'}
+              size="small"
             >
               Not Interested ({counts.notInterested})
             </Button>
-            
-            <Button
-              onClick={() => setFilter('noStatus')}
-              variant={filter === 'noStatus' ? 'primary' : 'outline'}
-            >
-              No Status ({counts.noStatus})
-            </Button>
           </div>
-        </div>
-        
-        {/* Search box - moved to separate row for better layout */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <input
-            type="text"
-            placeholder="Search contacts..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              padding: '0.5rem',
-              borderRadius: '4px',
-              border: '1px solid #ddd',
-              width: '100%',
-              maxWidth: '400px'
-            }}
-          />
+          
+          {/* Search Box */}
+          <div style={{ 
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            minWidth: '200px'
+          }}>
+            <input
+              type="text"
+              placeholder="Search contacts..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                padding: '0.5rem 0.5rem 0.5rem 2rem', // Space for the icon
+                borderRadius: '4px',
+                border: '1px solid #ddd',
+                width: '100%'
+              }}
+            />
+            <FaSearch 
+              size={14} 
+              style={{ 
+                position: 'absolute', 
+                left: '0.75rem',
+                color: '#a0aec0'
+              }} 
+            />
+          </div>
         </div>
         
         {/* Contact Cards List */}
@@ -487,7 +505,7 @@ export default function Contacts() {
               {searchTerm 
                 ? 'No contacts found matching your search.' 
                 : filter !== 'all' 
-                  ? `No contacts with ${filter === 'noStatus' ? 'no status' : filter + ' status'}.` 
+                  ? `No contacts with ${filter} status.` 
                   : 'No contacts found. Add your first contact to get started.'}
             </p>
             <Button
