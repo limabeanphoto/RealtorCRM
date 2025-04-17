@@ -23,7 +23,7 @@ export default function Contacts() {
   const [selectedTask, setSelectedTask] = useState(null)
   
   // Changed filter state to use status-based filtering
-  const [filter, setFilter] = useState('all') // all, interested, notInterested, followUp, etc.
+  const [filter, setFilter] = useState('all') // all, followUp, noAnswer, dealClosed, notInterested
   
   // Get user from localStorage
   useEffect(() => {
@@ -48,13 +48,10 @@ export default function Contacts() {
       if (filter !== 'all') {
         // Convert filter to proper status format (e.g., "followUp" to "Follow Up")
         const statusMap = {
-          interested: 'Interested',
-          notInterested: 'Not Interested',
           followUp: 'Follow Up',
           noAnswer: 'No Answer',
-          leftMessage: 'Left Message',
-          wrongNumber: 'Wrong Number',
-          dealClosed: 'Deal Closed'
+          dealClosed: 'Deal Closed',
+          notInterested: 'Not Interested'
         }
         
         if (statusMap[filter]) {
@@ -109,13 +106,10 @@ export default function Contacts() {
       if (data.success) {
         // Add the new contact to the list if it matches current filter
         const statusMap = {
-          interested: 'Interested',
-          notInterested: 'Not Interested',
           followUp: 'Follow Up',
           noAnswer: 'No Answer',
-          leftMessage: 'Left Message',
-          wrongNumber: 'Wrong Number',
-          dealClosed: 'Deal Closed'
+          dealClosed: 'Deal Closed',
+          notInterested: 'Not Interested'
         }
         
         if (filter === 'all' || 
@@ -333,13 +327,10 @@ export default function Contacts() {
     // Calculate counts for each status
     const counts = {
       all: contacts.length,
-      interested: contacts.filter(contact => contact.lastCallOutcome === 'Interested').length,
-      notInterested: contacts.filter(contact => contact.lastCallOutcome === 'Not Interested').length,
       followUp: contacts.filter(contact => contact.lastCallOutcome === 'Follow Up').length,
       noAnswer: contacts.filter(contact => contact.lastCallOutcome === 'No Answer').length,
-      leftMessage: contacts.filter(contact => contact.lastCallOutcome === 'Left Message').length,
-      wrongNumber: contacts.filter(contact => contact.lastCallOutcome === 'Wrong Number').length,
       dealClosed: contacts.filter(contact => contact.lastCallOutcome === 'Deal Closed').length,
+      notInterested: contacts.filter(contact => contact.lastCallOutcome === 'Not Interested').length,
       noStatus: contacts.filter(contact => !contact.lastCallOutcome).length
     }
     
@@ -402,7 +393,7 @@ export default function Contacts() {
           </Button>
         </div>
         
-        {/* Simplified filter bar with status-based filters, matching the UI style in your screenshot */}
+        {/* Simplified filter bar with status-based filters */}
         <div style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
             <Button
@@ -410,13 +401,6 @@ export default function Contacts() {
               variant={filter === 'all' ? 'primary' : 'outline'}
             >
               All Contacts ({counts.all})
-            </Button>
-            
-            <Button
-              onClick={() => setFilter('interested')}
-              variant={filter === 'interested' ? 'primary' : 'outline'}
-            >
-              Interested ({counts.interested})
             </Button>
             
             <Button
@@ -434,13 +418,6 @@ export default function Contacts() {
             </Button>
             
             <Button
-              onClick={() => setFilter('leftMessage')}
-              variant={filter === 'leftMessage' ? 'primary' : 'outline'}
-            >
-              Left Message ({counts.leftMessage})
-            </Button>
-            
-            <Button
               onClick={() => setFilter('dealClosed')}
               variant={filter === 'dealClosed' ? 'primary' : 'outline'}
             >
@@ -452,13 +429,6 @@ export default function Contacts() {
               variant={filter === 'notInterested' ? 'primary' : 'outline'}
             >
               Not Interested ({counts.notInterested})
-            </Button>
-            
-            <Button
-              onClick={() => setFilter('wrongNumber')}
-              variant={filter === 'wrongNumber' ? 'primary' : 'outline'}
-            >
-              Wrong Number ({counts.wrongNumber})
             </Button>
             
             <Button

@@ -5,7 +5,7 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
     contactId: contact?.id || '',
     duration: 0,
     notes: '',
-    outcome: 'Interested', // Default value
+    outcome: 'Follow Up', // Default value
     isDeal: false,
     dealValue: '',
     ...initialData
@@ -35,11 +35,11 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
       setCreateFollowUp(true)
     }
     
-    // Auto-set isDeal if outcome is 'Deal Closed' or 'Interested'
+    // Auto-set isDeal if outcome is 'Deal Closed'
     if (e.target.name === 'outcome') {
       setFormData(prev => ({
         ...prev,
-        isDeal: ['Deal Closed', 'Interested'].includes(e.target.value)
+        isDeal: e.target.value === 'Deal Closed'
       }))
     }
   }
@@ -130,13 +130,10 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
           required
           style={{ width: '100%', padding: '0.5rem' }}
         >
-          <option value="Interested">Interested</option>
-          <option value="Not Interested">Not Interested</option>
           <option value="Follow Up">Follow Up</option>
           <option value="No Answer">No Answer</option>
-          <option value="Left Message">Left Message</option>
-          <option value="Wrong Number">Wrong Number</option>
           <option value="Deal Closed">Deal Closed</option>
+          <option value="Not Interested">Not Interested</option>
         </select>
       </div>
       
@@ -292,5 +289,5 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
         )}
       </div>
     </form>
-  )
+  );
 }

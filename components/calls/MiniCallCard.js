@@ -29,13 +29,10 @@ export default function MiniCallCard({
   // Get color based on outcome
   const getOutcomeStyle = (outcome) => {
     const styles = {
-      'Interested': { backgroundColor: '#d4edda', color: '#155724' },
-      'Not Interested': { backgroundColor: '#f8d7da', color: '#721c24' },
       'Follow Up': { backgroundColor: '#fff3cd', color: '#856404' },
       'No Answer': { backgroundColor: '#e2e3e5', color: '#383d41' },
-      'Left Message': { backgroundColor: '#cce5ff', color: '#004085' },
-      'Wrong Number': { backgroundColor: '#f8d7da', color: '#721c24' },
-      'Deal Closed': { backgroundColor: '#d4edda', color: '#155724' }
+      'Deal Closed': { backgroundColor: '#d4edda', color: '#155724' },
+      'Not Interested': { backgroundColor: '#f8d7da', color: '#721c24' }
     };
     
     return styles[outcome] || { backgroundColor: '#e2e3e5', color: '#383d41' };
