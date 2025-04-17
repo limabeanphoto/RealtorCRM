@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import Button from '../common/Button'; // Import Button
+import Button from '../common/Button';
 
 export default function CallForm({ onSubmit, contact, onCancel, initialData = {} }) {
   const [formData, setFormData] = useState({
@@ -7,7 +7,6 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
     duration: 0,
     notes: '',
     outcome: 'Follow Up', // Default value
-    isDeal: false,
     ...initialData
   })
   
@@ -27,7 +26,7 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
   }, [contact, initialData.id]);
   
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
     let processedValue;
 
     if (type === 'checkbox') {
@@ -155,29 +154,11 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
           required
           style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
         >
-          <option value="Interested">Interested</option>
-          <option value="Not Interested">Not Interested</option>
           <option value="Follow Up">Follow Up</option>
           <option value="No Answer">No Answer</option>
-          <option value="Left Message">Left Message</option>
-          <option value="Wrong Number">Wrong Number</option>
           <option value="Deal Closed">Deal Closed</option>
+          <option value="Not Interested">Not Interested</option>
         </select>
-      </div>
-      
-      <div style={{ marginBottom: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
-          <input
-            type="checkbox"
-            id="isDeal"
-            name="isDeal"
-            checked={formData.isDeal}
-            onChange={handleChange} // Use the main handler
-            style={{ marginRight: '0.5rem' }}
-            disabled={formData.outcome !== 'Deal Closed'} // Disable if outcome is not Deal Closed
-          />
-          <label htmlFor="isDeal">Mark as Deal</label>
-        </div>
       </div>
       
       <div style={{ marginBottom: '1rem' }}>
