@@ -6,6 +6,7 @@ import ContactCard from '../components/contacts/ContactCard'
 import CallModal from '../components/calls/CallModal'
 import TaskModal from '../components/tasks/TaskModal'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
+import Button from '../components/common/Button' // Import Button
 
 export default function Contacts() {
   const [contacts, setContacts] = useState([])
@@ -365,19 +366,12 @@ export default function Contacts() {
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h1>Contacts</h1>
-          <button
+          <Button 
             onClick={() => setIsAddModalOpen(true)}
-            style={{
-              backgroundColor: '#8F9F3B',
-              color: 'white',
-              padding: '0.5rem 1rem',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
+            tooltip="Create a new contact"
           >
             Add Contact
-          </button>
+          </Button>
         </div>
         
         {/* Filters and Search */}
@@ -389,47 +383,29 @@ export default function Contacts() {
           marginBottom: '1.5rem' 
         }}>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
+            <Button
               onClick={() => setFilter('all')}
-              style={{
-                backgroundColor: filter === 'all' ? '#8F9F3B' : '#e2e8f0',
-                color: filter === 'all' ? 'white' : '#4a5568',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
+              variant={filter === 'all' ? 'primary' : 'outline'} // Change variant based on active filter
+              tooltip={`Show all contacts (${counts.all})`}
             >
               All Contacts ({counts.all})
-            </button>
+            </Button>
             
-            <button
+            <Button
               onClick={() => setFilter('open')}
-              style={{
-                backgroundColor: filter === 'open' ? '#8F9F3B' : '#e2e8f0',
-                color: filter === 'open' ? 'white' : '#4a5568',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
+              variant={filter === 'open' ? 'primary' : 'outline'}
+              tooltip={`Show only open contacts (${counts.open})`}
             >
               Open ({counts.open})
-            </button>
+            </Button>
             
-            <button
+            <Button
               onClick={() => setFilter('assigned')}
-              style={{
-                backgroundColor: filter === 'assigned' ? '#8F9F3B' : '#e2e8f0',
-                color: filter === 'assigned' ? 'white' : '#4a5568',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
+              variant={filter === 'assigned' ? 'primary' : 'outline'}
+              tooltip={`Show contacts assigned to you (${counts.assigned})`}
             >
               My Contacts ({counts.assigned})
-            </button>
+            </Button>
           </div>
           
           <div>
@@ -479,19 +455,12 @@ export default function Contacts() {
                 ? 'No contacts found matching your search.' 
                 : 'No contacts found. Add your first contact to get started.'}
             </p>
-            <button
+            <Button
               onClick={() => setIsAddModalOpen(true)}
-              style={{
-                backgroundColor: '#8F9F3B',
-                color: 'white',
-                padding: '0.5rem 1rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
+              tooltip="Create your first contact"
             >
               Add Contact
-            </button>
+            </Button>
           </div>
         )}
 

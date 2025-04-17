@@ -1,7 +1,8 @@
-// components/contacts/MiniContactCard.js (complete file)
+// components/contacts/MiniContactCard.js
 import { useState } from 'react';
 import { FaPhone, FaEdit, FaBuilding, FaEnvelope, FaHistory } from 'react-icons/fa';
 import theme from '../../styles/theme';
+import Button from '../common/Button'; // Import Button
 
 export default function MiniContactCard({ 
   contact, 
@@ -32,11 +33,22 @@ export default function MiniContactCard({
     const options = { 
       year: 'numeric', 
       month: 'short', 
-      day: 'numeric'
+      day: 'numeric' 
     };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
   
+  // Custom styles for mini icon buttons
+  const miniIconButtonStyle = {
+    width: '28px',
+    height: '28px',
+    padding: '0',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '28px'
+  };
+
   return (
     <div 
       style={{ 
@@ -52,7 +64,7 @@ export default function MiniContactCard({
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         {/* Contact Info */}
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, marginRight: '0.5rem' }}> {/* Added margin for spacing */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
             <strong>{contact.name}</strong>
             
@@ -102,49 +114,31 @@ export default function MiniContactCard({
         {(onEditClick || onLogCallClick) && (
           <div style={{ display: 'flex', gap: '0.25rem' }}>
             {onEditClick && (
-              <button
+              <Button
                 onClick={(e) => {
                   e.stopPropagation();
                   onEditClick(contact);
                 }}
-                style={{
-                  width: '28px',
-                  height: '28px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: '#4a69bd',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: theme.borderRadius.sm,
-                  cursor: 'pointer',
-                }}
+                style={miniIconButtonStyle} // Use specific style
+                variant="secondary" // Example variant
+                tooltip="Edit contact details"
               >
                 <FaEdit size={12} />
-              </button>
+              </Button>
             )}
             
             {onLogCallClick && (
-              <button
+              <Button
                 onClick={(e) => {
                   e.stopPropagation();
                   onLogCallClick(contact);
                 }}
-                style={{
-                  width: '28px',
-                  height: '28px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: '#78e08f',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: theme.borderRadius.sm,
-                  cursor: 'pointer',
-                }}
+                style={miniIconButtonStyle} // Use specific style
+                variant="primary" // Example variant
+                tooltip="Log a call with this contact"
               >
                 <FaPhone size={12} />
-              </button>
+              </Button>
             )}
           </div>
         )}

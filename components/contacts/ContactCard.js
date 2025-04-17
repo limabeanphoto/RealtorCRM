@@ -4,6 +4,7 @@ import { FaCheck, FaPhone, FaEdit, FaEnvelope, FaBuilding, FaAngleDown, FaAngleU
 import theme from '../../styles/theme';
 import MiniTaskCard from '../tasks/MiniTaskCard';
 import MiniCallCard from '../calls/MiniCallCard';
+import Button from '../common/Button'; // Import Button
 
 export default function ContactCard({ 
   contact, 
@@ -197,6 +198,17 @@ export default function ContactCard({
     setIsStatusDropdownOpen(!isStatusDropdownOpen);
   };
   
+  // Custom styles for square icon buttons
+  const iconButtonStyle = {
+    width: '32px',
+    height: '32px',
+    padding: '0', // Remove default padding
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '32px' // Ensure minimum width for flex item
+  };
+
   return (
     <div style={{ 
       border: '1px solid #e2e8f0', 
@@ -204,10 +216,10 @@ export default function ContactCard({
       margin: '0 0 1rem 0',
       backgroundColor: 'white',
       boxShadow: theme.shadows.sm,
-      overflow: 'visible', // Changed from 'hidden' to 'visible' to allow dropdown to show
+      overflow: 'visible', // Allow dropdown to show
       transition: 'box-shadow 0.2s ease',
-      position: 'relative', // Added to make sure child elements are positioned relative to this
-      zIndex: isStatusDropdownOpen ? 10 : 1, // Increase z-index when dropdown is open
+      position: 'relative',
+      zIndex: isStatusDropdownOpen ? 10 : 1,
       ':hover': {
         boxShadow: theme.shadows.md
       }
@@ -231,7 +243,7 @@ export default function ContactCard({
             </h3>
             
             {/* Status badges */}
-            <div style={{ display: 'flex', gap: '0.3rem', position: 'relative' }}> {/* Added position relative */}
+            <div style={{ display: 'flex', gap: '0.3rem', position: 'relative' }}>
               {/* Assignment status badge */}
               {contact.status && (
                 <span style={{
@@ -272,7 +284,7 @@ export default function ContactCard({
                         backgroundColor: 'white',
                         borderRadius: '4px',
                         boxShadow: theme.shadows.md,
-                        zIndex: 100, // Increased z-index to make sure it appears on top
+                        zIndex: 100, // Ensure dropdown is on top
                         width: '180px',
                       }}
                     >
@@ -354,69 +366,39 @@ export default function ContactCard({
         </div>
         
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          {/* Updated square buttons */}
-          <button
+          {/* Updated icon buttons using Button component */}
+          <Button
             onClick={(e) => {
               e.stopPropagation();
               onEditClick(contact);
             }}
-            style={{
-              width: '32px',
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: theme.colors.brand.primary,
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
+            style={iconButtonStyle}
+            tooltip="Edit contact details"
           >
             <FaEdit size={14} />
-          </button>
+          </Button>
           
-          <button
+          <Button
             onClick={(e) => {
               e.stopPropagation();
               onLogCallClick(contact);
             }}
-            style={{
-              width: '32px',
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: theme.colors.brand.primary,
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
+            style={iconButtonStyle}
+            tooltip="Log a new call with this contact"
           >
             <FaPhone size={14} />
-          </button>
+          </Button>
           
-          <button
+          <Button
             onClick={(e) => {
               e.stopPropagation();
               onAddTaskClick(contact);
             }}
-            style={{
-              width: '32px',
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: theme.colors.brand.primary,
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
+            style={iconButtonStyle}
+            tooltip="Add a new task for this contact"
           >
             <FaTasks size={14} />
-          </button>
+          </Button>
           
           <div style={{ 
             display: 'flex', 
@@ -451,26 +433,16 @@ export default function ContactCard({
           <div style={{ marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
               <h4 style={{ margin: 0 }}>Tasks</h4>
-              <button
+              <Button
                 onClick={(e) => {
                   e.stopPropagation();
                   onAddTaskClick(contact);
                 }}
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: theme.colors.brand.primary,
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
+                style={iconButtonStyle}
+                tooltip="Add a new task for this contact"
               >
                 <FaTasks size={14} />
-              </button>
+              </Button>
             </div>
             
             {isLoadingRelated ? (
@@ -505,26 +477,16 @@ export default function ContactCard({
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
               <h4 style={{ margin: 0 }}>Recent Calls</h4>
-              <button
+              <Button
                 onClick={(e) => {
                   e.stopPropagation();
                   onLogCallClick(contact);
                 }}
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: theme.colors.brand.primary,
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
+                style={iconButtonStyle}
+                tooltip="Log a new call with this contact"
               >
                 <FaPhone size={14} />
-              </button>
+              </Button>
             </div>
             
             {isLoadingRelated ? (
@@ -556,28 +518,20 @@ export default function ContactCard({
           
           {/* Delete Contact Button */}
           <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
-            <button
+             <Button
               onClick={(e) => {
                 e.stopPropagation();
                 if (window.confirm('Are you sure you want to delete this contact? This cannot be undone.')) {
                   onDeleteContact(contact.id);
                 }
               }}
-              style={{
-                backgroundColor: '#e74c3c',
-                color: 'white',
-                padding: '0.25rem 0.5rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.2rem',
-              }}
+              variant="outline" // Using outline variant for less emphasis
+              size="small"
+              style={{ color: '#e74c3c', borderColor: '#e74c3c' }} // Custom danger color
+              tooltip="Permanently delete this contact"
             >
-              <FaTrash size={12} /> Delete Contact
-            </button>
+              <FaTrash size={12} style={{ marginRight: '0.2rem' }} /> Delete Contact
+            </Button>
           </div>
         </div>
       )}

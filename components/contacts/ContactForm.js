@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Button from '../common/Button'; // Import Button
 
 export default function ContactForm({ onSubmit, initialData = {}, onCancel }) {
   const [formData, setFormData] = useState({
@@ -34,7 +35,7 @@ export default function ContactForm({ onSubmit, initialData = {}, onCancel }) {
           value={formData.name}
           onChange={handleChange}
           required
-          style={{ width: '100%', padding: '0.5rem' }}
+          style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
         />
       </div>
       
@@ -47,7 +48,7 @@ export default function ContactForm({ onSubmit, initialData = {}, onCancel }) {
           name="email"
           value={formData.email}
           onChange={handleChange}
-          style={{ width: '100%', padding: '0.5rem' }}
+          style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
         />
       </div>
       
@@ -61,7 +62,7 @@ export default function ContactForm({ onSubmit, initialData = {}, onCancel }) {
           value={formData.phone}
           onChange={handleChange}
           required
-          style={{ width: '100%', padding: '0.5rem' }}
+          style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
         />
       </div>
       
@@ -74,7 +75,7 @@ export default function ContactForm({ onSubmit, initialData = {}, onCancel }) {
           name="company"
           value={formData.company}
           onChange={handleChange}
-          style={{ width: '100%', padding: '0.5rem' }}
+          style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
         />
       </div>
       
@@ -86,42 +87,29 @@ export default function ContactForm({ onSubmit, initialData = {}, onCancel }) {
           name="notes"
           value={formData.notes}
           onChange={handleChange}
-          style={{ width: '100%', padding: '0.5rem' }}
+          style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
           rows="3"
         />
       </div>
       
-      <div style={{ display: 'flex', gap: '1rem' }}>
-        <button
-          type="submit"
-          style={{
-            backgroundColor: '#4a69bd',
-            color: 'white',
-            padding: '0.5rem 1rem',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          {initialData.id ? 'Update Contact' : 'Save Contact'}
-        </button>
-        
+      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
         {onCancel && (
-          <button
+          <Button
             type="button"
             onClick={onCancel}
-            style={{
-              backgroundColor: '#e74c3c',
-              color: 'white',
-              padding: '0.5rem 1rem',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
+            variant="outline" // Use outline for cancel
+            tooltip="Discard changes and close"
           >
             Cancel
-          </button>
+          </Button>
         )}
+        <Button
+          type="submit"
+          variant="primary" // Use primary for submit
+          tooltip={initialData.id ? 'Save changes to this contact' : 'Create this new contact'}
+        >
+          {initialData.id ? 'Update Contact' : 'Save Contact'}
+        </Button>
       </div>
     </form>
   )

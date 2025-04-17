@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ContactForm from './ContactForm';
+import Button from '../common/Button'; // Import Button
 
 export default function ContactModal({ isOpen, onClose, contact, onSubmit, mode }) {
   if (!isOpen) return null;
@@ -44,17 +45,14 @@ export default function ContactModal({ isOpen, onClose, contact, onSubmit, mode 
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h2 style={{ margin: 0 }}>{title}</h2>
-          <button
+          <Button
             onClick={onClose}
-            style={{
-              backgroundColor: 'transparent',
-              border: 'none',
-              fontSize: '1.5rem',
-              cursor: 'pointer',
-            }}
+            variant="text"
+            style={{ fontSize: '1.5rem', padding: '0.2rem' }}
+            tooltip="Close this window"
           >
             &times;
-          </button>
+          </Button>
         </div>
         
         <ContactForm 
