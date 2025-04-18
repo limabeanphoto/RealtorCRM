@@ -23,7 +23,7 @@ export default function Home() {
   return (
     <ProtectedRoute>
       <Layout>
-        <div className="page-transition">
+        <div className="page-transition" style={{ width: '100%' }}>
           <DashboardBase />
         </div>
       </Layout>

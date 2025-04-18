@@ -63,6 +63,9 @@ button:active {
 /* Smooth transitions */
 .page-transition {
   transition: opacity 0.3s ease-in-out;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 /* Card styling */
@@ -75,4 +78,26 @@ button:active {
 
 .card:hover {
   box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+}
+
+/* Grid layout for the dashboard */
+.dashboard-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Responsive grid layout */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .grid-container {
+    grid-template-columns: 1fr;
+  }
 }

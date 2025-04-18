@@ -69,6 +69,7 @@ export default function Layout({ children, customHeader }) {
         flexDirection: 'column',
         minHeight: '100vh',
         flexGrow: 1, // Ensure it takes available space
+        alignItems: 'center', // Center content horizontally
       }}>
         {/* Top Bar - Mobile Only - This should only show < 768px */}
         {isMobile && (
@@ -80,6 +81,7 @@ export default function Layout({ children, customHeader }) {
             backgroundColor: 'white',
             boxShadow: theme.shadows.sm,
             flexShrink: 0, // Prevent shrinking
+            width: '100%',
           }}>
             <h1 style={{ 
               margin: 0, 
@@ -97,6 +99,9 @@ export default function Layout({ children, customHeader }) {
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0.5rem',
+                marginLeft: '0.5rem',
               }}
             >
               <FaBars size={20} />
@@ -109,8 +114,8 @@ export default function Layout({ children, customHeader }) {
           padding: isMobile ? '1rem' : '2rem',
           flex: 1, // Allow shrinking/growing
           maxWidth: '1200px',
-          margin: '0 auto',
           width: '100%',
+          margin: '0 auto',
           overflowY: 'auto', // Allow vertical scroll within main if needed
         }}>
           {children}

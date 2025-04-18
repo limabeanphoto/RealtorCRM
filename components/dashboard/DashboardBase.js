@@ -181,16 +181,22 @@ export default function DashboardBase() {
   const isAdmin = user && user.role === 'admin';
 
   return (
-    <div className="dashboard-container" style={{ animation: 'fadeIn 0.5s ease-out' }}>
+    <div className="dashboard-container" style={{ 
+      animation: 'fadeIn 0.5s ease-out',
+      maxWidth: '1200px',
+      margin: '0 auto', 
+      padding: '0 1rem' 
+    }}>
       {/* Animated Welcome Message */}
       <AnimatedGreeting firstName={user.firstName} />
       
       {/* Metrics Cards Section */}
       <div className="metrics-container" style={{ 
-        display: 'flex', 
-        flexWrap: 'wrap', 
-        gap: '1rem', 
-        marginBottom: '2rem' 
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '1rem',
+        marginBottom: '2rem',
+        width: '100%'
       }}>
         <MetricCard
           title="Calls Today"
@@ -217,44 +223,38 @@ export default function DashboardBase() {
       
       {/* Goals Section */}
       <div className="goals-container" style={{ 
-        display: 'flex', 
-        flexWrap: 'wrap', 
-        gap: '1rem', 
-        marginBottom: '2rem' 
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '1rem',
+        marginBottom: '2rem',
+        width: '100%'
       }}>
-        <div style={{ flex: '1', minWidth: '300px' }}>
-          <GoalTracker
-            title="Daily Call Goal"
-            current={goals.callGoal.current}
-            target={goals.callGoal.target}
-            icon="calls"
-            animationDelay={0.8}
-          />
-        </div>
-        <div style={{ flex: '1', minWidth: '300px' }}>
-          <GoalTracker
-            title="Deal Conversion Goal"
-            current={goals.dealGoal.current}
-            target={goals.dealGoal.target}
-            icon="trophy"
-            animationDelay={1.0}
-          />
-        </div>
+        <GoalTracker
+          title="Daily Call Goal"
+          current={goals.callGoal.current}
+          target={goals.callGoal.target}
+          icon="calls"
+          animationDelay={0.8}
+        />
+        <GoalTracker
+          title="Deal Conversion Goal"
+          current={goals.dealGoal.current}
+          target={goals.dealGoal.target}
+          icon="trophy"
+          animationDelay={1.0}
+        />
       </div>
       
       {/* Tasks and Follow-Up Contacts */}
       <div className="action-container" style={{
-        display: 'flex',
-        flexWrap: 'wrap',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '1rem',
-        marginBottom: '2rem'
+        marginBottom: '2rem',
+        width: '100%'
       }}>
-        <div style={{ flex: '1', minWidth: '300px' }}>
-          <TasksSummary animationDelay={1.2} />
-        </div>
-        <div style={{ flex: '1', minWidth: '300px' }}>
-          <FollowUpContacts animationDelay={1.4} />
-        </div>
+        <TasksSummary animationDelay={1.2} />
+        <FollowUpContacts animationDelay={1.4} />
       </div>
       
       {/* Admin-Only Sections */}
@@ -263,7 +263,8 @@ export default function DashboardBase() {
           display: 'flex',
           flexDirection: 'column',
           gap: '1rem',
-          marginBottom: '2rem'
+          marginBottom: '2rem',
+          width: '100%'
         }}>
           <TeamLeaderboard animationDelay={1.6} />
           <AdminActions animationDelay={1.8} />

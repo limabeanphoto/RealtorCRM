@@ -71,6 +71,7 @@ export default function AdminActions({ animationDelay = 0 }) {
       opacity: isVisible ? 1 : 0,
       transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
       transition: `opacity 0.5s ease, transform 0.5s ease`,
+      width: '100%'
     }}>
       <h3 style={{ 
         margin: '0 0 1rem 0', 
@@ -84,16 +85,16 @@ export default function AdminActions({ animationDelay = 0 }) {
       </h3>
       
       <div style={{ 
-        display: 'flex',
-        flexWrap: 'wrap',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: '1rem',
+        width: '100%'
       }}>
         {actions.map((action, index) => (
           <div
             key={action.title}
             onClick={action.onClick}
             style={{
-              flex: '1 0 200px',
               backgroundColor: '#f8f9fa',
               borderRadius: theme.borderRadius.sm,
               padding: '1.25rem',
@@ -103,11 +104,16 @@ export default function AdminActions({ animationDelay = 0 }) {
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
               transitionDelay: `${(animationDelay + 0.1 + (index * 0.1))}s`,
-              ':hover': {
-                backgroundColor: '#f0f0f0',
-                transform: 'translateY(-2px)',
-                boxShadow: theme.shadows.md
-              }
+            }}
+            onMouseOver={e => {
+              e.currentTarget.style.backgroundColor = '#f0f0f0';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = theme.shadows.md;
+            }}
+            onMouseOut={e => {
+              e.currentTarget.style.backgroundColor = '#f8f9fa';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           >
             <div style={{ 
@@ -145,14 +151,6 @@ export default function AdminActions({ animationDelay = 0 }) {
           </div>
         ))}
       </div>
-      
-      <style jsx>{`
-        div[style]:hover {
-          background-color: #f0f0f0;
-          transform: translateY(-2px);
-          box-shadow: ${theme.shadows.md};
-        }
-      `}</style>
     </div>
   );
 }

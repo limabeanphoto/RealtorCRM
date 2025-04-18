@@ -41,6 +41,7 @@ export default function AnimatedGreeting({ firstName = 'Team' }) {
       opacity: animated ? 1 : 0,
       transform: animated ? 'translateY(0)' : 'translateY(20px)',
       transition: 'opacity 0.8s ease, transform 0.8s ease',
+      width: '100%'
     }}>
       <h1 style={{ 
         color: theme.colors.brand.primary,

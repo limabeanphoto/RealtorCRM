@@ -153,6 +153,8 @@ export default function TasksSummary({ animationDelay = 0 }) {
       opacity: isVisible ? 1 : 0,
       transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
       transition: `opacity 0.5s ease, transform 0.5s ease`,
+      width: '100%',
+      height: '100%'
     }}>
       <div style={{ 
         display: 'flex', 

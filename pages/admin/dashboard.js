@@ -29,7 +29,7 @@ export default function AdminDashboard() {
   return (
     <ProtectedRoute adminOnly={true}>
       <Layout>
-        <div className="page-transition">
+        <div className="page-transition" style={{ width: '100%' }}>
           <DashboardBase />
         </div>
       </Layout>
