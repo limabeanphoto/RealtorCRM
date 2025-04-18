@@ -204,29 +204,12 @@ export default function AdminDashboard() {
         padding: '20px',
         marginBottom: '20px',
       }}>
-        <h3 style={{ margin: '0 0 1rem 0' }}>Admin Actions</h3>
+        <h3 style={{ margin: '0 0 1rem 0' }}>Contact Management</h3>
         <div style={{
           display: 'flex',
           gap: '1rem',
           flexWrap: 'wrap',
         }}>
-           {/* Replace with Button component */}
-          <Button
-            onClick={() => router.push('/admin/users/new')}
-            size="large" // Use size prop for larger button
-            tooltip="Navigate to the page for creating a new user"
-          >
-            Add New User
-          </Button>
-           {/* Replace with Button component */}
-          <Button
-            onClick={() => router.push('/admin/contacts/import')}
-            size="large"
-            tooltip="Import contacts from a CSV file"
-          >
-            Import Contacts
-          </Button>
-           {/* Replace with Button component */}
           <Button
             onClick={() => router.push('/admin/contacts/assign')}
             size="large"
@@ -234,13 +217,21 @@ export default function AdminDashboard() {
           >
             Assign Contacts
           </Button>
-           {/* Replace with Button component */}
+          
           <Button
-            onClick={() => router.push('/admin/analytics')}
+            onClick={() => router.push('/admin/contacts?status=Open')}
             size="large"
-            tooltip="View detailed team performance analytics"
+            tooltip="View unassigned contacts"
           >
-            Team Analytics
+            View Open Contacts
+          </Button>
+          
+          <Button
+            onClick={() => router.push('/admin/contacts/import')}
+            size="large"
+            tooltip="Import contacts from a CSV file"
+          >
+            Import Contacts
           </Button>
         </div>
       </div>

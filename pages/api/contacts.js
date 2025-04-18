@@ -9,31 +9,38 @@ async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       // Get query parameters for filtering
-      const { status, assignedTo } = req.query
+      const { status, assignedTo, lastCallOutcome } = req.query
       
       // Build query conditions based on user role
       const where = {}
       
       if (req.user.role === 'member') {
-        // Members can only see open contacts or contacts assigned to them
+        // Members can only see:
+        // 1. Open contacts
+        // 2. Contacts assigned to them (both Active and Closed)
         where.OR = [
           { status: 'Open' },
           { assignedTo: req.user.id }
         ]
       }
       
-      // Add additional filters if provided - FIXED logic
+      // Add additional filters if provided
       if (status) {
         if (where.OR) {
-          // If we have OR conditions, we need to refine them based on status
-          if (status === 'Open') {
-            // Keep only the Open condition
-            where.OR = where.OR.filter(condition => condition.status === 'Open')
-          } else if (status === 'Assigned') {
-            // Keep only the assigned condition
-            where.OR = where.OR.filter(condition => condition.assignedTo)
+          // For regular users, we need to maintain their visibility restrictions
+          // while applying the status filter
+          if (req.user.role === 'member') {
+            // If filtering by Open, keep only the Open condition
+            if (status === 'Open') {
+              where.OR = where.OR.filter(condition => condition.status === 'Open')
+            } 
+            // If filtering by Active or Closed, make sure it's only for their assigned contacts
+            else {
+              where.OR = where.OR.filter(condition => condition.assignedTo === req.user.id)
+              where.status = status
+            }
           } else {
-            // For other statuses, replace OR with direct status filter
+            // For admins, just apply the status filter directly
             delete where.OR
             where.status = status
           }
@@ -41,6 +48,11 @@ async function handler(req, res) {
           // If no OR conditions, just set the status directly
           where.status = status
         }
+      }
+      
+      // Filter by lastCallOutcome if provided
+      if (lastCallOutcome) {
+        where.lastCallOutcome = lastCallOutcome
       }
       
       if (assignedTo) {
@@ -128,7 +140,7 @@ async function handler(req, res) {
           phone,
           company: company || null,
           notes: notes || null,
-          status: status || 'Open',
+          status: status || 'Open', // Default to Open
           assignedTo: null // New contacts start unassigned
         }
       })

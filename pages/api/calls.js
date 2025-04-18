@@ -1,4 +1,4 @@
-// pages/api/calls.js (complete file)
+// pages/api/calls.js
 import { PrismaClient } from '@prisma/client'
 import withAuth from '../../utils/withAuth'
 
@@ -76,6 +76,18 @@ async function handler(req, res) {
         return res.status(404).json({ success: false, message: 'Contact not found' })
       }
       
+      // Determine new contact status based on call outcome
+      let newStatus = contact.status
+      
+      // If contact is Open, it becomes Active when called
+      if (contact.status === 'Open') {
+        newStatus = 'Active'
+      } 
+      // If outcome is Not Interested or Deal Closed, status becomes Closed
+      else if (outcome === 'Not Interested' || outcome === 'Deal Closed') {
+        newStatus = 'Closed'
+      }
+      
       // Begin transaction to create call and update contact status
       const [newCall, updatedContact] = await prisma.$transaction([
         // Create call
@@ -115,7 +127,8 @@ async function handler(req, res) {
           data: {
             lastCallOutcome: outcome,
             lastCallDate: new Date(),
-            status: contact.status === 'Open' ? 'Assigned' : contact.status,
+            status: newStatus,
+            // If contact was Open, assign it to the current user
             assignedTo: contact.status === 'Open' ? req.user.id : contact.assignedTo
           }
         })

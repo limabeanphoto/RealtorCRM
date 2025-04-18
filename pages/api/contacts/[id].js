@@ -1,3 +1,4 @@
+// pages/api/contacts/[id].js
 import { PrismaClient } from '@prisma/client'
 import withAuth from '../../../utils/withAuth'
 
@@ -14,11 +15,31 @@ async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const contact = await prisma.contact.findUnique({
-        where: { id }
+        where: { id },
+        include: {
+          assignedToUser: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          }
+        }
       })
       
       if (!contact) {
         return res.status(404).json({ success: false, message: 'Contact not found' })
+      }
+      
+      // Check if user has permission to view this contact
+      if (req.user.role !== 'admin' && 
+          contact.status !== 'Open' && 
+          contact.assignedTo !== req.user.id) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'You do not have permission to view this contact' 
+        })
       }
       
       return res.status(200).json({ success: true, data: contact })
@@ -47,6 +68,16 @@ async function handler(req, res) {
         return res.status(404).json({ success: false, message: 'Contact not found' })
       }
       
+      // Check if user has permission to update this contact
+      if (req.user.role !== 'admin' && 
+          existingContact.status !== 'Open' && 
+          existingContact.assignedTo !== req.user.id) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'You do not have permission to update this contact' 
+        })
+      }
+      
       // Update contact
       const updatedContact = await prisma.contact.update({
         where: { id },
@@ -56,6 +87,16 @@ async function handler(req, res) {
           phone,
           company: company || null,
           notes: notes || null
+        },
+        include: {
+          assignedToUser: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          }
         }
       })
       
@@ -76,6 +117,14 @@ async function handler(req, res) {
       
       if (!existingContact) {
         return res.status(404).json({ success: false, message: 'Contact not found' })
+      }
+      
+      // Only admins can delete contacts
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'Only administrators can delete contacts' 
+        })
       }
       
       // Delete contact

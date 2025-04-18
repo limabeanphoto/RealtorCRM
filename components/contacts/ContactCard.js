@@ -1,10 +1,10 @@
 // components/contacts/ContactCard.js
 import { useState, useEffect, useRef } from 'react';
-import { FaCheck, FaPhone, FaEdit, FaEnvelope, FaBuilding, FaAngleDown, FaAngleUp, FaTasks, FaHistory, FaTrash } from 'react-icons/fa';
+import { FaCheck, FaPhone, FaEdit, FaEnvelope, FaBuilding, FaAngleDown, FaAngleUp, FaTasks, FaHistory, FaTrash, FaUserEdit } from 'react-icons/fa';
 import theme from '../../styles/theme';
 import MiniTaskCard from '../tasks/MiniTaskCard';
 import MiniCallCard from '../calls/MiniCallCard';
-import Button from '../common/Button'; // Import Button
+import Button from '../common/Button';
 
 export default function ContactCard({ 
   contact, 
@@ -14,13 +14,15 @@ export default function ContactCard({
   onDeleteContact,
   onEditTask,
   onTaskStatusChange,
-  onContactUpdate // New prop for handling contact updates
+  onContactUpdate,
+  currentUser,
+  onReassignClick // New prop for admin reassignment
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [calls, setCalls] = useState([]);
   const [isLoadingRelated, setIsLoadingRelated] = useState(false);
-  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false); // New state for status dropdown
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false); // State for status dropdown
   const dropdownRef = useRef(null);
   
   // Toggle expanded state
@@ -74,15 +76,13 @@ export default function ContactCard({
     }
   };
   
-  // Handle status update - fixed to properly call API
+  // Handle status update
   const handleStatusUpdate = async (newStatus, e) => {
     // Prevent the event from bubbling up
     if (e) {
       e.stopPropagation();
       e.preventDefault();
     }
-    
-    console.log("Updating status to:", newStatus);
     
     try {
       const token = localStorage.getItem('token');
@@ -98,11 +98,11 @@ export default function ContactCard({
       const data = await response.json();
       
       if (data.success) {
-        console.log("Status updated successfully");
         // Update the local contact data first
         const updatedContact = {
           ...contact,
-          lastCallOutcome: newStatus
+          lastCallOutcome: newStatus,
+          status: data.data.status
         };
         
         // Update the contact in parent component
@@ -139,11 +139,18 @@ export default function ContactCard({
     }
   };
   
-  // Get assigned status badge style (for admin view)
+  // Get assigned status badge style
   const getAssignedStyle = (status) => {
-    return status === 'Open' 
-      ? { backgroundColor: '#78e08f', color: 'white' }
-      : { backgroundColor: '#4a69bd', color: 'white' };
+    switch (status) {
+      case 'Open':
+        return { backgroundColor: '#78e08f', color: 'white' };
+      case 'Active':
+        return { backgroundColor: '#4a69bd', color: 'white' };
+      case 'Closed':
+        return { backgroundColor: '#e74c3c', color: 'white' };
+      default:
+        return { backgroundColor: '#e2e3e5', color: '#383d41' };
+    }
   };
   
   // Get call outcome badge style
@@ -206,6 +213,28 @@ export default function ContactCard({
     minWidth: '32px' // Ensure minimum width for flex item
   };
 
+  // Helper to display assignment information
+  const getAssignmentInfo = () => {
+    const isAdmin = currentUser && currentUser.role === 'admin';
+    
+    if (contact.status === 'Open') {
+      return 'Open to claim';
+    } else if (contact.assignedToUser) {
+      // For admins, show who is assigned to the contact
+      if (isAdmin) {
+        return `Assigned to: ${contact.assignedToUser.firstName} ${contact.assignedToUser.lastName}`;
+      } 
+      // For the assigned user, show "Assigned to you"
+      else if (currentUser && contact.assignedTo === currentUser.id) {
+        return 'Assigned to you';
+      }
+      // Fallback
+      return 'Assigned';
+    }
+    
+    return 'Unassigned';
+  };
+
   return (
     <div style={{ 
       border: '1px solid #e2e8f0', 
@@ -241,20 +270,6 @@ export default function ContactCard({
             
             {/* Status badges */}
             <div style={{ display: 'flex', gap: '0.3rem', position: 'relative' }}>
-              {/* Assignment status badge */}
-              {contact.status && (
-                <span style={{
-                  display: 'inline-block',
-                  padding: '0.2rem 0.5rem',
-                  borderRadius: '4px',
-                  fontSize: '0.8rem',
-                  ...getAssignedStyle(contact.status)
-                }}>
-                  {contact.status}
-                  {contact.assignedToUser && ` (${contact.assignedToUser.firstName})`}
-                </span>
-              )}
-              
               {/* Last call outcome badge with dropdown */}
               {contact.lastCallOutcome && (
                 <div style={{ position: 'relative' }} ref={dropdownRef}>
@@ -397,6 +412,20 @@ export default function ContactCard({
             <FaTasks size={14} />
           </Button>
           
+          {/* Admin-only reassign button */}
+          {onReassignClick && (
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                onReassignClick(contact);
+              }}
+              style={iconButtonStyle}
+              tooltip="Reassign this contact to another team member"
+            >
+              <FaUserEdit size={14} />
+            </Button>
+          )}
+          
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -411,6 +440,36 @@ export default function ContactCard({
       {/* Card Expanded Content */}
       {isExpanded && (
         <div style={{ padding: '1rem', backgroundColor: '#f9f9f9' }}>
+          {/* Assignment Status Section (shown only in expanded view) */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <div style={{ 
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '0.75rem',
+              backgroundColor: 'white',
+              borderRadius: theme.borderRadius.sm,
+              border: '1px solid #eee'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{
+                  display: 'inline-block',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '4px',
+                  fontSize: '0.8rem',
+                  ...getAssignedStyle(contact.status)
+                }}>
+                  {contact.status}
+                </span>
+                <span style={{ fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                  {getAssignmentInfo()}
+                </span>
+              </div>
+              
+              {/* Admin-only reassignment options would go here */}
+            </div>
+          </div>
+          
           {/* Notes Section */}
           {contact.notes && (
             <div style={{ marginBottom: '1.5rem' }}>

@@ -33,12 +33,41 @@ async function handler(req, res) {
         return res.status(404).json({ success: false, message: 'Contact not found' })
       }
       
+      // For non-admin users, verify they are assigned to this contact
+      if (req.user.role !== 'admin' && existingContact.assignedTo !== req.user.id) {
+        return res.status(403).json({ 
+          success: false, 
+          message: 'You do not have permission to update this contact'
+        })
+      }
+      
+      // Update data object with outcome status
+      const updateData = {
+        lastCallOutcome
+      }
+
+      // Set assignment status based on call outcome
+      if (lastCallOutcome === 'Not Interested' || lastCallOutcome === 'Deal Closed') {
+        // Change assignment status to Closed
+        updateData.status = 'Closed'
+        // Keep the existing assignedTo (maintain ownership)
+      } else if (lastCallOutcome === 'Follow Up' || lastCallOutcome === 'No Answer') {
+        // If contact is in Closed status, bring it back to Active
+        if (existingContact.status === 'Closed') {
+          updateData.status = 'Active'
+        }
+        // If it's Open, and a user is updating it, assign it to them
+        else if (existingContact.status === 'Open') {
+          updateData.status = 'Active'
+          updateData.assignedTo = req.user.id
+        }
+        // If it's already Active, maintain that status and assignment
+      }
+      
       // Update contact status
       const updatedContact = await prisma.contact.update({
         where: { id },
-        data: {
-          lastCallOutcome
-        },
+        data: updateData,
         include: {
           assignedToUser: {
             select: {

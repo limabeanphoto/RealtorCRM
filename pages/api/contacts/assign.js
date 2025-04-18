@@ -11,7 +11,7 @@ async function handler(req, res) {
   }
   
   try {
-    const { contactId, userId } = req.body
+    const { contactId, userId, newStatus } = req.body
     
     // Validate required fields
     if (!contactId) {
@@ -27,32 +27,21 @@ async function handler(req, res) {
       return res.status(404).json({ success: false, message: 'Contact not found' })
     }
     
-    // If userId is null, we're unassigning the contact
+    // Only admins can reassign contacts
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Only administrators can assign contacts' })
+    }
+    
+    const updateData = {}
+    
+    // Handle unassignment - set contact back to Open status
     if (userId === null) {
-      // Only admins can unassign contacts
-      if (req.user.role !== 'admin') {
-        return res.status(403).json({ success: false, message: 'Unauthorized. Admin access required to unassign contacts.' })
-      }
-      
-      // Unassign contact and set status to Open
-      const updatedContact = await prisma.contact.update({
-        where: { id: contactId },
-        data: {
-          assignedTo: null,
-          status: 'Open'
-        }
-      })
-      
-      return res.status(200).json({ success: true, data: updatedContact })
-    }
-    
-    // If contact is already assigned, only admins can reassign
-    if (contact.assignedTo && contact.assignedTo !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Unauthorized. Only admins can reassign contacts.' })
-    }
-    
-    // Check if the user exists
-    if (userId) {
+      updateData.assignedTo = null
+      updateData.status = newStatus || 'Open' // Default to Open if newStatus not provided
+    } 
+    // Handle assignment to a specific user
+    else {
+      // Check if the user exists
       const userExists = await prisma.user.findUnique({
         where: { id: userId }
       })
@@ -60,14 +49,26 @@ async function handler(req, res) {
       if (!userExists) {
         return res.status(404).json({ success: false, message: 'User not found' })
       }
+      
+      updateData.assignedTo = userId
+      
+      // If a new status is specified, use it, otherwise set status to Active
+      updateData.status = newStatus || 'Active'
     }
     
     // Update contact assignment
     const updatedContact = await prisma.contact.update({
       where: { id: contactId },
-      data: {
-        assignedTo: userId,
-        status: 'Assigned'
+      data: updateData,
+      include: {
+        assignedToUser: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        }
       }
     })
     

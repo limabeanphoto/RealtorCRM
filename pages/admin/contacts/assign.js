@@ -1,97 +1,100 @@
 // pages/admin/contacts/assign.js
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/router'
-import ProtectedRoute from '../../../components/auth/ProtectedRoute'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import ProtectedRoute from '../../../components/auth/ProtectedRoute';
+import Button from '../../../components/common/Button';
+import theme from '../../../styles/theme';
 
-export default function AssignContacts() {
-  const router = useRouter()
-  const [contacts, setContacts] = useState([])
-  const [users, setUsers] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [selectedUser, setSelectedUser] = useState('')
-  const [selectedContacts, setSelectedContacts] = useState([])
-  const [assignLoading, setAssignLoading] = useState(false)
+export default function BulkAssignContacts() {
+  const router = useRouter();
+  const [contacts, setContacts] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedUser, setSelectedUser] = useState('');
+  const [selectedContacts, setSelectedContacts] = useState([]);
+  const [assignLoading, setAssignLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('Open'); // Default to Open contacts
   
   useEffect(() => {
     // Fetch contacts and users
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem('token');
         
-        // Fetch open contacts
-        const contactsResponse = await fetch('/api/contacts?status=Open', {
+        // Fetch contacts based on status filter
+        const contactsResponse = await fetch(`/api/contacts?status=${statusFilter}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
-        })
-        const contactsData = await contactsResponse.json()
+        });
+        const contactsData = await contactsResponse.json();
         
         // Fetch users (members only)
         const usersResponse = await fetch('/api/users', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
-        })
-        const usersData = await usersResponse.json()
+        });
+        const usersData = await usersResponse.json();
         
         if (contactsData.success) {
-          setContacts(contactsData.data)
+          setContacts(contactsData.data);
         } else {
-          setError('Error fetching contacts: ' + (contactsData.message || 'Unknown error'))
+          setError('Error fetching contacts: ' + (contactsData.message || 'Unknown error'));
         }
         
         if (usersData.success) {
           // Filter for member users
-          const memberUsers = usersData.data.filter(user => user.role === 'member')
-          setUsers(memberUsers)
+          const memberUsers = usersData.data.filter(user => user.role === 'member');
+          setUsers(memberUsers);
         } else {
-          setError('Error fetching users: ' + (usersData.message || 'Unknown error'))
+          setError('Error fetching users: ' + (usersData.message || 'Unknown error'));
         }
         
-        setLoading(false)
+        setLoading(false);
       } catch (error) {
-        console.error('Error fetching data:', error)
-        setError('An error occurred while fetching data: ' + (error.message || 'Unknown error'))
-        setLoading(false)
+        console.error('Error fetching data:', error);
+        setError('An error occurred while fetching data: ' + (error.message || 'Unknown error'));
+        setLoading(false);
       }
-    }
+    };
     
-    fetchData()
-  }, [])
+    fetchData();
+  }, [statusFilter]); // Re-fetch when status filter changes
   
   const handleSelectAllContacts = (e) => {
     if (e.target.checked) {
-      setSelectedContacts(contacts.map(contact => contact.id))
+      setSelectedContacts(contacts.map(contact => contact.id));
     } else {
-      setSelectedContacts([])
+      setSelectedContacts([]);
     }
-  }
+  };
   
   const handleSelectContact = (contactId) => {
     if (selectedContacts.includes(contactId)) {
-      setSelectedContacts(selectedContacts.filter(id => id !== contactId))
+      setSelectedContacts(selectedContacts.filter(id => id !== contactId));
     } else {
-      setSelectedContacts([...selectedContacts, contactId])
+      setSelectedContacts([...selectedContacts, contactId]);
     }
-  }
+  };
   
   const handleAssignContacts = async () => {
     if (!selectedUser) {
-      alert('Please select a user to assign contacts to')
-      return
+      alert('Please select a user to assign contacts to');
+      return;
     }
     
     if (selectedContacts.length === 0) {
-      alert('Please select at least one contact to assign')
-      return
+      alert('Please select at least one contact to assign');
+      return;
     }
     
-    setAssignLoading(true)
-    setError('')
+    setAssignLoading(true);
+    setError('');
     
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('token');
       
       // Assign each selected contact to the selected user
       const assignPromises = selectedContacts.map(contactId => 
@@ -103,53 +106,53 @@ export default function AssignContacts() {
           },
           body: JSON.stringify({
             contactId,
-            userId: selectedUser
+            userId: selectedUser,
+            newStatus: 'Active' // Ensure status is set to Active
           })
         })
-      )
+      );
       
       // Wait for all assignments to complete
-      const responses = await Promise.all(assignPromises)
+      const responses = await Promise.all(assignPromises);
       
       // Check for errors
-      const errorResponses = responses.filter(response => !response.ok)
+      const errorResponses = responses.filter(response => !response.ok);
       
       if (errorResponses.length > 0) {
-        setError(`Failed to assign ${errorResponses.length} contacts`)
+        setError(`Failed to assign ${errorResponses.length} contacts`);
       } else {
-        // Redirect to contacts page
-        router.push('/admin/contacts?status=Assigned')
+        // Update the UI to remove assigned contacts
+        setContacts(contacts.filter(contact => !selectedContacts.includes(contact.id)));
+        setSelectedContacts([]);
+        
+        // Show success message
+        alert(`Successfully assigned ${selectedContacts.length} contacts`);
       }
     } catch (error) {
-      console.error('Error assigning contacts:', error)
-      setError('An error occurred while assigning contacts: ' + (error.message || 'Unknown error'))
+      console.error('Error assigning contacts:', error);
+      setError('An error occurred while assigning contacts: ' + (error.message || 'Unknown error'));
     } finally {
-      setAssignLoading(false)
+      setAssignLoading(false);
     }
-  }
+  };
   
   return (
     <ProtectedRoute adminOnly={true}>
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <h1>Assign Contacts</h1>
-          <button
+          <Button
             onClick={() => router.push('/admin/contacts')}
-            style={{
-              backgroundColor: '#6c757d',
-              color: 'white',
-              padding: '0.5rem 1rem',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
+            variant="outline"
           >
             Back to Contacts
-          </button>
+          </Button>
         </div>
         
         {loading ? (
-          <p>Loading data...</p>
+          <div style={{ textAlign: 'center', padding: '2rem' }}>
+            <p>Loading data...</p>
+          </div>
         ) : (
           <div>
             {error && (
@@ -164,9 +167,46 @@ export default function AssignContacts() {
               </div>
             )}
             
-            {/* Added: User Selection Section */}
-            <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '1.5rem', marginBottom: '1.5rem' }}>
-              <h2>1. Select User to Assign Contacts</h2>
+            {/* Status Filter */}
+            <div style={{ 
+              backgroundColor: 'white', 
+              borderRadius: '8px', 
+              boxShadow: theme.shadows.sm, 
+              padding: '1.5rem', 
+              marginBottom: '1.5rem' 
+            }}>
+              <h2 style={{ marginTop: 0 }}>1. Select Contact Status</h2>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <Button
+                  onClick={() => setStatusFilter('Open')}
+                  variant={statusFilter === 'Open' ? 'primary' : 'outline'}
+                >
+                  Open Contacts
+                </Button>
+                <Button
+                  onClick={() => setStatusFilter('Active')}
+                  variant={statusFilter === 'Active' ? 'primary' : 'outline'}
+                >
+                  Active Contacts
+                </Button>
+                <Button
+                  onClick={() => setStatusFilter('Closed')}
+                  variant={statusFilter === 'Closed' ? 'primary' : 'outline'}
+                >
+                  Closed Contacts
+                </Button>
+              </div>
+            </div>
+            
+            {/* User Selection */}
+            <div style={{ 
+              backgroundColor: 'white', 
+              borderRadius: '8px', 
+              boxShadow: theme.shadows.sm, 
+              padding: '1.5rem', 
+              marginBottom: '1.5rem' 
+            }}>
+              <h2 style={{ marginTop: 0 }}>2. Select Team Member to Assign</h2>
               
               {users.length === 0 ? (
                 <p>No team members available for assignment</p>
@@ -174,7 +214,12 @@ export default function AssignContacts() {
                 <select
                   value={selectedUser}
                   onChange={(e) => setSelectedUser(e.target.value)}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #ddd' }}
+                  style={{ 
+                    width: '100%', 
+                    padding: '0.75rem', 
+                    borderRadius: '4px', 
+                    border: '1px solid #ddd' 
+                  }}
                 >
                   <option value="">-- Select a team member --</option>
                   {users.map(user => (
@@ -186,17 +231,25 @@ export default function AssignContacts() {
               )}
             </div>
             
-            <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '1.5rem', marginBottom: '1.5rem' }}>
+            {/* Contact Selection */}
+            <div style={{ 
+              backgroundColor: 'white', 
+              borderRadius: '8px', 
+              boxShadow: theme.shadows.sm, 
+              padding: '1.5rem', 
+              marginBottom: '1.5rem' 
+            }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h2>2. Select Contacts to Assign</h2>
+                <h2 style={{ margin: 0 }}>3. Select Contacts to Assign</h2>
                 
                 <div>
                   <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
                     <input
                       type="checkbox"
-                      checked={selectedContacts.length === contacts.length}
+                      checked={selectedContacts.length === contacts.length && contacts.length > 0}
                       onChange={handleSelectAllContacts}
                       style={{ marginRight: '0.5rem' }}
+                      disabled={contacts.length === 0}
                     />
                     Select All ({contacts.length})
                   </label>
@@ -204,7 +257,7 @@ export default function AssignContacts() {
               </div>
               
               {contacts.length === 0 ? (
-                <p>No open contacts available to assign</p>
+                <p>No {statusFilter.toLowerCase()} contacts available to assign</p>
               ) : (
                 <div style={{ marginBottom: '1rem' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -215,6 +268,7 @@ export default function AssignContacts() {
                         <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Company</th>
                         <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Phone</th>
                         <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Email</th>
+                        <th style={{ textAlign: 'left', padding: '0.75rem', borderBottom: '1px solid #ddd' }}>Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -239,6 +293,20 @@ export default function AssignContacts() {
                           <td style={{ padding: '0.75rem', borderBottom: '1px solid #ddd' }}>
                             {contact.email || '-'}
                           </td>
+                          <td style={{ padding: '0.75rem', borderBottom: '1px solid #ddd' }}>
+                            <span style={{
+                              display: 'inline-block',
+                              padding: '0.25rem 0.5rem',
+                              borderRadius: '4px',
+                              fontSize: '0.8rem',
+                              backgroundColor: contact.status === 'Open' ? '#78e08f' : 
+                                              contact.status === 'Active' ? '#4a69bd' : 
+                                              contact.status === 'Closed' ? '#e74c3c' : '#e2e3e5',
+                              color: 'white'
+                            }}>
+                              {contact.status}
+                            </span>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -253,31 +321,29 @@ export default function AssignContacts() {
               </div>
             </div>
             
-            <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.12)', padding: '1.5rem' }}>
-              <h2>3. Assign Contacts</h2>
+            {/* Assignment Action */}
+            <div style={{ 
+              backgroundColor: 'white', 
+              borderRadius: '8px', 
+              boxShadow: theme.shadows.sm, 
+              padding: '1.5rem' 
+            }}>
+              <h2 style={{ marginTop: 0 }}>4. Assign Contacts</h2>
               
               <div style={{ marginTop: '1rem' }}>
-                <button
+                <Button
                   onClick={handleAssignContacts}
+                  variant="primary"
                   disabled={!selectedUser || selectedContacts.length === 0 || assignLoading}
-                  style={{
-                    backgroundColor: '#4a69bd',
-                    color: 'white',
-                    padding: '0.75rem 1.5rem',
-                    border: 'none',
-                    borderRadius: '4px',
-                    fontSize: '1rem',
-                    cursor: (!selectedUser || selectedContacts.length === 0 || assignLoading) ? 'not-allowed' : 'pointer',
-                    opacity: (!selectedUser || selectedContacts.length === 0 || assignLoading) ? 0.7 : 1
-                  }}
+                  style={{ minWidth: '200px' }}
                 >
-                  {assignLoading ? 'Assigning...' : `Assign ${selectedContacts.length} Contacts to Selected User`}
-                </button>
+                  {assignLoading ? 'Assigning...' : `Assign ${selectedContacts.length} Contacts`}
+                </Button>
               </div>
             </div>
           </div>
         )}
       </div>
     </ProtectedRoute>
-  )
+  );
 }
