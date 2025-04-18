@@ -183,8 +183,8 @@ export default function DashboardBase() {
   return (
     <div style={{ 
       animation: 'fadeIn 0.5s ease-out',
-      width: '100%', // Changed from maxWidth:1200px to width:100%
-      padding: '0' // Removed horizontal padding
+      width: '100%', // Full width to fill the parent container
+      padding: '0', // No horizontal padding to prevent overflow
     }}>
       {/* Animated Welcome Message */}
       <AnimatedGreeting firstName={user.firstName} />

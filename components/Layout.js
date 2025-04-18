@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import theme from '../styles/theme';
 import Sidebar from './common/Sidebar';
-import { FaBars } from 'react-icons/fa'; // Added import for FaBars icon
+import { FaBars } from 'react-icons/fa';
 
 export default function Layout({ children, customHeader }) {
   const router = useRouter();
@@ -61,7 +61,7 @@ export default function Layout({ children, customHeader }) {
         <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
       </div>
       
-      {/* Main Content - With left margin based on sidebar state */}
+      {/* Main Content Container - With left margin based on sidebar state */}
       <div style={{ 
         marginLeft: isSidebarCollapsed ? '70px' : '240px',
         width: 'calc(100% - ' + (isSidebarCollapsed ? '70px' : '240px') + ')',
@@ -70,7 +70,6 @@ export default function Layout({ children, customHeader }) {
         flexDirection: 'column',
         minHeight: '100vh',
         flexGrow: 1, // Ensure it takes available space
-        alignItems: 'center', // Center content horizontally
       }}>
         {/* Top Bar - Mobile Only - This should only show < 768px */}
         {isMobile && (
@@ -110,19 +109,26 @@ export default function Layout({ children, customHeader }) {
           </div>
         )}
         
-        {/* Main Content Area */}
-        <main style={{ 
-          padding: isMobile ? '1rem' : '2rem',
-          flex: 1, // Allow shrinking/growing
-          maxWidth: '1200px', // Keep this as the single source of max-width
+        {/* Main Content Wrapper - Centers the content horizontally */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center', // Center content horizontally
           width: '100%',
-          margin: '0 auto',
-          overflowY: 'auto', // Allow vertical scroll within main if needed
+          flex: 1,
         }}>
-          {children}
-        </main>
-        
-        {/* Footer */}
+          {/* Main Content Area */}
+          <main style={{ 
+            padding: isMobile ? '1rem' : '2rem',
+            flex: 1,
+            maxWidth: '1200px', // Single source of max-width
+            width: '100%',
+            margin: '0 auto', // Center horizontally
+            overflowY: 'auto', // Allow vertical scroll within main if needed
+          }}>
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );
