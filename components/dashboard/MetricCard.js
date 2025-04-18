@@ -43,7 +43,7 @@ export default function MetricCard({
     <div style={{
       flex: '1',
       minWidth: '200px',
-      width: '100%',
+      width: '100%', // Ensure full width
       backgroundColor: 'white',
       borderRadius: theme.borderRadius.md,
       boxShadow: theme.shadows.sm,

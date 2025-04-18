@@ -181,17 +181,16 @@ export default function DashboardBase() {
   const isAdmin = user && user.role === 'admin';
 
   return (
-    <div className="dashboard-container" style={{ 
+    <div style={{ 
       animation: 'fadeIn 0.5s ease-out',
-      maxWidth: '1200px',
-      margin: '0 auto', 
-      padding: '0 1rem' 
+      width: '100%', // Changed from maxWidth:1200px to width:100%
+      padding: '0' // Removed horizontal padding
     }}>
       {/* Animated Welcome Message */}
       <AnimatedGreeting firstName={user.firstName} />
       
       {/* Metrics Cards Section */}
-      <div className="metrics-container" style={{ 
+      <div style={{ 
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '1rem',
@@ -222,7 +221,7 @@ export default function DashboardBase() {
       </div>
       
       {/* Goals Section */}
-      <div className="goals-container" style={{ 
+      <div style={{ 
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '1rem',
@@ -246,7 +245,7 @@ export default function DashboardBase() {
       </div>
       
       {/* Tasks and Follow-Up Contacts */}
-      <div className="action-container" style={{
+      <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '1rem',
@@ -259,7 +258,7 @@ export default function DashboardBase() {
       
       {/* Admin-Only Sections */}
       {isAdmin && (
-        <div className="admin-container" style={{
+        <div style={{
           display: 'flex',
           flexDirection: 'column',
           gap: '1rem',

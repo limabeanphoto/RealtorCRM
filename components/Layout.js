@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import theme from '../styles/theme';
 import Sidebar from './common/Sidebar';
+import { FaBars } from 'react-icons/fa'; // Added import for FaBars icon
 
 export default function Layout({ children, customHeader }) {
   const router = useRouter();
@@ -113,7 +114,7 @@ export default function Layout({ children, customHeader }) {
         <main style={{ 
           padding: isMobile ? '1rem' : '2rem',
           flex: 1, // Allow shrinking/growing
-          maxWidth: '1200px',
+          maxWidth: '1200px', // Keep this as the single source of max-width
           width: '100%',
           margin: '0 auto',
           overflowY: 'auto', // Allow vertical scroll within main if needed

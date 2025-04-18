@@ -66,8 +66,8 @@ export default function GoalTracker({
       transition: `opacity 0.5s ease, transform 0.5s ease`,
       position: 'relative',
       overflow: 'hidden',
-      width: '100%',
-      height: '100%'
+      width: '100%', // Ensure full width
+      height: '100%' // Maintain consistent height
     }}>
       {/* Celebration Overlay - Only shows when goal is met */}
       {showCelebration && percentage >= 100 && (
