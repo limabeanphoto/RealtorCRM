@@ -1,5 +1,5 @@
 // components/common/Sidebar.js
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import theme from '../../styles/theme';
