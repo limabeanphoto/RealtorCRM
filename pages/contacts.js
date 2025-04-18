@@ -26,9 +26,8 @@ export default function Contacts() {
   const [selectedCall, setSelectedCall] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   
-  // Filtering state
-  const [statusFilter, setStatusFilter] = useState('all'); // all, open, active, closed
-  const [outcomeFilter, setOutcomeFilter] = useState('all'); // all, followUp, noAnswer, dealClosed, notInterested
+  // Filtering state - simplified to match Tasks page
+  const [filter, setFilter] = useState('all'); // all, followUp, noAnswer, dealClosed, notInterested
   const [searchTerm, setSearchTerm] = useState('');
   
   // Get user from localStorage
@@ -40,7 +39,7 @@ export default function Contacts() {
   // Fetch contacts based on filters
   useEffect(() => {
     fetchContacts();
-  }, [statusFilter, outcomeFilter]); // Re-fetch when filters change
+  }, [filter]); // Re-fetch when filters change
 
   const fetchContacts = async () => {
     try {
@@ -51,13 +50,8 @@ export default function Contacts() {
       let url = '/api/contacts';
       const params = [];
       
-      // Add status filter if not "all"
-      if (statusFilter !== 'all') {
-        params.push(`status=${statusFilter}`);
-      }
-      
       // Add outcome filter if not "all"
-      if (outcomeFilter !== 'all') {
+      if (filter !== 'all') {
         // Map filter values to actual outcome strings
         const outcomeMap = {
           followUp: 'Follow Up',
@@ -66,8 +60,8 @@ export default function Contacts() {
           notInterested: 'Not Interested'
         };
         
-        if (outcomeMap[outcomeFilter]) {
-          params.push(`lastCallOutcome=${encodeURIComponent(outcomeMap[outcomeFilter])}`);
+        if (outcomeMap[filter]) {
+          params.push(`lastCallOutcome=${encodeURIComponent(outcomeMap[filter])}`);
         }
       }
       
@@ -148,14 +142,8 @@ export default function Contacts() {
         const forceData = await forceResponse.json();
         
         if (forceData.success) {
-          // Add the new contact to the list if it matches current filters
-          const shouldAdd = 
-            statusFilter === 'all' || 
-            statusFilter === forceData.data.status;
-          
-          if (shouldAdd) {
-            setContacts([forceData.data, ...contacts]);
-          }
+          // Add the new contact to the list
+          setContacts([forceData.data, ...contacts]);
           return { success: true, data: forceData.data };
         } else {
           alert('Error creating contact: ' + forceData.message);
@@ -164,14 +152,8 @@ export default function Contacts() {
       }
       
       if (data.success) {
-        // Add the new contact to the list if it matches current filters
-        const shouldAdd = 
-          statusFilter === 'all' || 
-          statusFilter === data.data.status;
-        
-        if (shouldAdd) {
-          setContacts([data.data, ...contacts]);
-        }
+        // Add the new contact to the list
+        setContacts([data.data, ...contacts]);
         return { success: true, data: data.data };
       } else {
         alert('Error creating contact: ' + data.message);
@@ -437,21 +419,14 @@ export default function Contacts() {
     return initialData;
   };
   
-  // Count contacts by status and outcome for filtering tabs
+  // Count contacts by outcome for filtering tabs
   const getContactCounts = () => {
     return {
-      status: {
-        all: contacts.length,
-        open: contacts.filter(c => c.status === 'Open').length,
-        active: contacts.filter(c => c.status === 'Active').length,
-        closed: contacts.filter(c => c.status === 'Closed').length
-      },
-      outcome: {
-        followUp: contacts.filter(c => c.lastCallOutcome === 'Follow Up').length,
-        noAnswer: contacts.filter(c => c.lastCallOutcome === 'No Answer').length,
-        dealClosed: contacts.filter(c => c.lastCallOutcome === 'Deal Closed').length,
-        notInterested: contacts.filter(c => c.lastCallOutcome === 'Not Interested').length
-      }
+      all: contacts.length,
+      followUp: contacts.filter(c => c.lastCallOutcome === 'Follow Up').length,
+      noAnswer: contacts.filter(c => c.lastCallOutcome === 'No Answer').length,
+      dealClosed: contacts.filter(c => c.lastCallOutcome === 'Deal Closed').length,
+      notInterested: contacts.filter(c => c.lastCallOutcome === 'Not Interested').length
     };
   };
   
@@ -470,137 +445,86 @@ export default function Contacts() {
           </Button>
         </div>
         
-        {/* Improved Filtering System */}
-        <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {/* Status Filter Tabs */}
-          <div>
-            <h3 style={{ 
-              margin: '0 0 0.5rem 0',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '1rem',
-              color: theme.colors.brand.text
-            }}>
-              <FaFilter size={14} /> Assignment Status Filter
-            </h3>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <Button
-                onClick={() => setStatusFilter('all')}
-                variant={statusFilter === 'all' ? 'primary' : 'outline'}
-                size="small"
-              >
-                All ({contactCounts.status.all})
-              </Button>
-              
-              <Button
-                onClick={() => setStatusFilter('Open')}
-                variant={statusFilter === 'Open' ? 'primary' : 'outline'}
-                size="small"
-              >
-                Open ({contactCounts.status.open})
-              </Button>
-              
-              <Button
-                onClick={() => setStatusFilter('Active')}
-                variant={statusFilter === 'Active' ? 'primary' : 'outline'}
-                size="small"
-              >
-                Active ({contactCounts.status.active})
-              </Button>
-              
-              <Button
-                onClick={() => setStatusFilter('Closed')}
-                variant={statusFilter === 'Closed' ? 'primary' : 'outline'}
-                size="small"
-              >
-                Closed ({contactCounts.status.closed})
-              </Button>
-            </div>
-          </div>
-          
-          {/* Call Outcome Filter Tabs */}
-          <div>
-            <h3 style={{
-              margin: '0 0 0.5rem 0',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '1rem',
-              color: theme.colors.brand.text
-            }}>
-              <FaFilter size={14} /> Last Call Outcome Filter
-            </h3>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <Button
-                onClick={() => setOutcomeFilter('all')}
-                variant={outcomeFilter === 'all' ? 'primary' : 'outline'}
-                size="small"
-              >
-                All Outcomes
-              </Button>
-              
-              <Button
-                onClick={() => setOutcomeFilter('followUp')}
-                variant={outcomeFilter === 'followUp' ? 'primary' : 'outline'}
-                size="small"
-              >
-                Follow Up ({contactCounts.outcome.followUp})
-              </Button>
-              
-              <Button
-                onClick={() => setOutcomeFilter('noAnswer')}
-                variant={outcomeFilter === 'noAnswer' ? 'primary' : 'outline'}
-                size="small"
-              >
-                No Answer ({contactCounts.outcome.noAnswer})
-              </Button>
-              
-              <Button
-                onClick={() => setOutcomeFilter('dealClosed')}
-                variant={outcomeFilter === 'dealClosed' ? 'primary' : 'outline'}
-                size="small"
-              >
-                Deal Closed ({contactCounts.outcome.dealClosed})
-              </Button>
-              
-              <Button
-                onClick={() => setOutcomeFilter('notInterested')}
-                variant={outcomeFilter === 'notInterested' ? 'primary' : 'outline'}
-                size="small"
-              >
-                Not Interested ({contactCounts.outcome.notInterested})
-              </Button>
-            </div>
-          </div>
-          
-          {/* Search Box */}
+        {/* Improved Filtering System - Styled like Tasks page */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          {/* Filter Buttons */}
           <div style={{ 
-            position: 'relative',
-            display: 'flex',
-            alignItems: 'center'
+            display: 'flex', 
+            gap: '1rem', 
+            flexWrap: 'wrap',
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            marginBottom: '1rem'
           }}>
-            <input
-              type="text"
-              placeholder="Search contacts..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                padding: '0.5rem 0.5rem 0.5rem 2rem', // Space for the icon
-                borderRadius: '4px',
-                border: '1px solid #ddd',
-                width: '100%',
-                maxWidth: '500px'
-              }}
-            />
-            <FaSearch 
-              size={14} 
-              style={{ 
-                position: 'absolute', 
-                left: '0.75rem',
-                color: '#a0aec0'
-              }} 
-            />
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <Button
+                onClick={() => setFilter('all')}
+                variant={filter === 'all' ? 'primary' : 'outline'}
+                tooltip={`Show all contacts (${contactCounts.all})`}
+              >
+                All ({contactCounts.all})
+              </Button>
+              
+              <Button
+                onClick={() => setFilter('followUp')}
+                variant={filter === 'followUp' ? 'primary' : 'outline'}
+                tooltip={`Show contacts with Follow Up outcome (${contactCounts.followUp})`}
+              >
+                Follow Up ({contactCounts.followUp})
+              </Button>
+              
+              <Button
+                onClick={() => setFilter('noAnswer')}
+                variant={filter === 'noAnswer' ? 'primary' : 'outline'}
+                tooltip={`Show contacts with No Answer outcome (${contactCounts.noAnswer})`}
+              >
+                No Answer ({contactCounts.noAnswer})
+              </Button>
+              
+              <Button
+                onClick={() => setFilter('dealClosed')}
+                variant={filter === 'dealClosed' ? 'primary' : 'outline'}
+                tooltip={`Show contacts with Deal Closed outcome (${contactCounts.dealClosed})`}
+              >
+                Deal Closed ({contactCounts.dealClosed})
+              </Button>
+              
+              <Button
+                onClick={() => setFilter('notInterested')}
+                variant={filter === 'notInterested' ? 'primary' : 'outline'}
+                tooltip={`Show contacts with Not Interested outcome (${contactCounts.notInterested})`}
+              >
+                Not Interested ({contactCounts.notInterested})
+              </Button>
+            </div>
+            
+            {/* Search Box */}
+            <div style={{ 
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              <input
+                type="text"
+                placeholder="Search contacts..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  padding: '0.5rem 0.5rem 0.5rem 2rem', // Space for the icon
+                  borderRadius: '4px',
+                  border: '1px solid #ddd',
+                  width: '250px' // Fixed width matching Tasks page
+                }}
+              />
+              <FaSearch 
+                size={14} 
+                style={{ 
+                  position: 'absolute', 
+                  left: '0.75rem',
+                  color: '#a0aec0'
+                }} 
+              />
+            </div>
           </div>
         </div>
         
@@ -636,8 +560,8 @@ export default function Contacts() {
             <p style={{ marginBottom: '1rem' }}>
               {searchTerm 
                 ? 'No contacts found matching your search.' 
-                : statusFilter !== 'all' || outcomeFilter !== 'all'
-                  ? `No contacts found with the selected filters.` 
+                : filter !== 'all'
+                  ? `No contacts found with the selected filter.` 
                   : 'No contacts found. Add your first contact to get started.'}
             </p>
             <Button
