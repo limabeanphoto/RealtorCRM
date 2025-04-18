@@ -4,7 +4,9 @@ import CallModal from '../components/calls/CallModal'
 import CallCard from '../components/calls/CallCard'
 import TaskModal from '../components/tasks/TaskModal'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
-import Button from '../components/common/Button' // Import Button
+import Button from '../components/common/Button'
+import { FaSearch } from 'react-icons/fa'
+import theme from '../styles/theme'
 
 export default function Calls() {
   const [calls, setCalls] = useState([])
@@ -282,7 +284,7 @@ export default function Calls() {
           </Button>
         </div>
         
-        {/* Filters and Search */}
+        {/* Filters and Search - Updated to match Tasks and Contacts pages */}
         <div style={{ 
           display: 'flex', 
           flexWrap: 'wrap', 
@@ -316,18 +318,30 @@ export default function Calls() {
             </Button>
           </div>
           
-          <div>
+          <div style={{ 
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center'
+          }}>
             <input
               type="text"
               placeholder="Search calls..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{
-                padding: '0.5rem',
+                padding: '0.5rem 0.5rem 0.5rem 2rem', // Space for the icon
                 borderRadius: '4px',
                 border: '1px solid #ddd',
-                width: '250px'
+                width: '250px' // Fixed width matching other pages
               }}
+            />
+            <FaSearch 
+              size={14} 
+              style={{ 
+                position: 'absolute', 
+                left: '0.75rem',
+                color: '#a0aec0'
+              }} 
             />
           </div>
         </div>
@@ -406,8 +420,6 @@ export default function Calls() {
           }}
           onSubmit={handleTaskSubmit}
         />
-
-        {/* Contact Selection part removed as it's integrated into CallModal */}
       </div>
     </ProtectedRoute>
   )

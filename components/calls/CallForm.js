@@ -26,7 +26,7 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
   }, [contact, initialData.id]);
   
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
+    const { name, value, type, checked } = e.target;
     let processedValue;
 
     if (type === 'checkbox') {
