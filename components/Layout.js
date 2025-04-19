@@ -56,7 +56,6 @@ export default function Layout({ children, customHeader }) {
         zIndex: 10,
         transition: 'width 0.3s ease',
         overflowX: 'hidden',
-        flexShrink: 0, // Prevent sidebar from shrinking
       }}>
         <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
       </div>
@@ -64,12 +63,11 @@ export default function Layout({ children, customHeader }) {
       {/* Main Content Container - With left margin based on sidebar state */}
       <div style={{ 
         marginLeft: isSidebarCollapsed ? '70px' : '240px',
-        width: 'calc(100% - ' + (isSidebarCollapsed ? '70px' : '240px') + ')',
-        transition: 'margin-left 0.3s ease, width 0.3s ease',
+        transition: 'margin-left 0.3s ease',
+        flexGrow: 1,
         display: 'flex',
         flexDirection: 'column',
-        minHeight: '100vh',
-        flexGrow: 1, // Ensure it takes available space
+        overflow: 'hidden', // This ensures content doesn't expand horizontally
       }}>
         {/* Top Bar - Mobile Only - This should only show < 768px */}
         {isMobile && (
@@ -80,8 +78,6 @@ export default function Layout({ children, customHeader }) {
             padding: '1rem',
             backgroundColor: 'white',
             boxShadow: theme.shadows.sm,
-            flexShrink: 0, // Prevent shrinking
-            width: '100%',
           }}>
             <h1 style={{ 
               margin: 0, 
@@ -109,26 +105,17 @@ export default function Layout({ children, customHeader }) {
           </div>
         )}
         
-        {/* Main Content Wrapper - Centers the content horizontally */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center', // Center content horizontally
-          width: '100%',
+        {/* Main Content Wrapper */}
+        <main style={{ 
+          padding: isMobile ? '1rem' : '2rem',
           flex: 1,
+          maxWidth: '1200px',
+          margin: '0 auto',
+          width: '100%',
+          overflow: 'auto',
         }}>
-          {/* Main Content Area */}
-          <main style={{ 
-            padding: isMobile ? '1rem' : '2rem',
-            flex: 1, // Allows it to grow vertically if needed
-            maxWidth: '1200px', // Single source of max-width
-            width: '100%',
-            margin: '0 auto', // Centers the main element itself
-            overflowY: 'auto', // Allow vertical scroll within main if needed
-          }}>
-            {children}
-          </main>
-        </div>
+          {children}
+        </main>
       </div>
     </div>
   );
