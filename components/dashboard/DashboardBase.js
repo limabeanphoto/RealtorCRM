@@ -195,7 +195,8 @@ export default function DashboardBase() {
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '1rem',
         marginBottom: '2rem',
-        width: '100%'
+        width: '100%',
+        justifyContent: 'center' // Added to center items
       }}>
         <MetricCard
           title="Calls Today"
@@ -226,7 +227,8 @@ export default function DashboardBase() {
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '1rem',
         marginBottom: '2rem',
-        width: '100%'
+        width: '100%',
+        justifyContent: 'center' // Added to center items
       }}>
         <GoalTracker
           title="Daily Call Goal"
@@ -250,7 +252,8 @@ export default function DashboardBase() {
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '1rem',
         marginBottom: '2rem',
-        width: '100%'
+        width: '100%',
+        justifyContent: 'center' // Added to center items
       }}>
         <TasksSummary animationDelay={1.2} />
         <FollowUpContacts animationDelay={1.4} />
@@ -261,6 +264,7 @@ export default function DashboardBase() {
         <div style={{
           display: 'flex',
           flexDirection: 'column',
+          alignItems: 'center', // Center flex items for admin section
           gap: '1rem',
           marginBottom: '2rem',
           width: '100%'
