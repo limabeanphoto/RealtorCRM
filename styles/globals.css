@@ -60,12 +60,6 @@ button:active {
   background: #8F9F3B;
 }
 
-/* Define CSS variables for sidebar width */
-:root {
-  --sidebar-width-collapsed: 70px;
-  --sidebar-width-expanded: 240px;
-}
-
 /* Smooth transitions */
 .page-transition {
   transition: opacity 0.3s ease-in-out;
