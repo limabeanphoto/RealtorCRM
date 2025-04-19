@@ -1,9 +1,9 @@
-// pages/admin/dashboard.js
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import DashboardBase from '../../components/dashboard/DashboardBase';
 import ProtectedRoute from '../../components/auth/ProtectedRoute';
+import DashboardSummary from '../../components/dashboard/DashboardSummary';
 import Layout from '../../components/Layout';
+import '../../styles/dashboard.css';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -28,11 +28,9 @@ export default function AdminDashboard() {
   
   return (
     <ProtectedRoute adminOnly={true}>
-      <Layout>
-        <div className="page-transition" style={{ width: '100%' }}>
-          <DashboardBase />
-        </div>
-      </Layout>
+      <div className="page-transition" style={{ width: '100%' }}>
+        <DashboardSummary />
+      </div>
     </ProtectedRoute>
   );
 }

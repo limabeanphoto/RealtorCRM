@@ -1,9 +1,9 @@
-// pages/index.js
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import DashboardBase from '../components/dashboard/DashboardBase';
+import DashboardSummary from '../components/dashboard/DashboardSummary';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import Layout from '../components/Layout';
+import '../styles/dashboard.css';
 
 export default function Home() {
   const router = useRouter();
@@ -18,15 +18,18 @@ export default function Home() {
       router.push('/login');
       return;
     }
+    
+    // Redirect admin users to admin dashboard
+    if (user.role === 'admin') {
+      router.push('/admin/dashboard');
+    }
   }, [router]);
   
   return (
     <ProtectedRoute>
-      <Layout>
-        <div className="page-transition" style={{ width: '100%' }}>
-          <DashboardBase />
-        </div>
-      </Layout>
+      <div className="page-transition" style={{ width: '100%' }}>
+        <DashboardSummary />
+      </div>
     </ProtectedRoute>
   );
 }
