@@ -39,6 +39,8 @@ export default function Layout({ children, customHeader }) {
     };
   }, [isMobile]); // Rerun effect if isMobile state changes
   
+  const sidebarWidth = isSidebarCollapsed ? 'var(--sidebar-width-collapsed)' : 'var(--sidebar-width-expanded)';
+
   return (
     <div style={{ 
       display: 'flex',
@@ -52,7 +54,7 @@ export default function Layout({ children, customHeader }) {
         top: 0,
         left: 0,
         bottom: 0,
-        width: isSidebarCollapsed ? '70px' : '240px',
+        width: sidebarWidth,
         zIndex: 10,
         transition: 'width 0.3s ease',
         overflowX: 'hidden',
@@ -63,8 +65,8 @@ export default function Layout({ children, customHeader }) {
       
       {/* Main Content Container - With left margin based on sidebar state */}
       <div style={{ 
-        marginLeft: isSidebarCollapsed ? '70px' : '240px',
-        width: 'calc(100% - ' + (isSidebarCollapsed ? '70px' : '240px') + ')',
+        marginLeft: sidebarWidth,
+        width: `calc(100% - ${sidebarWidth})`,
         transition: 'margin-left 0.3s ease, width 0.3s ease',
         display: 'flex',
         flexDirection: 'column',
@@ -109,11 +111,10 @@ export default function Layout({ children, customHeader }) {
           </div>
         )}
         
-        {/* Main Content Wrapper - Centers the content horizontally */}
+        {/* Main Content Wrapper */}
         <div style={{
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center', // Center content horizontally
           width: '100%',
           flex: 1,
         }}>
