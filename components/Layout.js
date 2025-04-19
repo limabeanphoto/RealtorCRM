@@ -64,12 +64,13 @@ export default function Layout({ children, customHeader }) {
       {/* Main Content Container - With left margin based on sidebar state */}
       <div style={{ 
         marginLeft: isSidebarCollapsed ? '70px' : '240px',
-        width: 'calc(100% - ' + (isSidebarCollapsed ? '70px' : '240px') + ')',
+        // width: 'calc(100% - ' + (isSidebarCollapsed ? '70px' : '240px') + ')',
         transition: 'margin-left 0.3s ease, width 0.3s ease',
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100vh',
         flexGrow: 1, // Ensure it takes available space
+        flex: 1, // NEW: Take up remaining horizontal space
       }}>
         {/* Top Bar - Mobile Only - This should only show < 768px */}
         {isMobile && (
@@ -111,9 +112,8 @@ export default function Layout({ children, customHeader }) {
         
         {/* Main Content Wrapper */}
         <div style={{
-          display: 'flex', // Keep flex to allow main to grow
+          display: 'flex',
           flexDirection: 'column',
-          // alignItems: 'center', // REMOVED THIS LINE
           width: '100%',
           flex: 1,
         }}>
@@ -122,7 +122,7 @@ export default function Layout({ children, customHeader }) {
             padding: isMobile ? '1rem' : '2rem',
             flex: 1, // Allows it to grow vertically if needed
             maxWidth: '1200px', // Single source of max-width
-            width: '100%', // Takes full width up to maxWidth
+            width: '100%',
             margin: '0 auto', // Centers the main element itself
             overflowY: 'auto', // Allow vertical scroll within main if needed
           }}>
