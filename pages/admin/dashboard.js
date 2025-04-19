@@ -29,7 +29,15 @@ export default function AdminDashboard() {
   return (
     <ProtectedRoute adminOnly={true}>
       <Layout>
-        <div className="page-transition" style={{ width: '100%' }}>
+        <div 
+          className="page-transition" 
+          style={{ 
+            width: '100%', 
+            display: 'flex',         // Added: Make this a flex container
+            flexDirection: 'column', // Added: Stack children vertically
+            alignItems: 'center'     // Added: Center children (DashboardBase) horizontally
+          }}
+        >
           <DashboardBase />
         </div>
       </Layout>

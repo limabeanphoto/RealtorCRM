@@ -109,21 +109,21 @@ export default function Layout({ children, customHeader }) {
           </div>
         )}
         
-        {/* Main Content Wrapper - Centers the content horizontally */}
+        {/* Main Content Wrapper */}
         <div style={{
-          display: 'flex',
+          display: 'flex', // Keep flex to allow main to grow
           flexDirection: 'column',
-          alignItems: 'center', // Center content horizontally
+          // alignItems: 'center', // REMOVED THIS LINE
           width: '100%',
           flex: 1,
         }}>
           {/* Main Content Area */}
           <main style={{ 
             padding: isMobile ? '1rem' : '2rem',
-            flex: 1,
+            flex: 1, // Allows it to grow vertically if needed
             maxWidth: '1200px', // Single source of max-width
-            width: '100%',
-            margin: '0 auto', // Center horizontally
+            width: '100%', // Takes full width up to maxWidth
+            margin: '0 auto', // Centers the main element itself
             overflowY: 'auto', // Allow vertical scroll within main if needed
           }}>
             {children}
