@@ -57,6 +57,8 @@ export default function GoalTracker({
   
   return (
     <div style={{
+      flex: '1 0 300px', // This ensures cards have a minimum width and flex properly
+      maxWidth: '400px', // Prevent getting too wide
       backgroundColor: 'white',
       borderRadius: theme.borderRadius.md,
       padding: '1.5rem',
@@ -66,8 +68,6 @@ export default function GoalTracker({
       transition: `opacity 0.5s ease, transform 0.5s ease`,
       position: 'relative',
       overflow: 'hidden',
-      width: '100%', // Ensure full width
-      height: '100%' // Maintain consistent height
     }}>
       {/* Celebration Overlay - Only shows when goal is met */}
       {showCelebration && percentage >= 100 && (

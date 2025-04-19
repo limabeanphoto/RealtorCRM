@@ -71,7 +71,6 @@ export default function AdminActions({ animationDelay = 0 }) {
       opacity: isVisible ? 1 : 0,
       transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
       transition: `opacity 0.5s ease, transform 0.5s ease`,
-      width: '100%' // Ensure full width
     }}>
       <h3 style={{ 
         margin: '0 0 1rem 0', 
@@ -87,8 +86,7 @@ export default function AdminActions({ animationDelay = 0 }) {
       <div style={{ 
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '1rem',
-        width: '100%' // Ensure full width of container
+         gap: '1rem',
       }}>
         {actions.map((action, index) => (
           <div

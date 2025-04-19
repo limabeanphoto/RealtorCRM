@@ -41,9 +41,8 @@ export default function MetricCard({
   
   return (
     <div style={{
-      flex: '1',
-      minWidth: '200px',
-      width: '100%', // Ensure full width
+      flex: '1 0 300px', // This ensures cards have a minimum width and flex properly
+      maxWidth: '400px', // Prevent getting too wide
       backgroundColor: 'white',
       borderRadius: theme.borderRadius.md,
       boxShadow: theme.shadows.sm,

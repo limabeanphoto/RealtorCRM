@@ -80,6 +80,8 @@ export default function FollowUpContacts({ animationDelay = 0 }) {
   
   return (
     <div style={{
+      flex: '1 0 300px', // This ensures cards have a minimum width and flex properly
+      maxWidth: '600px', // Prevent getting too wide
       backgroundColor: 'white',
       borderRadius: theme.borderRadius.md,
       padding: '1.5rem',
@@ -87,8 +89,6 @@ export default function FollowUpContacts({ animationDelay = 0 }) {
       opacity: isVisible ? 1 : 0,
       transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
       transition: `opacity 0.5s ease, transform 0.5s ease`,
-      width: '100%', // Ensure full width
-      height: '100%' // Maintain consistent height
     }}>
       <div style={{ 
         display: 'flex', 

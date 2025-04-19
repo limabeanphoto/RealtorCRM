@@ -113,7 +113,6 @@ export default function TeamLeaderboard({ animationDelay = 0 }) {
       transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
       transition: `opacity 0.5s ease, transform 0.5s ease`,
       overflow: 'hidden',
-      width: '100%' // Ensure full width
     }}>
       <h3 style={{ 
         margin: '0 0 1rem 0', 
