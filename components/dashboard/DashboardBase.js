@@ -183,8 +183,8 @@ export default function DashboardBase() {
   return (
     <div style={{ 
       animation: 'fadeIn 0.5s ease-out',
-      width: '100% !important', // Full width to fill the parent container
-      padding: '0 !important', // No horizontal padding to prevent overflow
+      width: '100%', // Full width to fill the parent container
+      padding: '0', // No horizontal padding to prevent overflow
     }}>
       {/* Animated Welcome Message */}
       <AnimatedGreeting firstName={user.firstName} />
@@ -195,8 +195,8 @@ export default function DashboardBase() {
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '1rem',
         marginBottom: '2rem',
-        width: '100% !important',
-        justifyContent: 'center !important' // Added to center items
+        width: '100%',
+        justifyContent: 'center' // Added to center items
       }}>
         <MetricCard
           title="Calls Today"
@@ -227,8 +227,8 @@ export default function DashboardBase() {
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '1rem',
         marginBottom: '2rem',
-        width: '100% !important',
-        justifyContent: 'center !important' // Added to center items
+        width: '100%',
+        justifyContent: 'center' // Added to center items
       }}>
         <GoalTracker
           title="Daily Call Goal"
@@ -252,8 +252,8 @@ export default function DashboardBase() {
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '1rem',
         marginBottom: '2rem',
-        width: '100% !important',
-        justifyContent: 'center !important' // Added to center items
+        width: '100%',
+        justifyContent: 'center' // Added to center items
       }}>
         <TasksSummary animationDelay={1.2} />
         <FollowUpContacts animationDelay={1.4} />
@@ -267,7 +267,7 @@ export default function DashboardBase() {
           alignItems: 'center', // Center flex items for admin section
           gap: '1rem',
           marginBottom: '2rem',
-          width: '100% !important'
+          width: '100%'
         }}>
           <TeamLeaderboard animationDelay={1.6} />
           <AdminActions animationDelay={1.8} />
