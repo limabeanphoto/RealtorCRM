@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import ProtectedRoute from '../../components/auth/ProtectedRoute';
 import DashboardSummary from '../../components/dashboard/DashboardSummary';
 import Layout from '../../components/Layout';
-import '../../styles/dashboard.css';
 
 export default function AdminDashboard() {
   const router = useRouter();
