@@ -1,6 +1,6 @@
 // pages/api/contacts/assign.js
 import { PrismaClient } from '@prisma/client'
-import withAuth from '../../../utils/withAuth'
+import { withAdminAuth } from '../../../utils/withAuth'
 
 const prisma = new PrismaClient()
 
@@ -27,10 +27,7 @@ async function handler(req, res) {
       return res.status(404).json({ success: false, message: 'Contact not found' })
     }
     
-    // Only admins can reassign contacts
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Only administrators can assign contacts' })
-    }
+    // Admin check is now handled by withAdminAuth
     
     const updateData = {}
     
@@ -79,4 +76,4 @@ async function handler(req, res) {
   }
 }
 
-export default withAuth(handler)
+export default withAdminAuth(handler)

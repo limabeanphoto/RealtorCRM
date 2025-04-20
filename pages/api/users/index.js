@@ -2,18 +2,14 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { v4 as uuidv4 } from 'uuid'
-import withAuth from '../../../utils/withAuth'
+import { withAdminAuth } from '../../../utils/withAuth'
 
 const prisma = new PrismaClient()
 
 async function handler(req, res) {
   // GET - List all users (admin only)
   if (req.method === 'GET') {
-    // Check if requester is admin
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Unauthorized. Admin access required.' })
-    }
-
+    // Admin check is now handled by withAdminAuth
     try {
       // Get all users without returning sensitive information
       const users = await prisma.user.findMany({
@@ -42,11 +38,7 @@ async function handler(req, res) {
   
   // POST - Create a new user (admin only)
   else if (req.method === 'POST') {
-    // Check if requester is admin
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Unauthorized. Admin access required.' })
-    }
-
+    // Admin check is now handled by withAdminAuth
     try {
       const { email, password, firstName, lastName, cellPhone, assignedCallNumber, role } = req.body
 
@@ -106,4 +98,4 @@ async function handler(req, res) {
   }
 }
 
-export default withAuth(handler)
+export default withAdminAuth(handler)

@@ -2,10 +2,11 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { v4 as uuidv4 } from 'uuid'
+import { withAdminAuth } from '../../../utils/withAuth'
 
 const prisma = new PrismaClient()
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, message: 'Method not allowed' })
@@ -14,14 +15,7 @@ export default async function handler(req, res) {
   try {
     const { email, password, firstName, lastName, cellPhone, assignedCallNumber, role } = req.body
     
-    // Get the requester's role from the auth token
-    // Note: We'll implement the auth middleware later
-    const requestingUser = req.user
-    
-    // Only admins can create new users
-    if (!requestingUser || requestingUser.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Unauthorized. Only admins can register new users.' })
-    }
+    // Admin check is now handled by withAdminAuth
 
     // Basic validation
     if (!email || !password || !firstName || !lastName) {
@@ -73,3 +67,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ success: false, message: 'Registration failed' })
   }
 }
+
+export default withAdminAuth(handler)

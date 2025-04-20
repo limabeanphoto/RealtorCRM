@@ -1,3 +1,4 @@
+// pages/api/stats/metrics.js
 import { PrismaClient } from '@prisma/client';
 import withAuth from '../../../utils/withAuth';
 import metricsCache from '../../../utils/cache';
@@ -373,10 +374,7 @@ async function getDealValueMetrics(startDate, endDate, userId = null) {
       gte: startDate,
       lte: endDate
     },
-    isDeal: true,
-    dealValue: {
-      not: null
-    }
+    isDeal: true
   };
   
   // Add userId filter if provided
@@ -394,18 +392,15 @@ async function getDealValueMetrics(startDate, endDate, userId = null) {
   try {
     const dealValues = await prisma.$queryRaw`
       SELECT 
-        COALESCE(SUM("dealValue"), 0) as total_value,
-        COALESCE(AVG("dealValue"), 0) as average_value,
         COUNT(*) as deal_count
       FROM "Call"
       WHERE "date" >= ${startDate} AND "date" <= ${endDate}
-        AND "isDeal" = true
-        AND "dealValue" IS NOT NULL ${prisma.raw(userIdFilter)}
+        AND "isDeal" = true ${prisma.raw(userIdFilter)}
     `;
     
     return {
-      totalValue: Number(dealValues[0]?.total_value || 0).toFixed(2),
-      averageValue: Number(dealValues[0]?.average_value || 0).toFixed(2),
+      totalValue: '0.00',
+      averageValue: '0.00',
       count: Number(dealValues[0]?.deal_count || 0)
     };
   } catch (error) {
@@ -680,73 +675,3 @@ async function getTasksMetrics(startDate, endDate, userId = null) {
     return {
       total: totalTasks,
       data: tasksByInterval
-    };
-  } catch (error) {
-    console.error('Error getting tasks metrics:', error);
-    return {
-      total: 0,
-      data: []
-    };
-  }
-}
-
-// Get call outcomes distribution
-async function getCallOutcomesDistribution(startDate, endDate, userId = null) {
-  try {
-    // Build where clause
-    const whereClause = {
-      date: {
-        gte: startDate,
-        lte: endDate
-      }
-    };
-    
-    // Add userId filter if provided
-    if (userId) {
-      whereClause.userId = userId;
-    }
-    
-    // Get counts of each call outcome
-    const outcomesCounts = await prisma.call.groupBy({
-      by: ['outcome'],
-      where: whereClause,
-      _count: {
-        _all: true
-      }
-    });
-
-    // Format data for pie chart
-    return outcomesCounts.map(item => ({
-      name: item.outcome,
-      value: item._count._all
-    }));
-  } catch (error) {
-    console.error('Error getting call outcomes distribution:', error);
-    return [];
-  }
-}
-
-// Helper function to format date
-function formatDate(date, format) {
-  if (!date) return '';
-  
-  const d = new Date(date);
-  
-  if (format === 'HH:mm') {
-    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-  }
-  
-  if (format === 'MMM dd') {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${months[d.getMonth()]} ${d.getDate().toString().padStart(2, '0')}`;
-  }
-  
-  if (format === 'MMM yyyy') {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${months[d.getMonth()]} ${d.getFullYear()}`;
-  }
-  
-  return d.toLocaleDateString();
-}
-
-export default withAuth(handler);

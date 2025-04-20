@@ -1,3 +1,4 @@
+// pages/api/search.js
 import { PrismaClient } from '@prisma/client'
 import withAuth from '../../utils/withAuth'
 

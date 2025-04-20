@@ -1,6 +1,6 @@
 // pages/api/users/[id]/assignedNumber.js
 import { PrismaClient } from '@prisma/client'
-import withAuth from '../../../../utils/withAuth'
+import { withAdminAuth } from '../../../../utils/withAuth'
 
 const prisma = new PrismaClient()
 
@@ -10,10 +10,7 @@ async function handler(req, res) {
     return res.status(405).json({ success: false, message: `Method ${req.method} not allowed` })
   }
   
-  // Only admins can update assigned call numbers
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ success: false, message: 'Unauthorized. Admin access required.' })
-  }
+  // Admin check is now handled by withAdminAuth
   
   const { id } = req.query
   const { assignedCallNumber } = req.body
@@ -52,4 +49,4 @@ async function handler(req, res) {
   }
 }
 
-export default withAuth(handler)
+export default withAdminAuth(handler)
