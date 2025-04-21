@@ -15,7 +15,7 @@ export default function Contacts() {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  
+
   // State for modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -25,17 +25,17 @@ export default function Contacts() {
   const [selectedContact, setSelectedContact] = useState(null);
   const [selectedCall, setSelectedCall] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
-  
+
   // Filtering state - simplified to match Tasks page
   const [filter, setFilter] = useState('all'); // all, followUp, noAnswer, dealClosed, notInterested
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Get user from localStorage
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
     setUser(userData);
   }, []);
-  
+
   // Fetch contacts based on filters
   useEffect(() => {
     fetchContacts();
@@ -45,11 +45,11 @@ export default function Contacts() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      
+
       // Build URL with filter parameters
       let url = '/api/contacts';
       const params = [];
-      
+
       // Add outcome filter if not "all"
       if (filter !== 'all') {
         // Map filter values to actual outcome strings
@@ -59,46 +59,46 @@ export default function Contacts() {
           dealClosed: 'Deal Closed',
           notInterested: 'Not Interested'
         };
-        
+
         if (outcomeMap[filter]) {
           params.push(`lastCallOutcome=${encodeURIComponent(outcomeMap[filter])}`);
         }
       }
-      
+
       // Add query params to URL if there are any
       if (params.length > 0) {
         url += `?${params.join('&')}`;
       }
-      
+
       const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       const data = await response.json();
-      
+
       if (data.success) {
         setContacts(data.data);
       } else {
         console.error('Error fetching contacts:', data.message);
       }
-      
+
       setLoading(false);
     } catch (error) {
       console.error('Error fetching contacts:', error);
       setLoading(false);
     }
   };
-  
+
   // Handle contact status update
   const handleContactUpdate = (updatedContact) => {
-    setContacts(prevContacts => 
-      prevContacts.map(contact => 
+    setContacts(prevContacts =>
+      prevContacts.map(contact =>
         contact.id === updatedContact.id ? updatedContact : contact
       )
     );
   };
-  
+
   // Handle adding a new contact
   const handleAddContact = async (formData) => {
     try {
@@ -111,21 +111,21 @@ export default function Contacts() {
         },
         body: JSON.stringify(formData)
       });
-      
+
       const data = await response.json();
-      
+
       // Handle duplicate detection response
       if (response.status === 409 && data.duplicates) {
-        return { 
-          success: false, 
+        return {
+          success: false,
           message: data.message,
           duplicates: data.duplicates
         };
       }
-      
+
       // Handle force create with duplicates
       if (formData.forceCreate && !data.success) {
-        // If force create is requested but original request failed, 
+        // If force create is requested but original request failed,
         // retry with the special flag to skip duplicate checks
         const forceResponse = await fetch('/api/contacts/force-create', {
           method: 'POST',
@@ -138,9 +138,9 @@ export default function Contacts() {
             skipDuplicateCheck: true
           })
         });
-        
+
         const forceData = await forceResponse.json();
-        
+
         if (forceData.success) {
           // Add the new contact to the list
           setContacts([forceData.data, ...contacts]);
@@ -150,7 +150,7 @@ export default function Contacts() {
           return { success: false, message: forceData.message };
         }
       }
-      
+
       if (data.success) {
         // Add the new contact to the list
         setContacts([data.data, ...contacts]);
@@ -184,12 +184,12 @@ export default function Contacts() {
         },
         body: JSON.stringify(formData)
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         // Update the contact in the list
-        setContacts(contacts.map(contact => 
+        setContacts(contacts.map(contact =>
           contact.id === data.data.id ? data.data : contact
         ));
         return { success: true, data: data.data };
@@ -207,10 +207,10 @@ export default function Contacts() {
   // Handle reassigning a contact (admin only)
   const handleReassignContact = (updatedContact) => {
     // Update the contact in the list
-    setContacts(contacts.map(contact => 
+    setContacts(contacts.map(contact =>
       contact.id === updatedContact.id ? updatedContact : contact
     ));
-    
+
     // Close the reassign modal
     setIsReassignModalOpen(false);
   };
@@ -225,9 +225,9 @@ export default function Contacts() {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         // Remove the contact from the list
         setContacts(contacts.filter(contact => contact.id !== contactId));
@@ -248,7 +248,7 @@ export default function Contacts() {
     setSelectedContact(contact);
     setIsEditModalOpen(true);
   };
-  
+
   // Handle opening the reassign modal (admin only)
   const handleOpenReassignModal = (contact) => {
     setSelectedContact(contact);
@@ -266,14 +266,29 @@ export default function Contacts() {
   const handleAddTask = (contact, call = null) => {
     setSelectedContact(contact);
     setSelectedCall(call);
-    setSelectedTask(null);
+    setSelectedTask(null); // Ensure no previous edit task is selected
     setIsTaskModalOpen(true);
   };
 
-  // Handle editing a task
+  // Handle editing a task (Updated)
   const handleEditTask = (task) => {
-    setSelectedTask(task);
-    setSelectedContact(null); // We'll get the contact from the task
+    // Find the contact associated with this task
+    const associatedContact = contacts.find(c => c.id === task.contactId);
+
+    if (!associatedContact) {
+      console.error("Could not find contact associated with task:", task);
+      alert("Error: Could not find the contact for this task."); // User feedback
+      return;
+    }
+
+    setSelectedTask({
+       ...task,
+       // Ensure dueDate is formatted correctly for the modal's input type="datetime-local"
+       // Handle cases where dueDate might be null or invalid
+       dueDate: task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : ''
+    });
+    setSelectedContact(associatedContact); // Set the correct contact
+    setSelectedCall(null); // Clear any selected call
     setIsTaskModalOpen(true);
   };
 
@@ -287,15 +302,29 @@ export default function Contacts() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           status: newStatus,
           completed: newStatus === 'Completed'
         })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
+         // --- Update the task within the specific contact in the state ---
+         const updatedTask = data.data;
+         setContacts(prevContacts => prevContacts.map(contact => {
+           if (contact.id === updatedTask.contactId) {
+             return {
+               ...contact,
+               tasks: contact.tasks.map(task =>
+                 task.id === updatedTask.id ? updatedTask : task
+               )
+             };
+           }
+           return contact;
+         }));
+         // --- End of update ---
         return { success: true, data: data.data };
       } else {
         alert('Error updating task status: ' + data.message);
@@ -320,19 +349,21 @@ export default function Contacts() {
         },
         body: JSON.stringify(formData)
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         // Update the contact in the list with new lastCallOutcome
         const updatedContact = {
           ...selectedContact,
           lastCallOutcome: data.data.outcome,
-          lastCallDate: data.data.date
+          lastCallDate: data.data.date,
+           // Optionally add the new call to the contact's calls array if it exists
+           calls: selectedContact.calls ? [data.data, ...selectedContact.calls] : [data.data]
         };
-        
-        handleContactUpdate(updatedContact);
-        
+
+        handleContactUpdate(updatedContact); // Updates the contact in the main list
+
         return { success: true, data: data.data };
       } else {
         alert('Error logging call: ' + data.message);
@@ -345,17 +376,17 @@ export default function Contacts() {
     }
   };
 
-  // Handle task form submission
+  // Handle task form submission (Updated)
   const handleTaskSubmit = async (formData) => {
     try {
       const token = localStorage.getItem('token');
-      
+
       // Check if we're updating an existing task or creating a new one
       const isUpdating = !!formData.id;
-      
+
       const url = isUpdating ? `/api/tasks/${formData.id}` : '/api/tasks';
       const method = isUpdating ? 'PUT' : 'POST';
-      
+
       const response = await fetch(url, {
         method: method,
         headers: {
@@ -364,11 +395,32 @@ export default function Contacts() {
         },
         body: JSON.stringify(formData)
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
-        return { success: true, data: data.data };
+        const updatedOrNewTask = data.data;
+
+        // --- Update the task list within the relevant contact ---
+        setContacts(prevContacts => prevContacts.map(contact => {
+          if (contact.id === updatedOrNewTask.contactId) {
+            let updatedTasks;
+            if (isUpdating) {
+              // Map existing tasks, replacing the updated one
+              updatedTasks = contact.tasks.map(task =>
+                task.id === updatedOrNewTask.id ? updatedOrNewTask : task
+              );
+            } else {
+              // Add the new task to the beginning of the array
+              updatedTasks = [updatedOrNewTask, ...(contact.tasks || [])];
+            }
+            return { ...contact, tasks: updatedTasks };
+          }
+          return contact;
+        }));
+        // --- End of update ---
+
+        return { success: true, data: updatedOrNewTask };
       } else {
         alert(`Error ${isUpdating ? 'updating' : 'creating'} task: ` + data.message);
         return { success: false, message: data.message };
@@ -379,7 +431,7 @@ export default function Contacts() {
       return { success: false, message: error.message };
     }
   };
-  
+
   // Filter contacts based on search term
   const filteredContacts = contacts.filter(contact => {
     if (searchTerm) {
@@ -393,32 +445,27 @@ export default function Contacts() {
     }
     return true;
   });
-  
-  // Prepare initial task data for task modal when creating from a call
+
+  // Prepare initial task data for task modal
   const getInitialTaskData = () => {
+    // If editing a task, use the selectedTask (which now includes formatted dueDate)
+    if (selectedTask) {
+      return { ...selectedTask }; // selectedTask already has formatted dueDate from handleEditTask
+    }
+
+    // If creating a new task (potentially from a call)
     let initialData = {};
-    
     if (selectedContact) {
       initialData.contactId = selectedContact.id;
     }
-    
     if (selectedCall) {
       initialData.callId = selectedCall.id;
-      initialData.title = `Follow up with ${selectedContact.name}`;
+      initialData.title = `Follow up with ${selectedContact?.name || 'contact'}`; // Added safety check
       initialData.description = `Follow-up from call on ${new Date(selectedCall.date).toLocaleDateString()}${selectedCall.notes ? `: ${selectedCall.notes}` : ''}`;
     }
-    
-    if (selectedTask) {
-      // If editing a task, use all its data
-      initialData = {
-        ...selectedTask,
-        dueDate: new Date(selectedTask.dueDate).toISOString().slice(0, 16)
-      };
-    }
-    
     return initialData;
   };
-  
+
   // Count contacts by outcome for filtering tabs
   const getContactCounts = () => {
     return {
@@ -429,77 +476,90 @@ export default function Contacts() {
       notInterested: contacts.filter(c => c.lastCallOutcome === 'Not Interested').length
     };
   };
-  
+
   const contactCounts = getContactCounts();
-  
+
+  // Function to close the Task Modal and reset states (Updated)
+  const closeTaskModal = () => {
+    setIsTaskModalOpen(false);
+    setSelectedTask(null);
+    setSelectedContact(null); // Reset selected contact as well
+    setSelectedCall(null); // Reset selected call
+  };
+
   return (
     <ProtectedRoute>
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h1>Contacts</h1>
-          <Button 
+          <Button
             onClick={() => setIsAddModalOpen(true)}
             tooltip="Create a new contact"
           >
             Add Contact
           </Button>
         </div>
-        
+
         {/* Improved Filtering System - Styled like Tasks page */}
         <div style={{ marginBottom: '1.5rem' }}>
           {/* Filter Buttons */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '1rem', 
+          <div style={{
+            display: 'flex',
+            gap: '1rem',
             flexWrap: 'wrap',
-            justifyContent: 'space-between', 
+            justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '1rem'
           }}>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}> {/* Added flexWrap here */}
               <Button
                 onClick={() => setFilter('all')}
                 variant={filter === 'all' ? 'primary' : 'outline'}
                 tooltip={`Show all contacts (${contactCounts.all})`}
+                size="small" // Making buttons slightly smaller
               >
                 All ({contactCounts.all})
               </Button>
-              
+
               <Button
                 onClick={() => setFilter('followUp')}
                 variant={filter === 'followUp' ? 'primary' : 'outline'}
                 tooltip={`Show contacts with Follow Up outcome (${contactCounts.followUp})`}
+                 size="small"
               >
                 Follow Up ({contactCounts.followUp})
               </Button>
-              
+
               <Button
                 onClick={() => setFilter('noAnswer')}
                 variant={filter === 'noAnswer' ? 'primary' : 'outline'}
                 tooltip={`Show contacts with No Answer outcome (${contactCounts.noAnswer})`}
+                 size="small"
               >
                 No Answer ({contactCounts.noAnswer})
               </Button>
-              
+
               <Button
                 onClick={() => setFilter('dealClosed')}
                 variant={filter === 'dealClosed' ? 'primary' : 'outline'}
                 tooltip={`Show contacts with Deal Closed outcome (${contactCounts.dealClosed})`}
+                 size="small"
               >
                 Deal Closed ({contactCounts.dealClosed})
               </Button>
-              
+
               <Button
                 onClick={() => setFilter('notInterested')}
                 variant={filter === 'notInterested' ? 'primary' : 'outline'}
                 tooltip={`Show contacts with Not Interested outcome (${contactCounts.notInterested})`}
+                 size="small"
               >
                 Not Interested ({contactCounts.notInterested})
               </Button>
             </div>
-            
+
             {/* Search Box */}
-            <div style={{ 
+            <div style={{
               position: 'relative',
               display: 'flex',
               alignItems: 'center'
@@ -513,21 +573,21 @@ export default function Contacts() {
                   padding: '0.5rem 0.5rem 0.5rem 2rem', // Space for the icon
                   borderRadius: '4px',
                   border: '1px solid #ddd',
-                  width: '250px' // Fixed width matching Tasks page
+                  width: '200px' // Slightly reduced width
                 }}
               />
-              <FaSearch 
-                size={14} 
-                style={{ 
-                  position: 'absolute', 
+              <FaSearch
+                size={14}
+                style={{
+                  position: 'absolute',
                   left: '0.75rem',
                   color: '#a0aec0'
-                }} 
+                }}
               />
             </div>
           </div>
         </div>
-        
+
         {/* Contact Cards List */}
         {loading ? (
           <p>Loading contacts...</p>
@@ -536,14 +596,14 @@ export default function Contacts() {
             {filteredContacts.map(contact => (
               <ContactCard
                 key={contact.id}
-                contact={contact}
+                contact={contact} // Pass the full contact object which now includes updated tasks
                 onEditClick={handleOpenEditModal}
                 onLogCallClick={handleLogCall}
                 onAddTaskClick={handleAddTask}
                 onDeleteContact={handleDeleteContact}
-                onEditTask={handleEditTask}
-                onTaskStatusChange={handleTaskStatusChange}
-                onContactUpdate={handleContactUpdate}
+                onEditTask={handleEditTask} // Correct handler passed
+                onTaskStatusChange={handleTaskStatusChange} // Correct handler passed
+                onContactUpdate={handleContactUpdate} // Pass handler to update contact details if needed from ContactCard
                 currentUser={user}
                 // For admin users, add reassignment option
                 onReassignClick={user && user.role === 'admin' ? handleOpenReassignModal : undefined}
@@ -551,17 +611,17 @@ export default function Contacts() {
             ))}
           </div>
         ) : (
-          <div style={{ 
-            textAlign: 'center', 
-            padding: '2rem', 
-            backgroundColor: '#f8f9fa', 
-            borderRadius: '8px' 
+          <div style={{
+            textAlign: 'center',
+            padding: '2rem',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '8px'
           }}>
             <p style={{ marginBottom: '1rem' }}>
-              {searchTerm 
-                ? 'No contacts found matching your search.' 
+              {searchTerm
+                ? 'No contacts found matching your search.'
                 : filter !== 'all'
-                  ? `No contacts found with the selected filter.` 
+                  ? `No contacts found with the selected filter.`
                   : 'No contacts found. Add your first contact to get started.'}
             </p>
             <Button
@@ -576,17 +636,17 @@ export default function Contacts() {
         <ContactModal
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
-          contact={{}}
+          contact={{}} // Empty for adding
           onSubmit={handleAddContact}
           mode="add"
-          onViewExistingContact={handleViewExistingContact}
+          onViewExistingContact={handleViewExistingContact} // For duplicate handling
         />
 
         {/* Edit Contact Modal */}
         <ContactModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          contact={selectedContact || {}}
+          contact={selectedContact || {}} // Use selected contact for editing
           onSubmit={handleEditContact}
           mode="edit"
         />
@@ -595,23 +655,25 @@ export default function Contacts() {
         <CallModal
           isOpen={isCallModalOpen}
           onClose={() => setIsCallModalOpen(false)}
-          contact={selectedContact}
+          contact={selectedContact} // Pass selected contact
           onSubmit={handleCallSubmit}
+          // Pass handleAddTask to create follow-up task from CallModal
+          onCreateTask={handleAddTask}
         />
 
-        {/* Task Modal */}
+        {/* Task Modal (Updated onClose) */}
         <TaskModal
           isOpen={isTaskModalOpen}
-          onClose={() => setIsTaskModalOpen(false)}
-          contact={selectedContact}
-          contacts={contacts}
-          initialData={getInitialTaskData()}
-          onSubmit={handleTaskSubmit}
+          onClose={closeTaskModal} // Use the dedicated close function
+          contact={selectedContact} // Pass the associated contact (now set correctly in handleEditTask)
+          contacts={contacts} // Pass full contacts list for potential dropdown
+          initialData={getInitialTaskData()} // Use the function to get initial/editing data
+          onSubmit={handleTaskSubmit} // Use the updated submit handler
         />
-        
+
         {/* Admin-only Reassign Modal */}
         {user && user.role === 'admin' && (
-          <div 
+          <div
             style={{
               position: 'fixed',
               top: 0,
@@ -624,24 +686,27 @@ export default function Contacts() {
               justifyContent: 'center',
               zIndex: 1000,
             }}
-            onClick={() => setIsReassignModalOpen(false)}
+            onClick={() => setIsReassignModalOpen(false)} // Close on overlay click
           >
             <div
               style={{
                 backgroundColor: 'white',
                 borderRadius: '8px',
                 maxWidth: '500px',
-                width: '100%',
+                width: '90%', // Use percentage for better responsiveness
                 maxHeight: '90vh',
                 overflowY: 'auto',
+                padding: '1.5rem' // Add some padding
               }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
             >
-              <ContactReassignForm 
-                contact={selectedContact}
-                onCancel={() => setIsReassignModalOpen(false)}
-                onSuccess={handleReassignContact}
-              />
+              {selectedContact && ( // Ensure contact is selected before rendering form
+                <ContactReassignForm
+                  contact={selectedContact}
+                  onCancel={() => setIsReassignModalOpen(false)}
+                  onSuccess={handleReassignContact}
+                />
+              )}
             </div>
           </div>
         )}
