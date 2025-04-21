@@ -1,16 +1,20 @@
-// components/contacts/ContactModal.js
 import { useState } from 'react';
 import ContactForm from './ContactForm';
-import Button from '../common/Button';
+import BaseModal from '../common/BaseModal';
 import DuplicateContactModal from './DuplicateContactModal';
 
-export default function ContactModal({ isOpen, onClose, contact, onSubmit, mode, onViewExistingContact }) {
+export default function ContactModal({ 
+  isOpen, 
+  onClose, 
+  contact, 
+  onSubmit, 
+  mode, 
+  onViewExistingContact 
+}) {
   const [duplicates, setDuplicates] = useState([]);
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [pendingFormData, setPendingFormData] = useState(null);
   
-  if (!isOpen) return null;
-
   const handleSubmit = async (formData) => {
     // Save form data in case we need to show duplicate modal
     setPendingFormData(formData);
@@ -61,52 +65,13 @@ export default function ContactModal({ isOpen, onClose, contact, onSubmit, mode,
 
   return (
     <>
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-        }}
-        onClick={onClose}
-      >
-        <div
-          style={{
-            backgroundColor: 'white',
-            padding: '2rem',
-            borderRadius: '8px',
-            maxWidth: '600px',
-            width: '100%',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h2 style={{ margin: 0 }}>{title}</h2>
-            <Button
-              onClick={onClose}
-              variant="text"
-              style={{ fontSize: '1.5rem', padding: '0.2rem' }}
-              tooltip="Close this window"
-            >
-              &times;
-            </Button>
-          </div>
-          
-          <ContactForm 
-            onSubmit={handleSubmit} 
-            initialData={contact}
-            onCancel={onClose}
-          />
-        </div>
-      </div>
+      <BaseModal isOpen={isOpen} onClose={onClose} title={title}>
+        <ContactForm 
+          onSubmit={handleSubmit} 
+          initialData={contact}
+          onCancel={onClose}
+        />
+      </BaseModal>
       
       {/* Duplicate Contact Modal */}
       <DuplicateContactModal
