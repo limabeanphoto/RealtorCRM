@@ -1,27 +1,20 @@
-import { useState } from 'react'
-import Button from '../common/Button'; // Import Button
+// components/contacts/ContactFormRefactored.js
+import { useForm } from '../common/useForm';
+import Button from '../common/Button';
 
 export default function ContactForm({ onSubmit, initialData = {}, onCancel }) {
-  const [formData, setFormData] = useState({
+  // Use our custom form hook
+  const { values, handleChange, createSubmitHandler } = useForm({
     name: '',
     email: '',
     phone: '',
     company: '',
     notes: '',
     ...initialData
-  })
+  });
   
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
-  
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    onSubmit(formData)
-  }
+  // Create submit handler using the utility from our hook
+  const handleSubmit = createSubmitHandler(onSubmit);
   
   return (
     <form onSubmit={handleSubmit} style={{ maxWidth: '500px', margin: '0 auto' }}>
@@ -32,7 +25,7 @@ export default function ContactForm({ onSubmit, initialData = {}, onCancel }) {
         <input
           type="text"
           name="name"
-          value={formData.name}
+          value={values.name}
           onChange={handleChange}
           required
           style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
@@ -46,7 +39,7 @@ export default function ContactForm({ onSubmit, initialData = {}, onCancel }) {
         <input
           type="email"
           name="email"
-          value={formData.email}
+          value={values.email}
           onChange={handleChange}
           style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
         />
@@ -59,7 +52,7 @@ export default function ContactForm({ onSubmit, initialData = {}, onCancel }) {
         <input
           type="tel"
           name="phone"
-          value={formData.phone}
+          value={values.phone}
           onChange={handleChange}
           required
           style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
@@ -73,7 +66,7 @@ export default function ContactForm({ onSubmit, initialData = {}, onCancel }) {
         <input
           type="text"
           name="company"
-          value={formData.company}
+          value={values.company}
           onChange={handleChange}
           style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
         />
@@ -85,7 +78,7 @@ export default function ContactForm({ onSubmit, initialData = {}, onCancel }) {
         </label>
         <textarea
           name="notes"
-          value={formData.notes}
+          value={values.notes}
           onChange={handleChange}
           style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
           rows="3"
@@ -97,7 +90,7 @@ export default function ContactForm({ onSubmit, initialData = {}, onCancel }) {
           <Button
             type="button"
             onClick={onCancel}
-            variant="outline" // Use outline for cancel
+            variant="outline"
             tooltip="Discard changes and close"
           >
             Cancel
@@ -105,12 +98,12 @@ export default function ContactForm({ onSubmit, initialData = {}, onCancel }) {
         )}
         <Button
           type="submit"
-          variant="primary" // Use primary for submit
+          variant="primary"
           tooltip={initialData.id ? 'Save changes to this contact' : 'Create this new contact'}
         >
           {initialData.id ? 'Update Contact' : 'Save Contact'}
         </Button>
       </div>
     </form>
-  )
+  );
 }

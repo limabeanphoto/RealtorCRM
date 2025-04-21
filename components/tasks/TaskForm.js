@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react'
+// components/tasks/TaskFormRefactored.js
+import { useEffect } from 'react';
+import { useForm } from '../common/useForm';
+import Button from '../common/Button';
 
 export default function TaskForm({ onSubmit, initialData = {}, onCancel, contacts = [] }) {
-  // Initialize formData with defaults or provided initialData
-  const [formData, setFormData] = useState({
+  // Use our custom form hook with initial values
+  const { values, setFieldValue, handleChange, createSubmitHandler } = useForm({
     title: '',
     description: '',
     status: 'Open',
@@ -11,42 +14,33 @@ export default function TaskForm({ onSubmit, initialData = {}, onCancel, contact
     contactId: '',
     callId: '',
     ...initialData
-  })
+  });
   
-  const [selectedContact, setSelectedContact] = useState(null)
+  // Create submit handler using our utility
+  const handleSubmit = createSubmitHandler(onSubmit);
   
   // Find contact details if contactId is provided
   useEffect(() => {
-    if (formData.contactId && contacts.length > 0) {
-      const contact = contacts.find(c => c.id === formData.contactId)
-      setSelectedContact(contact || null)
+    if (values.contactId && contacts.length > 0) {
+      const contact = contacts.find(c => c.id === values.contactId);
+      if (contact) {
+        // You could set additional fields based on the contact if needed
+        // Or store the contact object in local state
+      }
     }
-  }, [formData.contactId, contacts])
-  
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData({
-      ...formData,
-      [name]: value
-    })
-  }
-  
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    onSubmit(formData)
-  }
+  }, [values.contactId, contacts]);
   
   return (
     <form onSubmit={handleSubmit} style={{ maxWidth: '500px', margin: '0 auto' }}>
       {/* Contact Selection */}
-      {contacts.length > 0 && !selectedContact && (
+      {contacts.length > 0 && (
         <div style={{ marginBottom: '1rem' }}>
           <label style={{ display: 'block', marginBottom: '0.5rem' }}>
             Associated Contact (Optional)
           </label>
           <select
             name="contactId"
-            value={formData.contactId}
+            value={values.contactId}
             onChange={handleChange}
             style={{ width: '100%', padding: '0.5rem' }}
           >
@@ -60,43 +54,6 @@ export default function TaskForm({ onSubmit, initialData = {}, onCancel, contact
         </div>
       )}
       
-      {/* Display selected contact info */}
-      {selectedContact && (
-        <div style={{ 
-          padding: '1rem', 
-          marginBottom: '1rem', 
-          backgroundColor: '#f8f9fa', 
-          borderRadius: '4px'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ margin: '0 0 0.5rem 0' }}>{selectedContact.name}</h3>
-            <button
-              type="button"
-              onClick={() => {
-                setFormData({
-                  ...formData,
-                  contactId: ''
-                })
-                setSelectedContact(null)
-              }}
-              style={{
-                backgroundColor: '#6c757d',
-                color: 'white',
-                padding: '0.25rem 0.5rem',
-                border: 'none',
-                borderRadius: '4px',
-                fontSize: '0.8rem',
-                cursor: 'pointer'
-              }}
-            >
-              Change
-            </button>
-          </div>
-          {selectedContact.company && <p style={{ margin: '0 0 0.5rem 0' }}>Company: {selectedContact.company}</p>}
-          <p style={{ margin: '0' }}>Phone: {selectedContact.phone}</p>
-        </div>
-      )}
-      
       {/* Title */}
       <div style={{ marginBottom: '1rem' }}>
         <label style={{ display: 'block', marginBottom: '0.5rem' }}>
@@ -105,7 +62,7 @@ export default function TaskForm({ onSubmit, initialData = {}, onCancel, contact
         <input
           type="text"
           name="title"
-          value={formData.title}
+          value={values.title}
           onChange={handleChange}
           required
           style={{ width: '100%', padding: '0.5rem' }}
@@ -120,7 +77,7 @@ export default function TaskForm({ onSubmit, initialData = {}, onCancel, contact
         </label>
         <textarea
           name="description"
-          value={formData.description}
+          value={values.description}
           onChange={handleChange}
           style={{ width: '100%', padding: '0.5rem' }}
           rows="3"
@@ -136,7 +93,7 @@ export default function TaskForm({ onSubmit, initialData = {}, onCancel, contact
         <input
           type="datetime-local"
           name="dueDate"
-          value={formData.dueDate}
+          value={values.dueDate}
           onChange={handleChange}
           required
           style={{ width: '100%', padding: '0.5rem' }}
@@ -150,7 +107,7 @@ export default function TaskForm({ onSubmit, initialData = {}, onCancel, contact
         </label>
         <select
           name="status"
-          value={formData.status}
+          value={values.status}
           onChange={handleChange}
           style={{ width: '100%', padding: '0.5rem' }}
         >
@@ -167,7 +124,7 @@ export default function TaskForm({ onSubmit, initialData = {}, onCancel, contact
         </label>
         <select
           name="priority"
-          value={formData.priority}
+          value={values.priority}
           onChange={handleChange}
           style={{ width: '100%', padding: '0.5rem' }}
         >
@@ -179,22 +136,17 @@ export default function TaskForm({ onSubmit, initialData = {}, onCancel, contact
       
       {/* Buttons */}
       <div style={{ display: 'flex', gap: '0.5rem' }}>
-        <button
+        <Button
           type="submit"
-          style={{
-            backgroundColor: '#4a69bd',
-            color: 'white',
-            padding: '0.5rem 1rem',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
+          disabled={false}
+          variant="primary"
+          style={{ minWidth: '120px' }}
         >
           {initialData.id ? 'Update Task' : 'Create Task'}
-        </button>
+        </Button>
         
         {onCancel && (
-          <button
+          <Button
             type="button"
             onClick={onCancel}
             style={{
@@ -207,9 +159,9 @@ export default function TaskForm({ onSubmit, initialData = {}, onCancel, contact
             }}
           >
             Cancel
-          </button>
+          </Button>
         )}
       </div>
     </form>
-  )
+  );
 }

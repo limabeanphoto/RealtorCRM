@@ -1,84 +1,68 @@
-import { useState, useEffect } from 'react'
+// components/calls/CallFormRefactored.js
+import { useEffect } from 'react';
+import { useForm } from '../common/useForm';
 import Button from '../common/Button';
 
 export default function CallForm({ onSubmit, contact, onCancel, initialData = {} }) {
-  const [formData, setFormData] = useState({
+  // Use our custom form hook with initial values and auto-detected isDeal
+  const { values, handleChange, setFieldValue, createSubmitHandler } = useForm({
     contactId: contact?.id || '',
     duration: 0,
     notes: '',
     outcome: 'Follow Up', // Default value
+    isDeal: initialData.outcome === 'Deal Closed', // Auto-detect
     ...initialData
-  })
+  });
   
-  // State for follow-up task creation (only relevant for new calls)
-  const [createFollowUp, setCreateFollowUp] = useState(initialData?.outcome === 'Follow Up');
-  const [followUpData, setFollowUpData] = useState({
+  // For follow-up task creation (only relevant for new calls)
+  const { values: followUpValues, handleChange: handleFollowUpChange } = useForm({
     title: `Follow up with ${contact?.name || ''}`,
     priority: 'Medium',
     dueDate: new Date(new Date().setHours(17, 0, 0, 0) + 86400000).toISOString().slice(0, 16), // Default: Tomorrow at 5 PM
+  });
+  
+  // State for follow-up creation - handled separately since it's a checkbox
+  const { values: formOptions, handleChange: handleOptionsChange } = useForm({
+    createFollowUp: initialData?.outcome === 'Follow Up'
   });
 
   // Update follow-up defaults if contact changes (for new calls)
   useEffect(() => {
     if (!initialData.id && contact) { // Only for new calls when contact is present
-      setFollowUpData(prev => ({ ...prev, title: `Follow up with ${contact.name}` }));
+      setFieldValue('title', `Follow up with ${contact.name}`);
     }
   }, [contact, initialData.id]);
   
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    let processedValue;
-
-    if (type === 'checkbox') {
-      processedValue = checked;
-    } else if (name === 'duration') {
-      processedValue = parseInt(value) || 0;
-    } else {
-      processedValue = value;
+  // Auto-set isDeal if outcome is 'Deal Closed'
+  useEffect(() => {
+    if (values.outcome === 'Deal Closed') {
+      setFieldValue('isDeal', true);
     }
-
-    setFormData(prev => {
-      const newState = {
-        ...prev,
-        [name]: processedValue
-      };
-
-      // Auto-set follow up checkbox if outcome is 'Follow Up'
-      if (name === 'outcome' && value === 'Follow Up') {
-        setCreateFollowUp(true);
-      }
-      
-      // Auto-set isDeal if outcome is 'Deal Closed'
-      if (name === 'outcome') {
-        newState.isDeal = value === 'Deal Closed';
-      }
-
-      return newState;
-    });
-  };
+  }, [values.outcome]);
   
-  const handleFollowUpChange = (e) => {
-    setFollowUpData({
-      ...followUpData,
-      [e.target.name]: e.target.value
-    });
-  };
+  // Auto-set follow up checkbox if outcome is 'Follow Up'
+  useEffect(() => {
+    if (values.outcome === 'Follow Up') {
+      setFieldValue('createFollowUp', true);
+    }
+  }, [values.outcome]);
   
+  // Create a custom submit handler that will handle both the call and follow-up task
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     
     // Ensure contactId is set before submitting
-    if (!formData.contactId) {
-        alert("Please select a contact before logging the call.");
-        return;
+    if (!values.contactId) {
+      alert("Please select a contact before logging the call.");
+      return;
     }
 
     // Submit call data first
-    const callResult = await onSubmit(formData)
+    const callResult = await onSubmit(values);
     
     // If call was successful and follow-up is requested, create a task
     // Only do this for new calls (no id in initialData)
-    if (callResult && callResult.success && createFollowUp && !initialData.id) {
+    if (callResult && callResult.success && formOptions.createFollowUp && !initialData.id) {
       try {
         // Create follow-up task
         const taskResponse = await fetch('/api/tasks', {
@@ -88,27 +72,27 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           },
           body: JSON.stringify({
-            title: followUpData.title,
-            description: `Follow-up from call on ${new Date().toLocaleDateString()}${formData.notes ? `: ${formData.notes}` : ''}`,
-            priority: followUpData.priority,
-            dueDate: followUpData.dueDate,
-            contactId: formData.contactId,
+            title: followUpValues.title,
+            description: `Follow-up from call on ${new Date().toLocaleDateString()}${values.notes ? `: ${values.notes}` : ''}`,
+            priority: followUpValues.priority,
+            dueDate: followUpValues.dueDate,
+            contactId: values.contactId,
             callId: callResult.data.id,
             status: 'Open' // Tasks are always 'Open' initially
           })
-        })
+        });
         
-        const taskData = await taskResponse.json()
+        const taskData = await taskResponse.json();
         
         if (!taskData.success) {
-          console.error('Failed to create follow-up task:', taskData.message)
+          console.error('Failed to create follow-up task:', taskData.message);
           // Don't alert here, as the main call was successful
         }
       } catch (error) {
-        console.error('Error creating follow-up task:', error)
+        console.error('Error creating follow-up task:', error);
       }
     }
-  }
+  };
   
   return (
     <form onSubmit={handleSubmit} style={{ maxWidth: '500px', margin: '0 auto' }}>
@@ -134,7 +118,7 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
           id="duration"
           type="number"
           name="duration"
-          value={formData.duration}
+          value={values.duration}
           onChange={handleChange}
           min="0"
           required
@@ -149,7 +133,7 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
         <select
           id="outcome"
           name="outcome"
-          value={formData.outcome}
+          value={values.outcome}
           onChange={handleChange}
           required
           style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
@@ -168,7 +152,7 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
         <textarea
           id="notes"
           name="notes"
-          value={formData.notes}
+          value={values.notes}
           onChange={handleChange}
           style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
           rows="4"
@@ -187,13 +171,14 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
-            marginBottom: createFollowUp ? '1rem' : '0' // Remove bottom margin if details are hidden
+            marginBottom: formOptions.createFollowUp ? '1rem' : '0' // Remove bottom margin if details are hidden
           }}>
             <input
               type="checkbox"
               id="createFollowUp"
-              checked={createFollowUp}
-              onChange={(e) => setCreateFollowUp(e.target.checked)}
+              name="createFollowUp"
+              checked={formOptions.createFollowUp}
+              onChange={handleOptionsChange}
               style={{ marginRight: '0.5rem' }}
             />
             <label htmlFor="createFollowUp" style={{ fontWeight: 'bold' }}>
@@ -201,7 +186,7 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
             </label>
           </div>
           
-          {createFollowUp && (
+          {formOptions.createFollowUp && (
             <div style={{ marginTop: '1rem' }}> {/* Added margin top for spacing */}
               <div style={{ marginBottom: '1rem' }}>
                 <label htmlFor="followUpTitle" style={{ display: 'block', marginBottom: '0.5rem' }}>
@@ -211,7 +196,7 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
                   id="followUpTitle"
                   type="text"
                   name="title"
-                  value={followUpData.title}
+                  value={followUpValues.title}
                   onChange={handleFollowUpChange}
                   style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
                 />
@@ -224,7 +209,7 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
                 <select
                   id="followUpPriority"
                   name="priority"
-                  value={followUpData.priority}
+                  value={followUpValues.priority}
                   onChange={handleFollowUpChange}
                   style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
                 >
@@ -242,7 +227,7 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
                   id="followUpDueDate"
                   type="datetime-local"
                   name="dueDate"
-                  value={followUpData.dueDate}
+                  value={followUpValues.dueDate}
                   onChange={handleFollowUpChange}
                   style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
                   min={new Date().toISOString().slice(0, 16)} // Prevent setting past due dates
@@ -268,7 +253,7 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
           type="submit"
           variant="primary"
           tooltip={initialData.id ? 'Save changes to this call record' : 'Save this call record'}
-          disabled={!formData.contactId} // Disable if no contact is selected
+          disabled={!values.contactId} // Disable if no contact is selected
         >
           {initialData.id ? 'Update Call' : 'Log Call'}
         </Button>
