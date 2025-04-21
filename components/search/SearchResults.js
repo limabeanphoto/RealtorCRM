@@ -60,7 +60,8 @@ export default function SearchResults({ results, onClose }) {
       overflowY: 'auto',
       zIndex: 1000,
       position: 'absolute',
-      width: '100%'
+      width: '100%',
+      color: theme.colors.brand.text // Added this line to set text color
     }}>
       {/* Contacts Results */}
       {results.contacts.length > 0 && (
@@ -83,12 +84,13 @@ export default function SearchResults({ results, onClose }) {
                   padding: '0.5rem',
                   cursor: 'pointer',
                   borderRadius: '4px',
-                  transition: 'background-color 0.2s'
+                  transition: 'background-color 0.2s',
+                  color: theme.colors.brand.text // Added color here for list items
                 }}
                 onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <div style={{ fontWeight: 'bold' }}>{contact.name}</div>
+                <div style={{ fontWeight: 'bold', color: 'inherit' }}>{contact.name}</div>
                 <div style={{ fontSize: '0.8rem', color: theme.colors.brand.text }}>
                   {contact.company || 'No company'} • {contact.phone}
                 </div>
@@ -119,12 +121,13 @@ export default function SearchResults({ results, onClose }) {
                   padding: '0.5rem',
                   cursor: 'pointer',
                   borderRadius: '4px',
-                  transition: 'background-color 0.2s'
+                  transition: 'background-color 0.2s',
+                  color: theme.colors.brand.text // Added color here for list items
                 }}
                 onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <div style={{ fontWeight: 'bold' }}>
+                <div style={{ fontWeight: 'bold', color: 'inherit' }}>
                   Call with {call.contact?.name || 'Unknown'}
                 </div>
                 <div style={{ fontSize: '0.8rem', color: theme.colors.brand.text }}>
@@ -157,12 +160,13 @@ export default function SearchResults({ results, onClose }) {
                   padding: '0.5rem',
                   cursor: 'pointer',
                   borderRadius: '4px',
-                  transition: 'background-color 0.2s'
+                  transition: 'background-color 0.2s',
+                  color: theme.colors.brand.text // Added color here for list items
                 }}
                 onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <div style={{ fontWeight: 'bold' }}>{task.title}</div>
+                <div style={{ fontWeight: 'bold', color: 'inherit' }}>{task.title}</div>
                 <div style={{ fontSize: '0.8rem', color: theme.colors.brand.text }}>
                   Due: {formatDate(task.dueDate)} • {task.status}
                   {task.contact && ` • ${task.contact.name}`}
