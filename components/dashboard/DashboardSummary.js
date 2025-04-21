@@ -1,3 +1,4 @@
+// Updated components/dashboard/DashboardSummary.js to include Import Contacts button
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import StatCard from './StatCard';
@@ -285,6 +286,12 @@ export default function DashboardSummary() {
               onClick={() => router.push('/admin/contacts/assign')}
             >
               Assign Contacts
+            </button>
+            <button 
+              className="admin-button" 
+              onClick={() => router.push('/admin/contacts/import')}
+            >
+              Import Contacts
             </button>
             <button 
               className="admin-button" 
