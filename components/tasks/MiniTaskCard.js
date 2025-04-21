@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FaCheck, FaClock, FaAngleDown, FaAngleUp, FaEdit } from 'react-icons/fa';
 import theme from '../../styles/theme';
+import Button from '../common/Button';
 
 export default function MiniTaskCard({ 
   task, 
@@ -203,48 +204,33 @@ export default function MiniTaskCard({
           
           {/* Action Buttons */}
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.75rem' }}>
-            <button
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(task);
               }}
-              style={{
-                width: '28px',
-                height: '28px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: theme.colors.brand.primary, // Lima Bean Green
-                color: 'white',
-                border: 'none',
-                borderRadius: theme.borderRadius.sm,
-                cursor: 'pointer',
-              }}
+              variant="secondary"
+              size="small"
+              tooltip="Edit this task"
             >
               <FaEdit size={12} />
-            </button>
+            </Button>
             
-            <button
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 handleStatusChange(e);
               }}
-              style={{
-                backgroundColor: task.status === 'Completed' ? '#6c757d' : theme.colors.brand.primary,
-                color: 'white',
-                padding: '0.25rem 0.5rem',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-              }}
+              variant={task.status === 'Completed' ? 'outline' : 'primary'}
+              size="small"
+              tooltip={task.status === 'Completed' ? 'Mark as Active' : 'Mark as Completed'}
             >
               {task.status === 'Completed' ? 'Mark as Active' : 'Mark as Completed'}
-            </button>
+            </Button>
           </div>
         </div>
       )}
-      
+
       {/* CSS animations */}
       <style jsx global>{`
         @keyframes fadeIn {

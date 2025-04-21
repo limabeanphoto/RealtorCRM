@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FaClock, FaPhone, FaAngleDown, FaAngleUp, FaTasks } from 'react-icons/fa';
 import theme from '../../styles/theme';
-import Button from '../common/Button'; // Import Button
+import Button from '../common/Button';
 
 export default function MiniCallCard({ 
   call, 
@@ -138,7 +138,7 @@ export default function MiniCallCard({
                 e.stopPropagation();
                 onAddTask(call);
               }}
-              variant="secondary" // Example: Secondary variant
+              variant="secondary"
               size="small"
               tooltip="Create a follow-up task based on this call"
             >
