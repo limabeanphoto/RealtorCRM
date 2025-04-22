@@ -29,6 +29,7 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
   const [user, setUser] = useState(null);
   const searchRef = useRef(null);
   const userMenuRef = useRef(null);
+  const userMenuTriggerRef = useRef(null);
   
   // Get user data from localStorage on mount
   useEffect(() => {
@@ -122,7 +123,8 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
         setIsSearchOpen(false);
       }
       
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target) && 
+          userMenuTriggerRef.current && !userMenuTriggerRef.current.contains(event.target)) {
         setIsUserMenuOpen(false);
       }
     };
@@ -141,6 +143,7 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
       backgroundColor: theme.colors.brand.primary,
       color: 'white',
       width: '100%',
+      overflow: 'hidden', // Prevent vertical scrolling in sidebar
     }}>
       {/* Top section with toggle and search */}
       <div style={{
@@ -352,16 +355,14 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
       </nav>
       
       {/* User Menu at Bottom */}
-      <div 
-        ref={userMenuRef}
-        style={{
-          padding: '1rem',
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-          marginTop: 'auto',
-          position: 'relative',
-        }}
-      >
+      <div style={{
+        padding: '1rem',
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+        marginTop: 'auto',
+        position: 'relative',
+      }}>
         <div 
+          ref={userMenuTriggerRef}
           onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
           style={{
             display: 'flex',
@@ -372,9 +373,6 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
             borderRadius: '4px',
             transition: 'background-color 0.2s ease',
             backgroundColor: isUserMenuOpen ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
-            ':hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.1)'
-            }
           }}
         >
           {!isCollapsed ? (
@@ -386,71 +384,74 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
             <FaEllipsisV size={20} />
           )}
         </div>
-        
-        {/* User Menu Dropdown - FIXED POSITIONING FOR COLLAPSED SIDEBAR */}
-        {isUserMenuOpen && (
-          <div style={{
-            position: 'absolute',
-            bottom: isCollapsed ? 'auto' : '100%',
-            left: isCollapsed ? '70px' : '20px',
-            top: isCollapsed ? '0' : 'auto',
+      </div>
+      
+      {/* User Menu Dropdown - Completely separate from sidebar */}
+      {isUserMenuOpen && (
+        <div
+          ref={userMenuRef}
+          style={{
+            position: 'fixed', // Change to fixed positioning
+            top: isCollapsed ? 
+              userMenuTriggerRef.current?.getBoundingClientRect().top || 0 : // Align with trigger when collapsed
+              'auto',
+            bottom: !isCollapsed ? 
+              window.innerHeight - (userMenuTriggerRef.current?.getBoundingClientRect().top || 0) : // Position from bottom when expanded
+              'auto',
+            left: isCollapsed ? 
+              (userMenuTriggerRef.current?.getBoundingClientRect().left || 0) + 70 : // Position right of sidebar when collapsed
+              (userMenuTriggerRef.current?.getBoundingClientRect().left || 0) + 20, // Slight offset when expanded
             backgroundColor: 'white',
             borderRadius: '4px',
             boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
             width: '200px',
             zIndex: 1010,
-          }}>
-            <div 
-              style={{ 
-                padding: '0.75rem 1rem', 
-                borderBottom: '1px solid #eee',
-                color: theme.colors.brand.text,
-              }}
-            >
-              <div style={{ fontWeight: 'bold' }}>{user?.firstName} {user?.lastName}</div>
-              <div style={{ fontSize: '0.85rem', opacity: 0.8 }}>{user?.email}</div>
-            </div>
-            
-            <Link 
-              href="/settings"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.75rem 1rem',
-                color: theme.colors.brand.text,
-                textDecoration: 'none',
-                transition: 'background-color 0.2s ease',
-                ':hover': {
-                  backgroundColor: '#f8f9fa'
-                }
-              }}
-            >
-              <FaCog size={16} />
-              <span>Settings</span>
-            </Link>
-            
-            <div 
-              onClick={handleLogout}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.75rem 1rem',
-                color: theme.colors.brand.text,
-                cursor: 'pointer',
-                transition: 'background-color 0.2s ease',
-                ':hover': {
-                  backgroundColor: '#f8f9fa'
-                }
-              }}
-            >
-              <FaSignOutAlt size={16} />
-              <span>Logout</span>
-            </div>
+          }}
+        >
+          <div 
+            style={{ 
+              padding: '0.75rem 1rem', 
+              borderBottom: '1px solid #eee',
+              color: theme.colors.brand.text,
+            }}
+          >
+            <div style={{ fontWeight: 'bold' }}>{user?.firstName} {user?.lastName}</div>
+            <div style={{ fontSize: '0.85rem', opacity: 0.8 }}>{user?.email}</div>
           </div>
-        )}
-      </div>
+          
+          <Link 
+            href="/settings"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.75rem 1rem',
+              color: theme.colors.brand.text,
+              textDecoration: 'none',
+              transition: 'background-color 0.2s ease',
+            }}
+          >
+            <FaCog size={16} />
+            <span>Settings</span>
+          </Link>
+          
+          <div 
+            onClick={handleLogout}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.75rem 1rem',
+              color: theme.colors.brand.text,
+              cursor: 'pointer',
+              transition: 'background-color 0.2s ease',
+            }}
+          >
+            <FaSignOutAlt size={16} />
+            <span>Logout</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
