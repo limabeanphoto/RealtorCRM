@@ -143,8 +143,8 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
           required
           style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
         >
-          <option value="Follow Up">Follow Up</option>
           <option value="No Answer">No Answer</option>
+          <option value="Follow Up">Follow Up</option>
           <option value="Deal Closed">Deal Closed</option>
           <option value="Not Interested">Not Interested</option>
         </select>
