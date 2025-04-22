@@ -387,13 +387,13 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
           )}
         </div>
         
-        {/* User Menu Dropdown */}
+        {/* User Menu Dropdown - FIXED POSITIONING FOR COLLAPSED SIDEBAR */}
         {isUserMenuOpen && (
           <div style={{
             position: 'absolute',
-            bottom: isCollapsed ? 'auto' : '100%',  // Change from bottom to top for collapsed
+            bottom: isCollapsed ? 'auto' : '100%',
             left: isCollapsed ? '70px' : '20px',
-            top: isCollapsed ? '0' : 'auto',       // Add this for collapsed state
+            top: isCollapsed ? '0' : 'auto',
             backgroundColor: 'white',
             borderRadius: '4px',
             boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
