@@ -9,7 +9,7 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
     contactId: contact?.id || '',
     duration: 0,
     notes: '',
-    outcome: 'Follow Up', // Default value
+    outcome: 'No Answer', // Default value
     isDeal: initialData.outcome === 'Deal Closed', // Auto-detect
     ...initialData
   });
