@@ -1,9 +1,9 @@
-// components/calls/CallFormRefactored.js
+// components/calls/CallForm.js with fixes for updating metrics
 import { useEffect } from 'react';
 import { useForm } from '../common/useForm';
 import Button from '../common/Button';
 
-export default function CallForm({ onSubmit, contact, onCancel, initialData = {} }) {
+export default function CallForm({ onSubmit, contact, onCancel, initialData = {}, onMetricsUpdate }) {
   // Use our custom form hook with initial values and auto-detected isDeal
   const { values, handleChange, setFieldValue, createSubmitHandler } = useForm({
     contactId: contact?.id || '',
@@ -91,6 +91,11 @@ export default function CallForm({ onSubmit, contact, onCancel, initialData = {}
       } catch (error) {
         console.error('Error creating follow-up task:', error);
       }
+    }
+    
+    // Trigger dashboard metrics update if the call was successful
+    if (callResult && callResult.success && onMetricsUpdate) {
+      onMetricsUpdate();
     }
   };
   

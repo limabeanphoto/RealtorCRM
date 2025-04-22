@@ -1,4 +1,4 @@
-// Updated components/dashboard/DashboardSummary.js to include Import Contacts button
+// Modified components/dashboard/DashboardSummary.js with fixes for goal metrics
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import StatCard from './StatCard';
@@ -13,6 +13,7 @@ export default function DashboardSummary() {
     callsToday: 0,
     callsThisMonth: 0,
     callsThisYear: 0,
+    dealsToday: 0, // Added to track deals today
     loading: true
   });
   const [goals, setGoals] = useState({
@@ -32,7 +33,6 @@ export default function DashboardSummary() {
     // Fetch all data in parallel
     Promise.all([
       fetchMetricsData(),
-      fetchGoalsData(),
       fetchTasksData(),
       fetchFollowUpsData()
     ]).then(() => {
@@ -42,6 +42,13 @@ export default function DashboardSummary() {
       setDataLoading(false);
     });
   }, []);
+  
+  // Effect to update goals when metrics change
+  useEffect(() => {
+    if (!metrics.loading) {
+      updateGoalsData();
+    }
+  }, [metrics]);
   
   const fetchMetricsData = async () => {
     try {
@@ -89,6 +96,7 @@ export default function DashboardSummary() {
           callsToday: todayData.callsMetrics.total || 0,
           callsThisMonth: monthData.callsMetrics.total || 0,
           callsThisYear: yearData.callsMetrics.total || 0,
+          dealsToday: todayData.dealsMetrics.total || 0, // Store deals today
           loading: false,
           conversionRate: todayData.conversionRates?.rate || 0
         });
@@ -102,26 +110,20 @@ export default function DashboardSummary() {
     }
   };
   
-  const fetchGoalsData = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      
-      if (!token) {
-        console.error('No authentication token found');
-        return;
-      }
-      
-      // For simplicity, we'll use hardcoded goals for now
-      // In a real implementation, you'd fetch from an API
-      setGoals({
-        callGoal: { current: metrics.callsToday || 0, target: 10 },
-        dealGoal: { current: Math.floor((metrics.callsToday || 0) * (metrics.conversionRate || 0) / 100), target: 5 },
-        loading: false
-      });
-    } catch (error) {
-      console.error('Error fetching goals data:', error);
-      setGoals(prev => ({ ...prev, loading: false }));
-    }
+  // Update goals based on metrics
+  const updateGoalsData = () => {
+    // Update goals with the current metrics
+    setGoals({
+      callGoal: { 
+        current: metrics.callsToday || 0, 
+        target: 10 
+      },
+      dealGoal: { 
+        current: metrics.dealsToday || 0, 
+        target: 5 
+      },
+      loading: false
+    });
   };
   
   const fetchTasksData = async () => {
@@ -191,6 +193,12 @@ export default function DashboardSummary() {
     } catch (error) {
       console.error('Error fetching follow-ups:', error);
     }
+  };
+  
+  // Function to manually refresh metrics and goals
+  // This can be called after logging a call or deal
+  const refreshMetrics = () => {
+    fetchMetricsData();
   };
   
   if (dataLoading) {

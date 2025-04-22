@@ -1,3 +1,4 @@
+// components/calls/CallModal.js with updates for metrics refresh
 import { useState } from 'react';
 import CallForm from './CallForm';
 import BaseModal from '../common/BaseModal';
@@ -10,6 +11,7 @@ export default function CallModal({
   contacts, // Added contacts prop
   onContactSelect, // Added handler for contact selection
   onSubmit,
+  onMetricsUpdate, // New prop for metrics update
   mode = 'new'
 }) {
   const handleSubmit = async (formData) => {
@@ -66,6 +68,7 @@ export default function CallModal({
           contact={contact || call?.contact} // Pass the selected or existing contact
           initialData={initialData}
           onCancel={onClose}
+          onMetricsUpdate={onMetricsUpdate} // Pass the metrics update function
         />
       ) : (
         <div style={{ textAlign: 'center', padding: '1rem 0' }}>
