@@ -1,74 +1,97 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import DateRangeSelector from '../stats/DateRangeSelector'; // Corrected import path
-import Button from '../common/Button'; // Assuming this component exists
-import Card from '../common/Card'; // Assuming this component exists
-import Spinner from '../common/Spinner'; // Assuming this component exists
-import { useTheme } from 'next-themes'; // Or your theme context
+import Button from '../common/Button';
+import Card from '../common/Card';
+import Spinner from '../common/Spinner';
+import { useTheme } from 'next-themes';
+import { useRouter } from 'next/router'; // Import useRouter
 
-// Helper function for dynamic colors (optional, replace with your theme colors if needed)
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82ca9d'];
 
 const TeamAnalytics = () => {
   const [users, setUsers] = useState([]);
-  const [selectedUserId, setSelectedUserId] = useState('all'); // 'all' or a specific user ID
-  const [dateRange, setDateRange] = useState('month'); // e.g., 'today', 'week', 'month', 'custom'
-  const [customDateRange, setCustomDateRange] = useState({ start: null, end: null }); // For custom range picker
+  const [selectedUserId, setSelectedUserId] = useState('all');
+  const [dateRange, setDateRange] = useState('month');
+  const [customDateRange, setCustomDateRange] = useState({ start: null, end: null });
   const [teamData, setTeamData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { theme: nextTheme } = useTheme(); // Adapt if using a different theme provider
+  const { theme: nextTheme } = useTheme();
+  const router = useRouter(); // Initialize router
 
-  // Theme object (replace with your actual theme structure or context)
-  // Using a simplified theme structure here for demonstration
   const theme = {
       colors: {
-          primary: nextTheme === 'dark' ? '#60a5fa' : '#3b82f6', // Example blue
-          secondary: nextTheme === 'dark' ? '#4ade80' : '#22c55e', // Example green
-          background: nextTheme === 'dark' ? '#1f2937' : '#f9fafb', // Example dark/light bg
-          cardBackground: nextTheme === 'dark' ? '#374151' : '#ffffff', // Example card bg
-          text: nextTheme === 'dark' ? '#d1d5db' : '#111827', // Example text color
-          muted: nextTheme === 'dark' ? '#6b7280' : '#6b7280', // Example muted color
-          error: nextTheme === 'dark' ? '#f87171' : '#ef4444', // Example error color
-          success: nextTheme === 'dark' ? '#4ade80' : '#22c55e', // Example success color (matches secondary here)
+          primary: nextTheme === 'dark' ? '#60a5fa' : '#3b82f6',
+          secondary: nextTheme === 'dark' ? '#4ade80' : '#22c55e',
+          background: nextTheme === 'dark' ? '#1f2937' : '#f9fafb',
+          cardBackground: nextTheme === 'dark' ? '#374151' : '#ffffff',
+          text: nextTheme === 'dark' ? '#d1d5db' : '#111827',
+          muted: nextTheme === 'dark' ? '#6b7280' : '#6b7280',
+          error: nextTheme === 'dark' ? '#f87171' : '#ef4444',
+          success: nextTheme === 'dark' ? '#4ade80' : '#22c55e',
       },
       borderRadius: {
           sm: '0.25rem',
           md: '0.5rem',
           lg: '0.75rem',
       },
-      spacing: (factor) => `${factor * 0.5}rem`, // Example spacing function (adjust multiplier as needed)
+      spacing: (factor) => `${factor * 0.5}rem`,
   };
 
-
-  // Fetch Users for the dropdown
+  // Fetch Users (Add Authorization Header)
   useEffect(() => {
     const fetchUsers = async () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+          setError("Authentication token not found. Please log in.");
+          setLoading(false);
+          router.push('/login'); // Redirect to login if no token
+          return;
+      }
       try {
-        // Assuming /api/users returns an array like [{ id: '...', name: '...' }]
-        const response = await fetch('/api/users');
+        const response = await fetch('/api/users', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          if (response.status === 401) {
+             setError("Authentication failed. Please log in again.");
+             router.push('/login'); // Redirect on 401
+          } else {
+              throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return; // Stop execution if response is not ok
         }
         const data = await response.json();
-         // Ensure 'data' is an array before spreading
-         const usersArray = Array.isArray(data) ? data : (data.users || []); // Adjust if API nests users under a key
+        const usersArray = Array.isArray(data) ? data : (data.users || []);
         setUsers([{ id: 'all', name: 'All Team Members' }, ...usersArray]);
       } catch (err) {
         console.error("Failed to fetch users:", err);
-        setError("Failed to load team members.");
+        // Keep specific auth error if already set, otherwise set generic error
+        if (!error) {
+           setError("Failed to load team members.");
+        }
         setUsers([{ id: 'all', name: 'All Team Members' }]);
       }
     };
     fetchUsers();
-  }, []); // Fetch users only once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router]); // Add router to dependencies
 
-  // Fetch Team Analytics Data
+  // Fetch Team Analytics Data (Add Authorization Header)
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
-    // Don't clear previous data immediately, maybe show stale data while loading
-    // setTeamData(null);
+
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        setError("Authentication token not found. Please log in.");
+        setLoading(false);
+        router.push('/login'); // Redirect to login
+        return;
+    }
 
     const params = new URLSearchParams();
     params.append('userId', selectedUserId);
@@ -79,39 +102,49 @@ const TeamAnalytics = () => {
     }
 
     try {
-      // Use the confirmed API endpoint
-      const response = await fetch(`/api/stats/team-performance?${params.toString()}`);
+      const response = await fetch(`/api/stats/team-performance?${params.toString()}`, {
+        headers: {
+          'Authorization': `Bearer ${token}` // Add the Authorization header
+        }
+      });
+
       if (!response.ok) {
-         // Try to parse error message from backend if available
-         let errorMsg = `HTTP error! status: ${response.status}`;
-         try {
-             const errorData = await response.json();
-             errorMsg += `, message: ${errorData.message || response.statusText}`;
-         } catch (parseError) {
-             // Fallback if response is not JSON or message key doesn't exist
-             errorMsg += `, message: ${response.statusText}`;
-         }
+        let errorMsg = `HTTP error! status: ${response.status}`;
+        if (response.status === 401) {
+            errorMsg += `, message: Authentication required. Please log in again.`;
+            // Optionally redirect to login immediately on 401 during data fetch
+             router.push('/login');
+        } else {
+            try {
+                const errorData = await response.json();
+                errorMsg += `, message: ${errorData.message || response.statusText}`;
+            } catch (parseError) {
+                errorMsg += `, message: ${response.statusText}`;
+            }
+        }
         throw new Error(errorMsg);
       }
-      const data = await response.json();
 
-      // Set the fetched team data
+      const data = await response.json();
       setTeamData(data);
 
     } catch (err) {
       console.error("Failed to fetch team data:", err);
       setError(`Failed to load team analytics data: ${err.message}`);
-      setTeamData(null); // Ensure data is null on error
+      setTeamData(null);
     } finally {
       setLoading(false);
     }
-  }, [selectedUserId, dateRange, customDateRange]); // Dependencies for useCallback
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedUserId, dateRange, customDateRange, router]); // Added router dependency
 
-  // Trigger data fetch when filters change
+  // Initial fetch and refetch on filter changes
   useEffect(() => {
-    fetchData();
-  }, [fetchData]); // fetchData is memoized by useCallback
-
+    // Prevent fetching if users haven't loaded yet or if there was an auth error during user fetch
+     if (users.length > 0) {
+       fetchData();
+     }
+  }, [fetchData, users]); // Added users dependency
 
   // --- Handlers ---
   const handleUserChange = (event) => {
@@ -125,13 +158,10 @@ const TeamAnalytics = () => {
      } else if (range !== 'custom') {
        setCustomDateRange({ start: null, end: null });
      }
-     // Data fetch is triggered by the useEffect watching 'dateRange' and 'customDateRange'
    };
-
 
   // --- Rendering Logic ---
 
-  // Custom Tooltip for Charts
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
@@ -146,7 +176,6 @@ const TeamAnalytics = () => {
           <p style={{ fontWeight: 'bold', marginBottom: theme.spacing(0.5) }}>{label}</p>
           {payload.map((entry, index) => (
             <p key={`item-${index}`} style={{ color: entry.color || entry.fill }}>
-              {/* Accessing name/value which are standard recharts payload properties */}
               {`${entry.name}: ${entry.value}`}
             </p>
           ))}
@@ -156,72 +185,81 @@ const TeamAnalytics = () => {
     return null;
   };
 
+  // Render null or a message if user fetch failed with auth error before attempting dashboard render
+   if (!loading && error && error.includes("Authentication")) {
+       return (
+           <div style={{ padding: theme.spacing(3), textAlign: 'center' }}>
+               <p style={{ color: theme.colors.error }}>{error}</p>
+               <Button onClick={() => router.push('/login')} style={{ marginTop: theme.spacing(2) }}>
+                   Go to Login
+               </Button>
+           </div>
+       );
+   }
 
   return (
     <div style={{ padding: theme.spacing(3), backgroundColor: theme.colors.background, color: theme.colors.text, minHeight: '100vh' }}>
       <h1 style={{ marginBottom: theme.spacing(3), color: theme.colors.primary, fontWeight: 'bold', fontSize: '1.75rem' }}>Team Analytics Dashboard</h1>
 
-      {/* Filter Section */}
-      <Card style={{ marginBottom: theme.spacing(3), padding: theme.spacing(2), backgroundColor: theme.colors.cardBackground, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: theme.spacing(2), alignItems: 'center' }}>
-          <div>
-            <label htmlFor="teamMemberSelect" style={{ marginRight: theme.spacing(1), color: theme.colors.text, fontSize: '0.875rem' }}>Team Member:</label>
-            <select
-              id="teamMemberSelect"
-              value={selectedUserId}
-              onChange={handleUserChange}
-              style={{
-                  padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
-                  borderRadius: theme.borderRadius.sm,
-                  border: `1px solid ${theme.colors.muted}`,
-                  backgroundColor: theme.colors.background, // Use main background for select
-                  color: theme.colors.text,
-                  minWidth: '150px'
-              }}
-              disabled={loading || users.length <= 1} // Disable if loading or only 'All' option
-            >
-              {users.map(user => (
-                <option key={user.id} value={user.id}>{user.name}</option>
-              ))}
-            </select>
-          </div>
-           {/* Assuming DateRangeSelector handles its own styling and theme */}
-          <DateRangeSelector
-            currentRange={dateRange}
-            onRangeChange={handleDateRangeChange}
-            disabled={loading}
-             // Pass theme if needed by DateRangeSelector internally
-             // theme={theme}
-          />
-          <Button onClick={fetchData} disabled={loading} style={{ marginLeft: 'auto' }}>
-            {loading ? <Spinner size="sm" /> : 'Refresh Data'}
-          </Button>
-        </div>
-      </Card>
+      {/* Filter Section - Only show if users loaded successfully */}
+      {users.length > 0 && (
+          <Card style={{ marginBottom: theme.spacing(3), padding: theme.spacing(2), backgroundColor: theme.colors.cardBackground, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: theme.spacing(2), alignItems: 'center' }}>
+                  <div>
+                      <label htmlFor="teamMemberSelect" style={{ marginRight: theme.spacing(1), color: theme.colors.text, fontSize: '0.875rem' }}>Team Member:</label>
+                      <select
+                          id="teamMemberSelect"
+                          value={selectedUserId}
+                          onChange={handleUserChange}
+                          style={{
+                              padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
+                              borderRadius: theme.borderRadius.sm,
+                              border: `1px solid ${theme.colors.muted}`,
+                              backgroundColor: theme.colors.background,
+                              color: theme.colors.text,
+                              minWidth: '150px'
+                          }}
+                          disabled={loading || users.length <= 1}
+                      >
+                          {users.map(user => (
+                              <option key={user.id} value={user.id}>{user.name}</option>
+                          ))}
+                      </select>
+                  </div>
+                  <DateRangeSelector
+                      currentRange={dateRange}
+                      onRangeChange={handleDateRangeChange}
+                      disabled={loading}
+                  />
+                  <Button onClick={fetchData} disabled={loading} style={{ marginLeft: 'auto' }}>
+                      {loading ? <Spinner size="sm" /> : 'Refresh Data'}
+                  </Button>
+              </div>
+          </Card>
+      )}
 
-      {/* Loading and Error States */}
+      {/* Loading State */}
       {loading && (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
               <Spinner />
           </div>
       )}
-       {error && !loading && (
+
+      {/* Error State (excluding auth errors handled above) */}
+       {error && !loading && !error.includes("Authentication") && (
          <Card style={{ marginBottom: theme.spacing(3), padding: theme.spacing(2), backgroundColor: '#ffebee', color: theme.colors.error, border: `1px solid ${theme.colors.error}` }}>
            <p><strong>Error:</strong> {error}</p>
            <Button onClick={fetchData} style={{ marginTop: theme.spacing(1) }}>Retry</Button>
          </Card>
        )}
 
-
-      {/* Dashboard Content Area */}
+      {/* Dashboard Content Area - Only render if not loading, no error, and data exists */}
        {!loading && !error && teamData ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(3) }}>
            {/* Section 1: Performance Overview */}
            <Card style={{ padding: theme.spacing(2), backgroundColor: theme.colors.cardBackground }}>
              <h2 style={{ color: theme.colors.primary, marginBottom: theme.spacing(2), fontSize: '1.25rem', fontWeight: '600' }}>Performance Overview</h2>
-             {/* Display Key Metrics: Adapt based on teamData structure */}
              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: theme.spacing(2) }}>
-               {/* Assuming teamData.summary contains these metrics */}
                <MetricCard title="Call Volume" value={teamData.summary?.totalCalls ?? 'N/A'} change={teamData.summary?.callVolumeChange ?? null} />
                <MetricCard title="Conversion Rate" value={`${teamData.summary?.conversionRate ?? 'N/A'}%`} change={teamData.summary?.conversionRateChange ?? null} />
                <MetricCard title="Deals Closed" value={teamData.summary?.totalDeals ?? 'N/A'} change={teamData.summary?.dealsClosedChange ?? null} />
@@ -229,8 +267,6 @@ const TeamAnalytics = () => {
                <MetricCard title="Tasks Completed" value={teamData.summary?.completedTasks ?? 'N/A'} />
                <MetricCard title="Avg. Follow-Up (Days)" value={teamData.summary?.avgFollowUpTime?.toFixed(1) ?? 'N/A'} />
              </div>
-
-             {/* Goals Progress - Assuming teamData.goals structure */}
               {teamData.goals && Object.keys(teamData.goals).length > 0 && (
                 <div style={{ marginTop: theme.spacing(3) }}>
                   <h3 style={{ color: theme.colors.secondary, marginBottom: theme.spacing(1), fontSize: '1.1rem', fontWeight: '600' }}>Goal Progress</h3>
@@ -243,14 +279,10 @@ const TeamAnalytics = () => {
               )}
             </Card>
 
-
             {/* Section 2: Activity Breakdown */}
             <Card style={{ padding: theme.spacing(2), backgroundColor: theme.colors.cardBackground }}>
                <h2 style={{ color: theme.colors.primary, marginBottom: theme.spacing(2), fontSize: '1.25rem', fontWeight: '600' }}>Activity Breakdown</h2>
                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: theme.spacing(3) }}>
-
-               {/* Calls by Outcome Pie Chart */}
-               {/* Assuming teamData.callsByOutcome is like [{ name: '...', value: ... }] */}
                {teamData.callsByOutcome && teamData.callsByOutcome.length > 0 ? (
                 <div>
                   <h3 style={{ color: theme.colors.secondary, marginBottom: theme.spacing(1), textAlign: 'center', fontSize: '1rem', fontWeight: '500' }}>Calls by Outcome</h3>
@@ -263,8 +295,8 @@ const TeamAnalytics = () => {
                           labelLine={false}
                           outerRadius={100}
                           fill="#8884d8"
-                          dataKey="value" // Matches the assumed API structure { name: '...', value: ... }
-                          nameKey="name"  // Use 'name' from data for labels/tooltips
+                          dataKey="value"
+                          nameKey="name"
                           label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                           >
                           {teamData.callsByOutcome.map((entry, index) => (
@@ -277,51 +309,35 @@ const TeamAnalytics = () => {
                    </ResponsiveContainer>
                  </div>
                ) : <p style={{color: theme.colors.muted, textAlign: 'center'}}>No call outcome data.</p>}
-
-
-                {/* Activity by Day Bar Chart */}
-                {/* Assuming teamData.activityByDay is like [{ day: 'Mon', calls: ..., tasks: ... }] */}
                  {teamData.activityByDay && teamData.activityByDay.length > 0 ? (
                    <div>
                      <h3 style={{ color: theme.colors.secondary, marginBottom: theme.spacing(1), textAlign: 'center', fontSize: '1rem', fontWeight: '500' }}>Activity by Day</h3>
                      <ResponsiveContainer width="100%" height={300}>
                        <BarChart data={teamData.activityByDay}>
-                         <CartesianGrid strokeDasharray="3 3" stroke={theme.colors.muted + '50'} /> {/* Muted grid */}
+                         <CartesianGrid strokeDasharray="3 3" stroke={theme.colors.muted + '50'} />
                          <XAxis dataKey="day" stroke={theme.colors.text} fontSize="0.75rem" />
                          <YAxis stroke={theme.colors.text} fontSize="0.75rem"/>
                          <Tooltip content={<CustomTooltip />} />
                          <Legend wrapperStyle={{fontSize: '0.8rem'}}/>
-                         {/* Check if 'calls' key exists in the first data item */}
                          {teamData.activityByDay[0]?.hasOwnProperty('calls') && <Bar dataKey="calls" fill={theme.colors.primary} name="Calls" />}
-                         {/* Check if 'tasks' key exists */}
                          {teamData.activityByDay[0]?.hasOwnProperty('tasks') && <Bar dataKey="tasks" fill={theme.colors.secondary} name="Tasks Completed" />}
-                         {/* Add other potential keys */}
                          {teamData.activityByDay[0]?.hasOwnProperty('emails') && <Bar dataKey="emails" fill="#FFBB28" name="Emails Sent" />}
                        </BarChart>
                      </ResponsiveContainer>
                    </div>
                  ) : <p style={{color: theme.colors.muted, textAlign: 'center'}}>No daily activity data.</p>}
-
                </div>
             </Card>
-
 
            {/* Section 3: Contact Management */}
            <Card style={{ padding: theme.spacing(2), backgroundColor: theme.colors.cardBackground }}>
              <h2 style={{ color: theme.colors.primary, marginBottom: theme.spacing(2), fontSize: '1.25rem', fontWeight: '600' }}>Contact Management</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: theme.spacing(3) }}>
-
-                {/* Display contact stats */}
-                {/* Assuming teamData.contactStats contains these */}
                 <MetricCard title="Total Contacts" value={teamData.contactStats?.totalAssigned ?? 'N/A'} />
                 <MetricCard title="New Contacts" value={teamData.contactStats?.newContacts ?? 'N/A'} />
                 <MetricCard title="Contact Conversion" value={`${teamData.contactStats?.conversionRate?.toFixed(1) ?? 'N/A'}%`} />
-
-
-               {/* Contact Statuses Pie Chart */}
-               {/* Assuming teamData.contactStatusDistribution is like [{ name: '...', value: ... }] */}
                {teamData.contactStatusDistribution && teamData.contactStatusDistribution.length > 0 ? (
-                 <div style={{ gridColumn: 'span 1 / span 1' }}> {/* Allow pie to take space */}
+                 <div style={{ gridColumn: 'span 1 / span 1' }}>
                    <h3 style={{ color: theme.colors.secondary, marginBottom: theme.spacing(1), textAlign: 'center', fontSize: '1rem', fontWeight: '500' }}>Contact Statuses</h3>
                     <ResponsiveContainer width="100%" height={300}>
                      <PieChart>
@@ -332,8 +348,8 @@ const TeamAnalytics = () => {
                           labelLine={false}
                           outerRadius={100}
                           fill="#ffc658"
-                          dataKey="value" // Correct key assumed
-                          nameKey="name" // Use name for label
+                          dataKey="value"
+                          nameKey="name"
                           label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                        >
                          {teamData.contactStatusDistribution.map((entry, index) => (
@@ -345,7 +361,7 @@ const TeamAnalytics = () => {
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
-               ): <MetricCard title="Contact Statuses" value="No data" /> /* Placeholder if no data */}
+               ): <MetricCard title="Contact Statuses" value="No data" />}
               </div>
            </Card>
 
@@ -353,15 +369,9 @@ const TeamAnalytics = () => {
             <Card style={{ padding: theme.spacing(2), backgroundColor: theme.colors.cardBackground }}>
               <h2 style={{ color: theme.colors.primary, marginBottom: theme.spacing(2), fontSize: '1.25rem', fontWeight: '600' }}>Tasks & Follow-ups</h2>
                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: theme.spacing(3) }}>
-
-                 {/* Display task stats */}
-                 {/* Assuming teamData.taskStats contains these */}
                  <MetricCard title="Tasks Completed" value={teamData.taskStats?.completed ?? 'N/A'} />
                  <MetricCard title="Tasks Outstanding" value={teamData.taskStats?.outstanding ?? 'N/A'} />
                  <MetricCard title="Tasks Overdue" value={teamData.taskStats?.overdue ?? 'N/A'} />
-
-                 {/* Task Status Distribution Pie Chart */}
-                 {/* Assuming teamData.taskStatusDistribution is like [{ name: '...', value: ... }] */}
                  {teamData.taskStatusDistribution && teamData.taskStatusDistribution.length > 0 ? (
                      <div style={{ gridColumn: 'span 1 / span 1' }}>
                          <h3 style={{ color: theme.colors.secondary, marginBottom: theme.spacing(1), textAlign: 'center', fontSize: '1rem', fontWeight: '500' }}>Task Statuses</h3>
@@ -373,13 +383,13 @@ const TeamAnalytics = () => {
                                      cy="50%"
                                      outerRadius={100}
                                      fill="#82ca9d"
-                                     dataKey="value" // Correct key assumed
-                                     nameKey="name" // Use name for label
+                                     dataKey="value"
+                                     nameKey="name"
                                      labelLine={false}
                                      label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                                  >
                                      {teamData.taskStatusDistribution.map((entry, index) => (
-                                         <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} /> // Offset colors
+                                         <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
                                      ))}
                                  </Pie>
                                  <Tooltip content={<CustomTooltip />} />
@@ -392,7 +402,6 @@ const TeamAnalytics = () => {
              </Card>
 
             {/* Performance Metrics Radar Chart */}
-            {/* Using teamData.performanceMetrics directly from API snippet */}
             {teamData.performanceMetrics && teamData.performanceMetrics.length > 0 ? (
                <Card style={{ padding: theme.spacing(2), backgroundColor: theme.colors.cardBackground }}>
                   <h2 style={{ color: theme.colors.primary, marginBottom: theme.spacing(2), textAlign: 'center', fontSize: '1.25rem', fontWeight: '600' }}>Overall Performance Areas</h2>
@@ -403,7 +412,7 @@ const TeamAnalytics = () => {
                       <PolarRadiusAxis angle={30} domain={[0, 100]} stroke={theme.colors.muted} fontSize="0.75rem"/>
                       <Radar
                           name={selectedUserId === 'all' ? 'Team Average' : (users.find(u=>u.id === selectedUserId)?.name || 'Selected User')}
-                          dataKey="A" // Matches the 'A' key from the API snippet
+                          dataKey="A"
                           stroke={theme.colors.primary}
                           fill={theme.colors.primary}
                           fillOpacity={0.6}
@@ -416,7 +425,7 @@ const TeamAnalytics = () => {
             ) : <p style={{color: theme.colors.muted, textAlign: 'center'}}>No performance metrics data available.</p>}
         </div>
       ) : (
-         // Display message when there's no error, not loading, but no data
+         // Display message when no data after loading without errors
          !loading && !error && !teamData && (
            <Card style={{ padding: theme.spacing(4), textAlign: 'center', backgroundColor: theme.colors.cardBackground, color: theme.colors.text }}>
              <p style={{marginBottom: theme.spacing(2)}}>No data available for the selected filters.</p>
@@ -426,7 +435,6 @@ const TeamAnalytics = () => {
                   setSelectedUserId('all');
                   setDateRange('month');
                   setCustomDateRange({ start: null, end: null });
-                  // fetchData() will be triggered by the state change effect
                 }}
               >
                Reset Filters
@@ -438,12 +446,9 @@ const TeamAnalytics = () => {
   );
 };
 
-
 // --- Helper Components ---
 
-// Metric Card Component
 const MetricCard = React.memo(({ title, value, change = null }) => {
-   // Using inline theme object for simplicity, ideally consume from context
    const theme = {
      colors: { text: '#111827', muted: '#6b7280', success: '#10b981', error: '#ef4444', cardBackground: '#ffffff' },
      spacing: (f) => `${f * 0.5}rem`,
@@ -455,8 +460,7 @@ const MetricCard = React.memo(({ title, value, change = null }) => {
 
    return (
      <div style={{
-       backgroundColor: theme.colors.cardBackground, // Inner card bg can differ if needed
-       // border: `1px solid ${theme.colors.muted + '30'}`, // Subtle border
+       backgroundColor: theme.colors.cardBackground,
        padding: theme.spacing(2),
        borderRadius: theme.borderRadius.md,
        textAlign: 'center',
@@ -472,13 +476,11 @@ const MetricCard = React.memo(({ title, value, change = null }) => {
      </div>
    );
  });
-MetricCard.displayName = 'MetricCard'; // Add display name for React DevTools
+MetricCard.displayName = 'MetricCard';
 
-
-// Goal Progress Component
  const GoalProgress = React.memo(({ title, current, target, theme }) => {
    const percentage = target > 0 ? Math.min(100, Math.max(0, Math.round((current / target) * 100))) : 0;
-   const barColor = percentage >= 100 ? theme.colors.success : (percentage > 75 ? theme.colors.primary : (percentage > 40 ? '#FFBB28' : theme.colors.error)); // Color based on progress
+   const barColor = percentage >= 100 ? theme.colors.success : (percentage > 75 ? theme.colors.primary : (percentage > 40 ? '#FFBB28' : theme.colors.error));
 
    return (
      <div style={{ marginBottom: theme.spacing(1.5) }}>
@@ -498,16 +500,13 @@ MetricCard.displayName = 'MetricCard'; // Add display name for React DevTools
      </div>
    );
  });
- GoalProgress.displayName = 'GoalProgress'; // Add display name
+ GoalProgress.displayName = 'GoalProgress';
 
-// Helper to format goal keys into readable titles
 const formatGoalTitle = (key) => {
-   // Example: turns 'callsGoal' into 'Calls Goal'
-   return key.replace(/([A-Z])/g, ' $1') // Add space before caps
-           .replace(/Goal$/, ' Goal')   // Ensure 'Goal' suffix has space
-           .replace(/_/g, ' ')          // Replace underscores with spaces
-           .replace(/^\w/, c => c.toUpperCase()); // Capitalize first letter
+   return key.replace(/([A-Z])/g, ' $1')
+           .replace(/Goal$/, ' Goal')
+           .replace(/_/g, ' ')
+           .replace(/^\w/, c => c.toUpperCase());
  };
-
 
 export default TeamAnalytics;
