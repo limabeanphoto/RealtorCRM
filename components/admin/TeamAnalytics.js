@@ -43,7 +43,7 @@ const TeamAnalytics = () => {
     const fetchUsers = async () => {
       setLoading(true); // Set loading for user fetch
       setError(null); // Clear previous errors
-      const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
       if (!token) {
           // Don't redirect, just set error. Page guard should handle redirect.
@@ -102,7 +102,7 @@ const TeamAnalytics = () => {
     // Don't clear error here, let user see the error from user fetch if it happened
     // setError(null);
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (!token) {
         // No token found, error should have been set by user fetch effect.
         // Ensure error state persists if it was already set.
