@@ -456,16 +456,16 @@ const TeamAnalytics = () => {
                        <Card style={{ padding: theme.spacing(2), backgroundColor: theme.colors.cardBackground }}>
                            <h2 style={{ color: theme.colors.primary, marginBottom: theme.spacing(2), fontSize: '1.25rem', fontWeight: '600' }}>Contact Management</h2>
                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: theme.spacing(3) }}>
-                               <MetricCard title="Total Contacts" value={teamData.contactStats?.totalAssigned ?? 'N/A'} />
-                               <MetricCard title="New Contacts" value={teamData.contactStats?.newContacts ?? 'N/A'} />
-                               <MetricCard title="Contact Conversion" value={`${teamData.contactStats?.conversionRate?.toFixed(1) ?? 'N/A'}%`} />
-                               {teamData.contactStatusDistribution && teamData.contactStatusDistribution.length > 0 ? (
+                               <MetricCard title="Total Contacts" value={teamData.summary?.totalContacts ?? 'N/A'} />
+                               <MetricCard title="New Contacts" value={teamData.summary?.totalContacts ?? 'N/A'} />
+                               <MetricCard title="Contact Conversion" value={`${teamData.summary?.conversionRate?.toFixed(1) ?? 'N/A'}%`} />
+                               {teamData.contactsStatus && teamData.contactsStatus.length > 0 ? (
                                    <div style={{ gridColumn: 'span 1 / span 1' }}>
                                        <h3 style={{ color: theme.colors.secondary, marginBottom: theme.spacing(1), textAlign: 'center', fontSize: '1rem', fontWeight: '500' }}>Contact Statuses</h3>
                                        <ResponsiveContainer width="100%" height={300}>
                                            <PieChart>
-                                               <Pie data={teamData.contactStatusDistribution} cx="50%" cy="50%" labelLine={false} outerRadius={100} fill="#ffc658" dataKey="value" nameKey="name" label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
-                                                   {teamData.contactStatusDistribution.map((entry, index) => (<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />))}
+                                               <Pie data={teamData.contactsStatus} cx="50%" cy="50%" labelLine={false} outerRadius={100} fill="#ffc658" dataKey="value" nameKey="name" label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
+                                                   {teamData.contactsStatus.map((entry, index) => (<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />))}
                                                </Pie>
                                                <Tooltip content={<CustomTooltip />} />
                                                <Legend />
@@ -480,16 +480,16 @@ const TeamAnalytics = () => {
                        <Card style={{ padding: theme.spacing(2), backgroundColor: theme.colors.cardBackground }}>
                            <h2 style={{ color: theme.colors.primary, marginBottom: theme.spacing(2), fontSize: '1.25rem', fontWeight: '600' }}>Tasks & Follow-ups</h2>
                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: theme.spacing(3) }}>
-                               <MetricCard title="Tasks Completed" value={teamData.taskStats?.completed ?? 'N/A'} />
-                               <MetricCard title="Tasks Outstanding" value={teamData.taskStats?.outstanding ?? 'N/A'} />
-                               <MetricCard title="Tasks Overdue" value={teamData.taskStats?.overdue ?? 'N/A'} />
-                               {teamData.taskStatusDistribution && teamData.taskStatusDistribution.length > 0 ? (
+                               <MetricCard title="Tasks Completed" value={teamData.summary?.tasksCompleted ?? 'N/A'} />
+                               <MetricCard title="Tasks Outstanding" value={(teamData.summary?.tasksTotalCount - teamData.summary?.tasksCompleted) ?? 'N/A'} />
+                               <MetricCard title="Tasks Overdue" value={teamData.overdueTasks ?? 'N/A'} />
+                               {teamData.tasksStatus && teamData.tasksStatus.length > 0 ? (
                                    <div style={{ gridColumn: 'span 1 / span 1' }}>
                                        <h3 style={{ color: theme.colors.secondary, marginBottom: theme.spacing(1), textAlign: 'center', fontSize: '1rem', fontWeight: '500' }}>Task Statuses</h3>
                                        <ResponsiveContainer width="100%" height={300}>
                                            <PieChart>
-                                               <Pie data={teamData.taskStatusDistribution} cx="50%" cy="50%" outerRadius={100} fill="#82ca9d" dataKey="value" nameKey="name" labelLine={false} label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
-                                                   {teamData.taskStatusDistribution.map((entry, index) => (<Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />))}
+                                               <Pie data={teamData.tasksStatus} cx="50%" cy="50%" outerRadius={100} fill="#82ca9d" dataKey="value" nameKey="name" labelLine={false} label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}>
+                                                   {teamData.tasksStatus.map((entry, index) => (<Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />))}
                                                </Pie>
                                                <Tooltip content={<CustomTooltip />} />
                                                <Legend />
