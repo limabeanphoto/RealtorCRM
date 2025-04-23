@@ -73,11 +73,43 @@ const TeamAnalytics = () => {
           throw new Error(errorMsg);
         }
         const data = await response.json();
-        const usersArray = Array.isArray(data) ? data : (data.users || []);
-        if (isMounted) {
-          setUsers([{ id: 'all', name: 'All Team Members' }, ...usersArray]);
-          // Don't setLoading(false) here, let fetchData handle the final loading state
-        }
+        try {
+            const response = await fetch('/api/users', {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            if (!response.ok) {
+              let errorMsg = `Failed to fetch users: ${response.status}`;
+               if (response.status === 401) {
+                   errorMsg += " (Unauthorized). Please ensure you are logged in.";
+               }
+               try {
+                  const errorData = await response.json();
+                  errorMsg = `${errorData.message || errorMsg}`;
+               } catch {}
+              throw new Error(errorMsg);
+            }
+            const data = await response.json();
+            
+            // Fix the issue - properly format user objects with correct properties
+            const usersArray = data.success && Array.isArray(data.data) 
+              ? data.data.map(user => ({
+                  id: user.id,
+                  name: `${user.firstName} ${user.lastName}`
+                }))
+              : [];
+              
+            if (isMounted) {
+              setUsers([{ id: 'all', name: 'All Team Members' }, ...usersArray]);
+            }
+          } catch (err) {
+            console.error("Failed to fetch users:", err);
+            if (isMounted) {
+               setError(err.message);
+               setLoading(false);
+            }
+          }
       } catch (err) {
         console.error("Failed to fetch users:", err);
         if (isMounted) {
@@ -322,22 +354,24 @@ const TeamAnalytics = () => {
                           <div>
                               <label htmlFor="teamMemberSelect" style={{ marginRight: theme.spacing(1), color: theme.colors.text, fontSize: '0.875rem' }}>Team Member:</label>
                               <select
-                                  id="teamMemberSelect"
-                                  value={selectedUserId}
-                                  onChange={handleUserChange}
-                                  style={{
-                                      padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
-                                      borderRadius: theme.borderRadius.sm,
-                                      border: `1px solid ${theme.colors.muted}`,
-                                      backgroundColor: theme.colors.background,
-                                      color: theme.colors.text,
-                                      minWidth: '150px'
-                                  }}
-                                  disabled={users.length <= 1}
-                              >
-                                  {users.map(user => (
-                                      <option key={user.id} value={user.id}>{user.name}</option>
-                                  ))}
+                                id="teamMemberSelect"
+                                value={selectedUserId}
+                                onChange={handleUserChange}
+                                style={{
+                                    padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
+                                    borderRadius: theme.borderRadius.sm,
+                                    border: `1px solid ${theme.colors.muted}`,
+                                    backgroundColor: theme.colors.background,
+                                    color: theme.colors.text,
+                                    minWidth: '150px'
+                                }}
+                                disabled={users.length <= 1}
+                                >
+                                {users.map(user => (
+                                    <option key={user.id} value={user.id}>
+                                    {user.name}
+                                    </option>
+                                ))}
                               </select>
                           </div>
                           <DateRangeSelector
