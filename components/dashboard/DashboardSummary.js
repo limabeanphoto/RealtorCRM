@@ -280,35 +280,39 @@ export default function DashboardSummary() {
       
       {/* Admin Section */}
       {isAdmin && (
-        <div className="dashboard-card admin-actions">
-          <h2>Admin Actions</h2>
-          <div className="admin-buttons">
-            <button 
-              className="admin-button" 
-              onClick={() => router.push('/admin/users')}
-            >
-              Manage Users
-            </button>
-            <button 
-              className="admin-button" 
-              onClick={() => router.push('/admin/contacts/assign')}
-            >
-              Assign Contacts
-            </button>
-            <button 
-              className="admin-button" 
-              onClick={() => router.push('/admin/contacts/import')}
-            >
-              Import Contacts
-            </button>
-            <button 
-              className="admin-button" 
-              onClick={() => router.push('/stats')}
-            >
-              Team Analytics
-            </button>
-          </div>
+      <div className="dashboard-card admin-actions">
+        <h2>Admin Actions</h2>
+        <div className="admin-buttons">
+          <button 
+            className="admin-button" 
+            onClick={() => router.push('/admin/users')}
+          >
+            Manage Users
+          </button>
+          <button 
+            className="admin-button" 
+            onClick={() => router.push('/admin/contacts/assign')}
+          >
+            Assign Contacts
+          </button>
+          <button 
+            className="admin-button" 
+            onClick={() => router.push('/admin/contacts/import')}
+          >
+            Import Contacts
+          </button>
+          <button 
+          className="admin-button" 
+          onClick={() => router.push('/admin/team-analytics')}
+          style={{ 
+            backgroundColor: theme.colors.brand.accent,
+            color: 'white' 
+          }}
+          >
+            Team Analytics
+          </button> 
         </div>
+      </div>
       )}
     </div>
   );
