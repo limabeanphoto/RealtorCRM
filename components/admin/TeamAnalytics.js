@@ -93,68 +93,128 @@ const TeamAnalytics = () => {
   }, []); // Fetch users only once on mount
 
   // Fetch Team Analytics Data (Add Authorization Header, handle errors, no redirect)
-  const fetchData = useCallback(async (isInitial = false) => {
-    // Only set loading if it's not the initial load triggered by useEffect below
-    // or if users have loaded successfully and there is no error.
-    if (!isInitial || (users.length > 0 && !error)) {
-        setLoading(true);
-    }
-    // Don't clear error here, let user see the error from user fetch if it happened
-    // setError(null);
-
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    if (!token) {
-        // No token found, error should have been set by user fetch effect.
-        // Ensure error state persists if it was already set.
-        if (!error && typeof window !== 'undefined') {
-            setError("Authentication token not found.");
+    const fetchData = useCallback(async (isInitial = false) => {
+        // Only set loading if it's not the initial load triggered by useEffect below
+        // or if users have loaded successfully and there is no error.
+        if (!isInitial || (users.length > 0 && !error)) {
+            setLoading(true);
         }
-        setLoading(false); // Stop loading if no token
-        return;
-    }
 
-    const params = new URLSearchParams();
-    params.append('userId', selectedUserId);
-    params.append('range', dateRange);
-    if (dateRange === 'custom' && customDateRange.start && customDateRange.end) {
-      params.append('startDate', customDateRange.start.toISOString().split('T')[0]);
-      params.append('endDate', customDateRange.end.toISOString().split('T')[0]);
-    }
-
-    try {
-      const response = await fetch(`/api/stats/team-performance?${params.toString()}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        let errorMsg = `HTTP error! status: ${response.status}`;
-        if (response.status === 401) {
-            errorMsg += ", message: Authentication required. Please log in again.";
-        } else {
-            try {
-                const errorData = await response.json();
-                errorMsg += `, message: ${errorData.message || response.statusText}`;
-            } catch (parseError) {
-                errorMsg += `, message: ${response.statusText}`;
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        if (!token) {
+            // No token found, error should have been set by user fetch effect.
+            // Ensure error state persists if it was already set.
+            if (!error && typeof window !== 'undefined') {
+                setError("Authentication token not found.");
             }
+            setLoading(false); // Stop loading if no token
+            return;
         }
-        throw new Error(errorMsg);
-      }
 
-      const data = await response.json();
-      setTeamData(data); // Set data on success
-      setError(null); // Clear error on success
+        // Calculate date range based on selected range type
+        let startDate, endDate;
+        const now = new Date();
+        
+        // Calculate start and end dates based on dateRange value
+        switch(dateRange) {
+            case 'today':
+                startDate = new Date(now);
+                startDate.setHours(0, 0, 0, 0);
+                endDate = new Date(now);
+                endDate.setHours(23, 59, 59, 999);
+                break;
+            case 'week':
+                startDate = new Date(now);
+                startDate.setDate(now.getDate() - now.getDay()); // Start of current week (Sunday)
+                startDate.setHours(0, 0, 0, 0);
+                endDate = new Date(now);
+                endDate.setHours(23, 59, 59, 999);
+                break;
+            case 'month':
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now);
+                endDate.setHours(23, 59, 59, 999);
+                break;
+            case 'quarter':
+                startDate = new Date(now);
+                startDate.setMonth(Math.floor(now.getMonth() / 3) * 3, 1);
+                startDate.setHours(0, 0, 0, 0);
+                endDate = new Date(now);
+                endDate.setHours(23, 59, 59, 999);
+                break;
+            case 'year':
+                startDate = new Date(now.getFullYear(), 0, 1);
+                endDate = new Date(now);
+                endDate.setHours(23, 59, 59, 999);
+                break;
+            case 'custom':
+                // For custom range, use the stored dates if available
+                if (customDateRange.start && customDateRange.end) {
+                    startDate = new Date(customDateRange.start);
+                    endDate = new Date(customDateRange.end);
+                    // Set time to beginning and end of day
+                    startDate.setHours(0, 0, 0, 0);
+                    endDate.setHours(23, 59, 59, 999);
+                } else {
+                    // Fallback to last 30 days if custom dates aren't set
+                    startDate = new Date(now);
+                    startDate.setDate(now.getDate() - 30);
+                    startDate.setHours(0, 0, 0, 0);
+                    endDate = new Date(now);
+                    endDate.setHours(23, 59, 59, 999);
+                }
+                break;
+            default:
+                // Default to last 30 days
+                startDate = new Date(now);
+                startDate.setDate(now.getDate() - 30);
+                startDate.setHours(0, 0, 0, 0);
+                endDate = new Date(now);
+                endDate.setHours(23, 59, 59, 999);
+        }
 
-    } catch (err) {
-      console.error("Failed to fetch team data:", err);
-      setError(`Failed to load team analytics data: ${err.message}`);
-      setTeamData(null); // Clear data on error
-    } finally {
-       setLoading(false); // Always stop loading
-    }
-  }, [selectedUserId, dateRange, customDateRange, users, error]); // Added users and error dependency
+        // Build params including calculated dates
+        const params = new URLSearchParams();
+        params.append('userId', selectedUserId);
+        params.append('range', dateRange);
+        // Always include startDate and endDate parameters
+        params.append('startDate', startDate.toISOString());
+        params.append('endDate', endDate.toISOString());
+
+        try {
+        const response = await fetch(`/api/stats/team-performance?${params.toString()}`, {
+            headers: {
+            'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            let errorMsg = `HTTP error! status: ${response.status}`;
+            if (response.status === 401) {
+                errorMsg += ", message: Authentication required. Please log in again.";
+            } else {
+                try {
+                    const errorData = await response.json();
+                    errorMsg += `, message: ${errorData.message || response.statusText}`;
+                } catch (parseError) {
+                    errorMsg += `, message: ${response.statusText}`;
+                }
+            }
+            throw new Error(errorMsg);
+        }
+
+        const data = await response.json();
+        setTeamData(data); // Set data on success
+        setError(null); // Clear error on success
+
+        } catch (err) {
+        console.error("Failed to fetch team data:", err);
+        setError(`Failed to load team analytics data: ${err.message}`);
+        setTeamData(null); // Clear data on error
+        } finally {
+        setLoading(false); // Always stop loading
+        }
+    }, [selectedUserId, dateRange, customDateRange, users, error]); // Added dependencies
 
   // Fetch initial data only after users have been fetched (or failed fetch)
   useEffect(() => {
