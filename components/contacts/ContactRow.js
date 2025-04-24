@@ -226,8 +226,8 @@ const ContactRow = ({
           borderBottom: '1px solid #eee',
           transition: 'background-color 0.2s ease',
         }}
-        onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-        onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
       >
         Edit Contact
       </div>
@@ -243,8 +243,8 @@ const ContactRow = ({
           borderBottom: '1px solid #eee',
           transition: 'background-color 0.2s ease',
         }}
-        onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-        onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
       >
         Log Call
       </div>
@@ -260,8 +260,8 @@ const ContactRow = ({
           borderBottom: '1px solid #eee',
           transition: 'background-color 0.2s ease',
         }}
-        onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-        onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
       >
         Add Task
       </div>
@@ -278,8 +278,8 @@ const ContactRow = ({
             borderBottom: '1px solid #eee',
             transition: 'background-color 0.2s ease',
           }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
         >
           Reassign Contact
         </div>
@@ -298,15 +298,15 @@ const ContactRow = ({
           color: '#e74c3c',
           transition: 'background-color 0.2s ease',
         }}
-        onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-        onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
       >
         Delete Contact
       </div>
     </div>
   );
 
-  // Status menu component with visual grouping
+  // Status menu component - unified container
   const StatusMenu = () => (
     <div style={{ 
       position: 'absolute', 
@@ -318,43 +318,7 @@ const ContactRow = ({
       zIndex: 100,
       width: '180px',
     }}>
-      <div style={{
-        padding: '0.5rem 1rem',
-        fontSize: '0.8rem',
-        fontWeight: 'bold',
-        color: '#666',
-        borderBottom: '1px solid #eee',
-        backgroundColor: '#f8f9fa'
-      }}>
-      </div>
-      {['Follow Up', 'Deal Closed'].map(status => (
-        <div
-          key={status}
-          onClick={() => handleStatusChange(status)}
-          style={{
-            padding: '0.5rem 1rem',
-            cursor: 'pointer',
-            backgroundColor: status === contact.lastCallOutcome ? '#f0f0f0' : 'white',
-            borderBottom: '1px solid #eee',
-            ...getOutcomeStyle(status)
-          }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = status === contact.lastCallOutcome ? '#f0f0f0' : 'white'}
-        >
-          {status}
-        </div>
-      ))}
-      
-      <div style={{
-        padding: '0.5rem 1rem',
-        fontSize: '0.8rem',
-        fontWeight: 'bold',
-        color: '#666',
-        borderBottom: '1px solid #eee',
-        backgroundColor: '#f8f9fa'
-      }}>
-      </div>
-      {['No Answer', 'Not Interested'].map(status => (
+      {['Follow Up', 'Deal Closed', 'No Answer', 'Not Interested'].map(status => (
         <div
           key={status}
           onClick={() => handleStatusChange(status)}
@@ -363,10 +327,11 @@ const ContactRow = ({
             cursor: 'pointer',
             backgroundColor: status === contact.lastCallOutcome ? '#f0f0f0' : 'white',
             borderBottom: status === 'Not Interested' ? 'none' : '1px solid #eee',
-            ...getOutcomeStyle(status)
+            ...getOutcomeStyle(status),
+            transition: 'background-color 0.2s ease',
           }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = status === contact.lastCallOutcome ? '#f0f0f0' : 'white'}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = status === contact.lastCallOutcome ? '#f0f0f0' : 'white'}
         >
           {status}
         </div>
@@ -398,8 +363,8 @@ const ContactRow = ({
             ...getVolumeStyle(option.value),
             transition: 'background-color 0.2s ease',
           }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = option.value === contact.volume ? '#f0f0f0' : 'white'}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = option.value === contact.volume ? '#f0f0f0' : 'white'}
         >
           {option.label}
         </div>
@@ -430,8 +395,8 @@ const ContactRow = ({
             borderBottom: '1px solid #eee',
             transition: 'background-color 0.2s ease',
           }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = option.value === contact.region ? '#f0f0f0' : 'white'}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = option.value === contact.region ? '#f0f0f0' : 'white'}
         >
           {option.label}
         </div>
@@ -445,7 +410,7 @@ const ContactRow = ({
       <div 
         style={{ 
           display: 'grid',
-          gridTemplateColumns: '2.5fr 2fr 2fr 120px 120px 120px 50px', // Match header widths
+          gridTemplateColumns: '2.5fr 2fr 2fr 120px 120px 120px 100px', // Adjusted last column to 100px
           padding: '0.75rem 1rem',
           backgroundColor: 'white',
           borderBottom: '1px solid #eee',
@@ -530,7 +495,12 @@ const ContactRow = ({
         {/* Volume - Fixed width */}
         <div style={{ position: 'relative' }}>
           <div 
-            onClick={() => setVolumeMenuOpen(!volumeMenuOpen)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setVolumeMenuOpen(!volumeMenuOpen);
+              setRegionMenuOpen(false);
+              setStatusMenuOpen(false);
+            }}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -557,7 +527,12 @@ const ContactRow = ({
         {/* Region - Fixed width */}
         <div style={{ position: 'relative' }}>
           <div 
-            onClick={() => setRegionMenuOpen(!regionMenuOpen)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setRegionMenuOpen(!regionMenuOpen);
+              setVolumeMenuOpen(false);
+              setStatusMenuOpen(false);
+            }}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -585,7 +560,12 @@ const ContactRow = ({
         {/* Call Outcome Status - Fixed width */}
         <div style={{ position: 'relative' }}>
           <div 
-            onClick={() => setStatusMenuOpen(!statusMenuOpen)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setStatusMenuOpen(!statusMenuOpen);
+              setRegionMenuOpen(false);
+              setVolumeMenuOpen(false);
+            }}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -607,30 +587,42 @@ const ContactRow = ({
           {statusMenuOpen && <StatusMenu />}
         </div>
         
-        {/* Actions Menu */}
+        {/* Actions Menu - Standardized width */}
         <div style={{ textAlign: 'center', position: 'relative' }}>
           <button
             onClick={(e) => {
               e.stopPropagation();
               setMenuOpen(!menuOpen);
+              setStatusMenuOpen(false);
+              setRegionMenuOpen(false);
+              setVolumeMenuOpen(false);
             }}
             style={{
               background: 'none',
-              border: 'none',
+              border: '1px solid #eee',
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '32px',
+              width: '80px', // Fixed width for standardization
               height: '32px',
-              borderRadius: '50%',
-              transition: 'background-color 0.2s ease',
+              borderRadius: '4px',
+              transition: 'all 0.2s ease',
+              gap: '0.5rem',
+              fontSize: '0.8rem',
+              color: theme.colors.brand.text
             }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#eee'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#f0f0f0';
+              e.currentTarget.style.borderColor = '#ddd';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.borderColor = '#eee';
+            }}
             title="More actions"
           >
-            <FaEllipsisV />
+            Actions <FaEllipsisV size={12} />
           </button>
           
           {menuOpen && <ActionsMenu />}

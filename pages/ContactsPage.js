@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import ContactTable from '../components/contacts/ContactTable';
 import ContactModal from '../components/contacts/ContactModal';
 import CallModal from '../components/calls/CallModal';
@@ -7,9 +8,10 @@ import ContactReassignForm from '../components/admin/ContactReassignForm';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import Button from '../components/common/Button';
 import theme from '../styles/theme';
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaUpload } from 'react-icons/fa';
 
 export default function ContactsPage() {
+  const router = useRouter();
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -412,6 +414,11 @@ export default function ContactsPage() {
     setSelectedCall(null);
   };
 
+  // Navigate to import contacts page
+  const handleImportContacts = () => {
+    router.push('/admin/contacts/import');
+  };
+
   return (
     <ProtectedRoute>
       <div style={{ padding: '1.5rem' }}>
@@ -429,19 +436,36 @@ export default function ContactsPage() {
           }}>
             Contacts
           </h1>
-          <Button
-            onClick={() => setIsAddModalOpen(true)}
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.5rem',
-              paddingLeft: '1.25rem',
-              paddingRight: '1.25rem'
-            }}
-          >
-            <FaPlus size={14} />
-            Add Contact
-          </Button>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <Button
+              onClick={handleImportContacts}
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem',
+                paddingLeft: '1.25rem',
+                paddingRight: '1.25rem'
+              }}
+              variant="secondary"
+            >
+              <FaUpload size={14} />
+              Import Contacts
+            </Button>
+            
+            <Button
+              onClick={() => setIsAddModalOpen(true)}
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem',
+                paddingLeft: '1.25rem',
+                paddingRight: '1.25rem'
+              }}
+            >
+              <FaPlus size={14} />
+              Add Contact
+            </Button>
+          </div>
         </div>
 
         {/* Contact Table */}

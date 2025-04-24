@@ -5,7 +5,8 @@ import {
   FaFilter, 
   FaEllipsisV, 
   FaAngleDown, 
-  FaAngleUp
+  FaAngleUp,
+  FaUpload
 } from 'react-icons/fa';
 import theme from '../../styles/theme';
 import ContactRow from './ContactRow';
@@ -28,12 +29,9 @@ const ContactTable = ({
   const [sortField, setSortField] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
 
-  // Filter options
+  // Updated filter options - removed open, active, closed
   const filterOptions = [
     { id: 'all', label: 'All Contacts' },
-    { id: 'open', label: 'Open', status: 'Open' },
-    { id: 'active', label: 'Active', status: 'Active' },
-    { id: 'closed', label: 'Closed', status: 'Closed' },
     { id: 'followUp', label: 'Follow Up', callOutcome: 'Follow Up' },
     { id: 'noAnswer', label: 'No Answer', callOutcome: 'No Answer' },
     { id: 'dealClosed', label: 'Deal Closed', callOutcome: 'Deal Closed' },
@@ -67,7 +65,6 @@ const ContactTable = ({
     
     const filter = filterOptions.find(f => f.id === selectedFilter);
     const filterMatch = selectedFilter === 'all' || 
-      (filter.status && contact.status === filter.status) ||
       (filter.callOutcome && contact.lastCallOutcome === filter.callOutcome);
     
     return searchMatch && filterMatch;
@@ -124,7 +121,8 @@ const ContactTable = ({
         <div style={{ 
           position: 'relative',
           minWidth: '250px',
-          flex: '1'
+          flex: '1',
+          maxWidth: '400px'
         }}>
           <FaSearch 
             style={{ 
@@ -209,23 +207,24 @@ const ContactTable = ({
           border: '1px solid #eee',
           borderRadius: theme.borderRadius.md,
           overflow: 'hidden',
-          width: '98%', // Increased width
-          margin: '0 auto' // Center the table
+          width: '100%', // Changed from 98% to 100% to use full width
         }}>
           {/* Table Header */}
           <div style={{ 
             display: 'grid',
-            gridTemplateColumns: '2.5fr 2fr 2fr 120px 120px 120px 50px', // Standardized column widths
+            gridTemplateColumns: '2.5fr 2fr 2fr 120px 120px 120px 100px', // Adjusted last column to 100px
             backgroundColor: '#f8f9fa',
             padding: '0.75rem 1rem',
-            fontWeight: 'bold',
             borderBottom: '2px solid #eee'
           }}>
             <div 
               style={{ 
                 cursor: 'pointer', 
                 display: 'flex', 
-                alignItems: 'center' 
+                alignItems: 'center',
+                fontSize: '0.85rem', // Smaller font
+                fontWeight: 'normal', // Not bold
+                color: '#666' // Less prominent color
               }}
               onClick={() => handleSort('name')}
               title="Sort by name"
@@ -236,21 +235,31 @@ const ContactTable = ({
               style={{ 
                 cursor: 'pointer', 
                 display: 'flex', 
-                alignItems: 'center' 
+                alignItems: 'center',
+                fontSize: '0.85rem',
+                fontWeight: 'normal',
+                color: '#666'
               }}
               onClick={() => handleSort('company')}
               title="Sort by company"
             >
               Company {renderSortIndicator('company')}
             </div>
-            <div title="Contact information">
+            <div style={{ 
+              fontSize: '0.85rem',
+              fontWeight: 'normal',
+              color: '#666'
+            }} title="Contact information">
               Contact Info
             </div>
             <div 
               style={{ 
                 cursor: 'pointer', 
                 display: 'flex', 
-                alignItems: 'center' 
+                alignItems: 'center',
+                fontSize: '0.85rem',
+                fontWeight: 'normal',
+                color: '#666'
               }}
               onClick={() => handleSort('volume')}
               title="Sort by volume"
@@ -261,7 +270,10 @@ const ContactTable = ({
               style={{ 
                 cursor: 'pointer', 
                 display: 'flex', 
-                alignItems: 'center' 
+                alignItems: 'center',
+                fontSize: '0.85rem',
+                fontWeight: 'normal',
+                color: '#666'
               }}
               onClick={() => handleSort('region')}
               title="Sort by region"
@@ -272,15 +284,22 @@ const ContactTable = ({
               style={{ 
                 cursor: 'pointer', 
                 display: 'flex', 
-                alignItems: 'center' 
+                alignItems: 'center',
+                fontSize: '0.85rem',
+                fontWeight: 'normal',
+                color: '#666'
               }}
               onClick={() => handleSort('lastCallOutcome')}
               title="Sort by call outcome"
             >
               Status {renderSortIndicator('lastCallOutcome')}
             </div>
-            <div>
-              {/* No header text for actions */}
+            <div style={{ 
+              fontSize: '0.85rem',
+              fontWeight: 'normal',
+              color: '#666'
+            }}>
+              Actions
             </div>
           </div>
 
