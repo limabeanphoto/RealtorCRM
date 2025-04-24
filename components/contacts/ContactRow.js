@@ -5,7 +5,11 @@ import {
   FaEnvelope, 
   FaBuilding, 
   FaUser, 
-  FaEllipsisV, 
+  FaEllipsisV,
+  FaTasks, 
+  FaEdit, 
+  FaTrash, 
+  FaExternalLinkAlt,
   FaAngleDown,
   FaAngleUp,
   FaHistory
