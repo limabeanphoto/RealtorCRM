@@ -32,7 +32,7 @@ export default function ContactsPage() {
     setUser(userData);
   }, []);
 
-  // Fetch contacts
+  // Fetch contacts with their tasks
   useEffect(() => {
     fetchContacts();
   }, []);
@@ -42,18 +42,45 @@ export default function ContactsPage() {
       setLoading(true);
       const token = localStorage.getItem('token');
 
-      const response = await fetch('/api/contacts', {
+      // Fetch contacts
+      const contactsResponse = await fetch('/api/contacts', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       
-      const data = await response.json();
+      const contactsData = await contactsResponse.json();
 
-      if (data.success) {
-        setContacts(data.data);
+      if (contactsData.success) {
+        // Fetch tasks for each contact
+        const contactsWithTasks = await Promise.all(
+          contactsData.data.map(async (contact) => {
+            try {
+              const tasksResponse = await fetch(`/api/tasks?contactId=${contact.id}`, {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              });
+              
+              const tasksData = await tasksResponse.json();
+              
+              return {
+                ...contact,
+                tasks: tasksData.success ? tasksData.data : []
+              };
+            } catch (error) {
+              console.error(`Error fetching tasks for contact ${contact.id}:`, error);
+              return {
+                ...contact,
+                tasks: []
+              };
+            }
+          })
+        );
+        
+        setContacts(contactsWithTasks);
       } else {
-        console.error('Error fetching contacts:', data.message);
+        console.error('Error fetching contacts:', contactsData.message);
       }
 
       setLoading(false);
@@ -126,7 +153,7 @@ export default function ContactsPage() {
 
       if (data.success) {
         // Add the new contact to the list
-        setContacts([data.data, ...contacts]);
+        setContacts([{ ...data.data, tasks: [] }, ...contacts]);
         return { success: true, data: data.data };
       } else {
         alert('Error creating contact: ' + data.message);
@@ -161,9 +188,9 @@ export default function ContactsPage() {
       const data = await response.json();
 
       if (data.success) {
-        // Update the contact in the list
+        // Update the contact in the list, preserving tasks
         setContacts(contacts.map(contact =>
-          contact.id === data.data.id ? data.data : contact
+          contact.id === data.data.id ? { ...data.data, tasks: contact.tasks } : contact
         ));
         return { success: true, data: data.data };
       } else {
@@ -179,9 +206,9 @@ export default function ContactsPage() {
 
   // Handle reassigning a contact (admin only)
   const handleReassignContact = (updatedContact) => {
-    // Update the contact in the list
+    // Update the contact in the list preserving tasks
     setContacts(contacts.map(contact =>
-      contact.id === updatedContact.id ? updatedContact : contact
+      contact.id === updatedContact.id ? { ...updatedContact, tasks: contact.tasks } : contact
     ));
 
     // Close the reassign modal
@@ -421,12 +448,17 @@ export default function ContactsPage() {
 
   return (
     <ProtectedRoute>
-      <div style={{ padding: '1.5rem' }}>
+      <div style={{ 
+        padding: '0.75rem 0',  // Reduced vertical padding
+        width: '100%',
+        margin: '0',          // Remove any margins
+      }}>
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          marginBottom: '2rem' 
+          marginBottom: '1rem',  // Reduced bottom margin
+          padding: '0 1rem'      // Add padding only to the header
         }}>
           <h1 style={{ 
             margin: 0, 
@@ -468,18 +500,20 @@ export default function ContactsPage() {
           </div>
         </div>
 
-        {/* Contact Table */}
-        <ContactTable
-          contacts={contacts}
-          onEditContact={handleOpenEditModal}
-          onLogCall={handleLogCall}
-          onAddTask={handleAddTask}
-          onDeleteContact={handleDeleteContact}
-          onContactUpdate={handleContactUpdate}
-          onReassignContact={handleOpenReassignModal}
-          loading={loading}
-          currentUser={user}
-        />
+        {/* Contact Table - Full width with no container padding */}
+        <div style={{ width: '100%', padding: '0' }}>
+          <ContactTable
+            contacts={contacts}
+            onEditContact={handleOpenEditModal}
+            onLogCall={handleLogCall}
+            onAddTask={handleAddTask}
+            onDeleteContact={handleDeleteContact}
+            onContactUpdate={handleContactUpdate}
+            onReassignContact={handleOpenReassignModal}
+            loading={loading}
+            currentUser={user}
+          />
+        </div>
 
         {/* Add Contact Modal */}
         <ContactModal

@@ -71,12 +71,9 @@ async function handler(req, res) {
         }
       }
       
-      // Get contacts with filtering
+      // Get contacts with filtering and include tasks
       const contacts = await prisma.contact.findMany({
         where,
-        orderBy: {
-          createdAt: 'desc'
-        },
         include: {
           assignedToUser: {
             select: {
@@ -85,7 +82,24 @@ async function handler(req, res) {
               lastName: true,
               email: true
             }
+          },
+          tasks: {
+            orderBy: {
+              createdAt: 'desc'
+            },
+            include: {
+              call: {
+                select: {
+                  id: true,
+                  date: true,
+                  outcome: true
+                }
+              }
+            }
           }
+        },
+        orderBy: {
+          createdAt: 'desc'
         }
       })
       
@@ -142,6 +156,9 @@ async function handler(req, res) {
           notes: notes || null,
           status: status || 'Open', // Default to Open
           assignedTo: null // New contacts start unassigned
+        },
+        include: {
+          tasks: true
         }
       })
       

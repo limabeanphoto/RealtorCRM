@@ -5,8 +5,7 @@ import {
   FaFilter, 
   FaEllipsisV, 
   FaAngleDown, 
-  FaAngleUp,
-  FaUpload
+  FaAngleUp
 } from 'react-icons/fa';
 import theme from '../../styles/theme';
 import ContactRow from './ContactRow';
@@ -29,7 +28,7 @@ const ContactTable = ({
   const [sortField, setSortField] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
 
-  // Updated filter options - removed open, active, closed
+  // Filter options - removed open, active, closed
   const filterOptions = [
     { id: 'all', label: 'All Contacts' },
     { id: 'followUp', label: 'Follow Up', callOutcome: 'Follow Up' },
@@ -107,15 +106,16 @@ const ContactTable = ({
   };
 
   return (
-    <div className="contact-table-container">
+    <div className="contact-table-container" style={{ width: '100%', margin: 0, padding: 0 }}>
       {/* Search and Filter Bar */}
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        marginBottom: '1.5rem',
+        marginBottom: '1rem',
         flexWrap: 'wrap',
-        gap: '1rem'
+        gap: '1rem',
+        padding: '0 1rem'
       }}>
         {/* Search Input */}
         <div style={{ 
@@ -189,7 +189,8 @@ const ContactTable = ({
           textAlign: 'center', 
           padding: '2rem', 
           backgroundColor: '#f9f9f9',
-          borderRadius: theme.borderRadius.md
+          borderRadius: theme.borderRadius.md,
+          margin: '0 1rem'
         }}>
           <p>No contacts found matching your criteria</p>
           <Button 
@@ -207,7 +208,8 @@ const ContactTable = ({
           border: '1px solid #eee',
           borderRadius: theme.borderRadius.md,
           overflow: 'hidden',
-          width: '100%', // Changed from 98% to 100% to use full width
+          width: '100%',
+          margin: 0
         }}>
           {/* Table Header */}
           <div style={{ 
@@ -304,7 +306,7 @@ const ContactTable = ({
           </div>
 
           {/* Table Body */}
-          <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
+          <div style={{ maxHeight: 'calc(100vh - 250px)', overflowY: 'auto' }}>
             {sortedContacts.map(contact => (
               <ContactRow
                 key={contact.id}
@@ -332,7 +334,8 @@ const ContactTable = ({
           textAlign: 'right', 
           marginTop: '1rem', 
           fontSize: '0.9rem', 
-          color: theme.colors.brand.text 
+          color: theme.colors.brand.text,
+          padding: '0 1rem'
         }}>
           Showing {filteredContacts.length} of {contacts.length} contacts
         </div>
