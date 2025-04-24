@@ -635,16 +635,313 @@ const ContactRow = ({
         </div>
       </div>
       
-      {/* Expanded View (unchanged) */}
-      {expanded && (
-        <div style={{ 
-          padding: '1.5rem',
-          backgroundColor: '#f8f9fa',
-          borderBottom: '1px solid #eee'
-        }}>
-          {/* ... existing expanded view content ... */}
+      // Update the ContactRow.js expanded view section (replace the entire expanded view part)
+
+{/* Expanded View */}
+    {expanded && (
+      <div style={{ 
+        padding: '1.5rem',
+        backgroundColor: '#f8f9fa',
+        borderBottom: '1px solid #eee'
+      }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+          {/* Left Column */}
+          <div>
+            <h3 style={{ marginTop: 0, marginBottom: '1rem', color: theme.colors.brand.primary }}>
+              Contact Details
+            </h3>
+            
+            {/* Details Card */}
+            <div style={{ 
+              backgroundColor: 'white',
+              padding: '1rem',
+              borderRadius: theme.borderRadius.sm,
+              border: '1px solid #eee',
+              marginBottom: '1.5rem'
+            }}>
+              <div style={{ marginBottom: '0.75rem' }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                  Full Name
+                </div>
+                <div>{contact.name}</div>
+              </div>
+              
+              {contact.company && (
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                    Company
+                  </div>
+                  <div>{contact.company}</div>
+                </div>
+              )}
+              
+              <div style={{ marginBottom: '0.75rem' }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                  Phone
+                </div>
+                <div>{contact.phone}</div>
+              </div>
+              
+              {contact.email && (
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                    Email
+                  </div>
+                  <div>{contact.email}</div>
+                </div>
+              )}
+              
+              {contact.profileLink && (
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                    Profile
+                  </div>
+                  <div>
+                    <a 
+                      href={contact.profileLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{ 
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        color: theme.colors.brand.primary,
+                        gap: '0.25rem'
+                      }}
+                    >
+                      <FaExternalLinkAlt size={12} />
+                      View Profile
+                    </a>
+                  </div>
+                </div>
+              )}
+              
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <div>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                    Status
+                  </div>
+                  <div>
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '4px',
+                      fontSize: '0.8rem',
+                      ...getAssignmentStatusStyle(contact.status)
+                    }}>
+                      {contact.status}
+                    </span>
+                  </div>
+                </div>
+                
+                <div>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                    Volume
+                  </div>
+                  <div>
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '4px',
+                      fontSize: '0.8rem',
+                      ...(contact.volume ? getVolumeStyle(contact.volume) : { border: '1px dashed #ccc', color: '#666' })
+                    }}>
+                      {contact.volume ? 
+                        volumeOptions.find(o => o.value === contact.volume)?.label || 'Unknown' : 
+                        'Not Set'}
+                    </span>
+                  </div>
+                </div>
+                
+                <div>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                    Region
+                  </div>
+                  <div>
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '4px',
+                      fontSize: '0.8rem',
+                      border: '1px solid #eee',
+                      backgroundColor: contact.region ? '#f8f9fa' : 'transparent'
+                    }}>
+                      {contact.region ? 
+                        regionOptions.find(o => o.value === contact.region)?.label || contact.region : 
+                        'Not Set'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Notes Section */}
+            {contact.notes && (
+              <div>
+                <h4 style={{ marginTop: 0, marginBottom: '0.5rem', color: theme.colors.brand.text }}>
+                  Notes
+                </h4>
+                <div style={{ 
+                  backgroundColor: 'white',
+                  padding: '1rem',
+                  borderRadius: theme.borderRadius.sm,
+                  border: '1px solid #eee'
+                }}>
+                  {contact.notes}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Right Column */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ margin: 0, color: theme.colors.brand.primary }}>
+                Recent Activity
+              </h3>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <Button
+                  onClick={() => onLogCall(contact)}
+                  size="small"
+                  variant="primary"
+                >
+                  <FaPhone size={12} style={{ marginRight: '0.25rem' }} />
+                  Log Call
+                </Button>
+                <Button
+                  onClick={() => onAddTask(contact)}
+                  size="small"
+                  variant="secondary"
+                >
+                  <FaTasks size={12} style={{ marginRight: '0.25rem' }} />
+                  Add Task
+                </Button>
+              </div>
+            </div>
+            
+            {/* Last Call */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h4 style={{ marginTop: 0, marginBottom: '0.5rem', color: theme.colors.brand.text, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FaHistory size={14} />
+                Last Call
+              </h4>
+              <div style={{ 
+                backgroundColor: 'white',
+                padding: '1rem',
+                borderRadius: theme.borderRadius.sm,
+                border: '1px solid #eee'
+              }}>
+                {contact.lastCallDate ? (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <div style={{ fontWeight: 'bold' }}>{formatDate(contact.lastCallDate)}</div>
+                      <div>
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '0.15rem 0.3rem',
+                          borderRadius: '3px',
+                          fontSize: '0.75rem',
+                          ...getOutcomeStyle(contact.lastCallOutcome || 'No Answer')
+                        }}>
+                          {contact.lastCallOutcome || 'No Answer'}
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => onLogCall(contact)}
+                      size="small"
+                      variant="outline"
+                      style={{ marginTop: '0.5rem' }}
+                    >
+                      <FaPhone size={12} style={{ marginRight: '0.25rem' }} />
+                      Log Another Call
+                    </Button>
+                  </div>
+                ) : (
+                  <div>
+                    <p style={{ margin: '0 0 0.5rem 0', color: theme.colors.brand.text }}>No calls recorded yet</p>
+                    <Button
+                      onClick={() => onLogCall(contact)}
+                      size="small"
+                      variant="primary"
+                    >
+                      <FaPhone size={12} style={{ marginRight: '0.25rem' }} />
+                      Log First Call
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Tasks Section Placeholder */}
+            <div>
+              <h4 style={{ marginTop: 0, marginBottom: '0.5rem', color: theme.colors.brand.text, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FaTasks size={14} />
+                Tasks
+              </h4>
+              <div style={{ 
+                backgroundColor: 'white',
+                padding: '1rem',
+                borderRadius: theme.borderRadius.sm,
+                border: '1px solid #eee'
+              }}>
+                <p style={{ margin: '0 0 0.5rem 0', color: theme.colors.brand.text }}>
+                  {contact.tasks && contact.tasks.length > 0 ? 
+                    `${contact.tasks.length} task(s) associated with this contact` :
+                    'No tasks associated with this contact'}
+                </p>
+                <Button
+                  onClick={() => onAddTask(contact)}
+                  size="small"
+                  variant={contact.tasks && contact.tasks.length > 0 ? 'outline' : 'primary'}
+                >
+                  <FaTasks size={12} style={{ marginRight: '0.25rem' }} />
+                  {contact.tasks && contact.tasks.length > 0 ? 'Add Another Task' : 'Create Task'}
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
-      )}
+        
+        {/* Bottom Action Bar */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'flex-end', 
+          marginTop: '1.5rem',
+          paddingTop: '1rem',
+          borderTop: '1px solid #ddd' 
+        }}>
+          <Button
+            onClick={() => onEditContact(contact)}
+            style={{ marginRight: '0.5rem' }}
+          >
+            <FaEdit size={14} style={{ marginRight: '0.25rem' }} />
+            Edit Contact
+          </Button>
+          {currentUser && currentUser.role === 'admin' && (
+            <Button
+              onClick={() => onReassignContact(contact)}
+              variant="secondary"
+              style={{ marginRight: '0.5rem' }}
+            >
+              <FaUser size={14} style={{ marginRight: '0.25rem' }} />
+              Reassign
+            </Button>
+          )}
+          <Button
+            onClick={() => {
+              if (window.confirm('Are you sure you want to delete this contact? This cannot be undone.')) {
+                onDeleteContact(contact.id);
+              }
+            }}
+            variant="outline"
+            style={{ color: '#e74c3c', borderColor: '#e74c3c' }}
+          >
+            <FaTrash size={14} style={{ marginRight: '0.25rem' }} />
+            Delete
+          </Button>
+        </div>
+      </div>
+    )}
     </>
   );
 };

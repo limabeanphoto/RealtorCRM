@@ -49,7 +49,7 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
         label: 'Dashboard',
         icon: <FaHome size={18} />
       },
-      { href: '/contacts', label: 'Contacts', icon: <FaUsers size={18} /> },
+      { href: '/ContactsPage', label: 'Contacts', icon: <FaUsers size={18} /> },
       { href: '/calls', label: 'Calls', icon: <FaPhone size={18} /> },
       { href: '/tasks', label: 'Tasks', icon: <FaTasks size={18} /> },
       { href: '/stats', label: 'Analytics', icon: <FaChartBar size={18} /> },
