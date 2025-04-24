@@ -326,7 +326,6 @@ const ContactRow = ({
         borderBottom: '1px solid #eee',
         backgroundColor: '#f8f9fa'
       }}>
-        Positive Outcomes
       </div>
       {['Follow Up', 'Deal Closed'].map(status => (
         <div
@@ -354,7 +353,6 @@ const ContactRow = ({
         borderBottom: '1px solid #eee',
         backgroundColor: '#f8f9fa'
       }}>
-        Neutral/Negative Outcomes
       </div>
       {['No Answer', 'Not Interested'].map(status => (
         <div
