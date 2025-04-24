@@ -638,8 +638,6 @@ const ContactRow = ({
           {menuOpen && <ActionsMenu />}
         </div>
       </div>
-      
-      // Update the ContactRow.js expanded view section (replace the entire expanded view part)
 
 {/* Expanded View */}
     {expanded && (
