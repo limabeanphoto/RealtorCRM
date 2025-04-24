@@ -1,16 +1,17 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import ContactForm from './ContactForm';
 import BaseModal from '../common/BaseModal';
 import DuplicateContactModal from './DuplicateContactModal';
+import theme from '../../styles/theme';
 
-export default function ContactModal({ 
+const ContactModal = ({ 
   isOpen, 
   onClose, 
   contact, 
   onSubmit, 
   mode, 
   onViewExistingContact 
-}) {
+}) => {
   const [duplicates, setDuplicates] = useState([]);
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [pendingFormData, setPendingFormData] = useState(null);
@@ -65,7 +66,12 @@ export default function ContactModal({
 
   return (
     <>
-      <BaseModal isOpen={isOpen} onClose={onClose} title={title}>
+      <BaseModal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        title={title}
+        maxWidth="800px"
+      >
         <ContactForm 
           onSubmit={handleSubmit} 
           initialData={contact}
@@ -84,4 +90,6 @@ export default function ContactModal({
       />
     </>
   );
-}
+};
+
+export default ContactModal;

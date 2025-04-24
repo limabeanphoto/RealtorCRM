@@ -1,4 +1,3 @@
-// components/admin/ContactReassignForm.js
 import { useState, useEffect } from 'react';
 import Button from '../common/Button';
 import theme from '../../styles/theme';
@@ -11,9 +10,30 @@ export default function ContactReassignForm({
   const [users, setUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState('');
   const [status, setStatus] = useState(contact?.status || 'Active');
+  // Add state for new fields
+  const [volume, setVolume] = useState(contact?.volume || '');
+  const [region, setRegion] = useState(contact?.region || '');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  
+  // Volume options
+  const volumeOptions = [
+    { value: '', label: '-- No Change --' },
+    { value: 'high', label: 'High' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'low', label: 'Low' }
+  ];
+
+  // Region options
+  const regionOptions = [
+    { value: '', label: '-- No Change --' },
+    { value: 'OC', label: 'Orange County' },
+    { value: 'LA', label: 'Los Angeles' },
+    { value: 'SD', label: 'San Diego' },
+    { value: 'SF', label: 'San Francisco' },
+    { value: 'other', label: 'Other' }
+  ];
   
   // Fetch available users
   useEffect(() => {
@@ -57,17 +77,29 @@ export default function ContactReassignForm({
       // Determine if this is an unassignment
       const isUnassigning = selectedUserId === 'unassign';
       
+      // Create the request body with new fields
+      const requestBody = {
+        contactId: contact.id,
+        userId: isUnassigning ? null : selectedUserId,
+        newStatus: isUnassigning ? 'Open' : status
+      };
+      
+      // Add new fields only if they have values
+      if (volume) {
+        requestBody.volume = volume;
+      }
+      
+      if (region) {
+        requestBody.region = region;
+      }
+      
       const response = await fetch('/api/contacts/assign', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          contactId: contact.id,
-          userId: isUnassigning ? null : selectedUserId,
-          newStatus: isUnassigning ? 'Open' : status // If unassigning, set to Open; otherwise use selected status
-        })
+        body: JSON.stringify(requestBody)
       });
       
       const data = await response.json();
@@ -116,6 +148,26 @@ export default function ContactReassignForm({
               </span></>
             )}
           </p>
+          
+          {/* Display current volume and region if available */}
+          {(contact.volume || contact.region) && (
+            <div style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem' }}>
+              {contact.volume && (
+                <span style={{ marginRight: '1rem' }}>
+                  Volume: <span style={{ fontWeight: 'bold' }}>{
+                    volumeOptions.find(o => o.value === contact.volume)?.label || contact.volume
+                  }</span>
+                </span>
+              )}
+              {contact.region && (
+                <span>
+                  Region: <span style={{ fontWeight: 'bold' }}>{
+                    regionOptions.find(o => o.value === contact.region)?.label || contact.region
+                  }</span>
+                </span>
+              )}
+            </div>
+          )}
         </div>
       )}
       
@@ -178,6 +230,52 @@ export default function ContactReassignForm({
           </select>
         </div>
       )}
+      
+      {/* Add volume field */}
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+          Volume:
+        </label>
+        <select
+          value={volume}
+          onChange={(e) => setVolume(e.target.value)}
+          style={{ 
+            width: '100%', 
+            padding: '0.75rem', 
+            borderRadius: theme.borderRadius.sm,
+            border: '1px solid #ddd'
+          }}
+        >
+          {volumeOptions.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      
+      {/* Add region field */}
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+          Region:
+        </label>
+        <select
+          value={region}
+          onChange={(e) => setRegion(e.target.value)}
+          style={{ 
+            width: '100%', 
+            padding: '0.75rem', 
+            borderRadius: theme.borderRadius.sm,
+            border: '1px solid #ddd'
+          }}
+        >
+          {regionOptions.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.5rem' }}>
         <Button

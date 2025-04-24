@@ -1,4 +1,4 @@
-// pages/api/contacts/[id].js
+// pages/api/contacts/[id].js - Updated to handle new fields
 import { PrismaClient } from '@prisma/client'
 import withAuth from '../../../utils/withAuth'
 
@@ -49,10 +49,19 @@ async function handler(req, res) {
     }
   }
   
-  // PUT - Update contact
+  // PUT - Update contact - Updated to handle new fields
   else if (req.method === 'PUT') {
     try {
-      const { name, email, phone, company, notes } = req.body
+      const { 
+        name, 
+        email, 
+        phone, 
+        company, 
+        notes, 
+        profileLink, // New field
+        volume,      // New field
+        region       // New field
+      } = req.body
       
       // Validate required fields
       if (!name || !phone) {
@@ -78,7 +87,7 @@ async function handler(req, res) {
         })
       }
       
-      // Update contact
+      // Update contact with new fields
       const updatedContact = await prisma.contact.update({
         where: { id },
         data: {
@@ -86,7 +95,10 @@ async function handler(req, res) {
           email: email || null,
           phone,
           company: company || null,
-          notes: notes || null
+          notes: notes || null,
+          profileLink: profileLink || null, // New field
+          volume: volume || null,           // New field
+          region: region || null            // New field
         },
         include: {
           assignedToUser: {

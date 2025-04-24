@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { FaPhone, FaEdit, FaBuilding, FaEnvelope, FaHistory, FaUser } from 'react-icons/fa';
+import { 
+  FaPhone, 
+  FaEnvelope, 
+  FaBuilding, 
+  FaEdit, 
+  FaHistory, 
+  FaUser,
+  FaExternalLinkAlt
+} from 'react-icons/fa';
 import theme from '../../styles/theme';
 import Button from '../common/Button';
 
@@ -29,6 +37,20 @@ const getAssignedStyle = (status) => {
   }
 };
 
+// Utility function to get volume style
+const getVolumeStyle = (volume) => {
+  switch (volume) {
+    case 'high':
+      return { backgroundColor: '#4a69bd', color: 'white' };
+    case 'medium':
+      return { backgroundColor: '#78e08f', color: 'white' };
+    case 'low':
+      return { backgroundColor: '#e74c3c', color: 'white' };
+    default:
+      return { backgroundColor: '#e2e3e5', color: '#383d41' };
+  }
+};
+
 // Utility function to format date
 const formatDate = (dateString) => {
   if (!dateString) return 'No calls yet';
@@ -41,13 +63,57 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
+// Utility function to get profile link display
+const getProfileLinkDisplay = (profileLink) => {
+  if (!profileLink) return null;
+  
+  try {
+    const url = new URL(profileLink);
+    const domain = url.hostname.replace('www.', '');
+    
+    return (
+      <a 
+        href={profileLink} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        style={{ 
+          display: 'inline-flex',
+          alignItems: 'center',
+          color: theme.colors.brand.primary,
+          textDecoration: 'none',
+          fontSize: '0.8rem',
+          gap: '0.25rem'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <FaExternalLinkAlt size={12} />
+        {domain}
+      </a>
+    );
+  } catch (e) {
+    return null;
+  }
+};
+
 export default function MiniContactCard({ 
   contact, 
   onEditClick, 
   onLogCallClick, 
   onSelect,
   isSelected = false,
-  currentUser
+  currentUser,
+  volumeOptions = [
+    { value: 'high', label: 'High' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'low', label: 'Low' }
+  ],
+  regionOptions = [
+    { value: 'OC', label: 'Orange County' },
+    { value: 'LA', label: 'Los Angeles' },
+    { value: 'SD', label: 'San Diego' },
+    { value: 'SF', label: 'San Francisco' },
+    { value: 'other', label: 'Other' }
+  ]
 }) {
   // Helper to display assignment information
   const getAssignmentInfo = () => {
@@ -69,6 +135,18 @@ export default function MiniContactCard({
     }
     
     return 'Unassigned';
+  };
+  
+  // Helper to get volume label
+  const getVolumeLabel = (value) => {
+    const option = volumeOptions.find(o => o.value === value);
+    return option ? option.label : value;
+  };
+
+  // Helper to get region label
+  const getRegionLabel = (value) => {
+    const option = regionOptions.find(o => o.value === value);
+    return option ? option.label : value;
   };
   
   // Custom styles for mini icon buttons
@@ -149,7 +227,48 @@ export default function MiniContactCard({
               </div>
             )}
             
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+            {/* New: Profile Link */}
+            {contact.profileLink && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>
+                {getProfileLinkDisplay(contact.profileLink)}
+              </div>
+            )}
+            
+            {/* New: Volume and Region information */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '0.25rem' }}>
+              {/* Volume badge */}
+              {contact.volume && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <span style={{
+                    display: 'inline-block',
+                    padding: '0.15rem 0.3rem',
+                    borderRadius: '3px',
+                    fontSize: '0.7rem',
+                    ...getVolumeStyle(contact.volume)
+                  }}>
+                    {getVolumeLabel(contact.volume)}
+                  </span>
+                </div>
+              )}
+              
+              {/* Region badge */}
+              {contact.region && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <span style={{
+                    display: 'inline-block',
+                    padding: '0.15rem 0.3rem',
+                    borderRadius: '3px',
+                    fontSize: '0.7rem',
+                    backgroundColor: '#f0f0f0', 
+                    color: theme.colors.brand.text
+                  }}>
+                    {getRegionLabel(contact.region)}
+                  </span>
+                </div>
+              )}
+            </div>
+            
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '0.5rem' }}>
               {/* Last call date */}
               {contact.lastCallDate && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>

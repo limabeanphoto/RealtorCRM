@@ -24,6 +24,9 @@ model Contact {
   assignedTo      String?
   assignedToUser  User?     @relation("AssignedContacts", fields: [assignedTo], references: [id])
   status          String?   @default("Open")
+  profileLink     String?
+  volume          String?
+  region          String?
 }
 
 model Call {

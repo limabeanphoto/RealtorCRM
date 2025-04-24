@@ -1,4 +1,4 @@
-// pages/api/contacts/force-create.js
+// pages/api/contacts/force-create.js - Updated to handle new fields
 import { PrismaClient } from '@prisma/client'
 import withAuth from '../../../utils/withAuth'
 
@@ -10,7 +10,18 @@ async function handler(req, res) {
   }
   
   try {
-    const { name, email, phone, company, notes, status, skipDuplicateCheck } = req.body
+    const { 
+      name, 
+      email, 
+      phone, 
+      company, 
+      notes, 
+      status, 
+      skipDuplicateCheck,
+      profileLink, // New field
+      volume,      // New field
+      region       // New field
+    } = req.body
     
     // Validate required fields
     if (!name || !phone) {
@@ -26,7 +37,10 @@ async function handler(req, res) {
         company: company || null,
         notes: notes || null,
         status: status || 'Open',
-        assignedTo: null // New contacts start unassigned
+        assignedTo: null, // New contacts start unassigned
+        profileLink: profileLink || null, // New field
+        volume: volume || null,        // New field
+        region: region || null         // New field
       }
     })
     

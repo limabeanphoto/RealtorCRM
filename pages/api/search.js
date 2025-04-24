@@ -1,4 +1,4 @@
-// pages/api/search.js
+// pages/api/search.js - Updated to search through new fields
 import { PrismaClient } from '@prisma/client'
 import withAuth from '../../utils/withAuth'
 
@@ -19,7 +19,7 @@ async function handler(req, res) {
       })
     }
 
-    // Search contacts
+    // Search contacts - updated to include new fields
     const contacts = await prisma.contact.findMany({
       where: {
         OR: [
@@ -27,7 +27,10 @@ async function handler(req, res) {
           { company: { contains: query, mode: 'insensitive' } },
           { email: { contains: query, mode: 'insensitive' } },
           { phone: { contains: query, mode: 'insensitive' } },
-          { notes: { contains: query, mode: 'insensitive' } }
+          { notes: { contains: query, mode: 'insensitive' } },
+          { profileLink: { contains: query, mode: 'insensitive' } }, // New field
+          { region: { contains: query, mode: 'insensitive' } }       // New field
+          // Note: volume typically won't be searched as it's an enum-like value
         ]
       },
       take: 5, // Limit results

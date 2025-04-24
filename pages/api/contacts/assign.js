@@ -1,4 +1,4 @@
-// pages/api/contacts/assign.js
+// pages/api/contacts/assign.js - Updated to handle new fields
 import { PrismaClient } from '@prisma/client'
 import { withAdminAuth } from '../../../utils/withAuth'
 
@@ -11,7 +11,7 @@ async function handler(req, res) {
   }
   
   try {
-    const { contactId, userId, newStatus } = req.body
+    const { contactId, userId, newStatus, volume, region } = req.body
     
     // Validate required fields
     if (!contactId) {
@@ -51,6 +51,16 @@ async function handler(req, res) {
       
       // If a new status is specified, use it, otherwise set status to Active
       updateData.status = newStatus || 'Active'
+    }
+    
+    // Add volume field if provided
+    if (volume !== undefined) {
+      updateData.volume = volume || null
+    }
+    
+    // Add region field if provided
+    if (region !== undefined) {
+      updateData.region = region || null
     }
     
     // Update contact assignment
