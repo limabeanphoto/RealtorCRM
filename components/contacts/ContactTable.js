@@ -115,7 +115,8 @@ const ContactTable = ({
     <div className="contact-table-container" style={{ 
       width: '100%', 
       margin: 0, 
-      padding: 0
+      padding: 0,
+      minHeight: '100%'
     }}>
       {/* Search and Filter Bar */}
       <div style={{ 

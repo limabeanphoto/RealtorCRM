@@ -468,15 +468,13 @@ export default function ContactsPage() {
       <div style={{ 
         width: '100%',
         margin: '0',
-        height: '100vh',
+        padding: '0 1rem',
         display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden' // Prevent double scrollbars
+        flexDirection: 'column'
       }}>
         <div style={{ 
           padding: '0.75rem 1rem',
-          backgroundColor: 'white',
-          borderBottom: '1px solid #eee'
+          marginBottom: '1rem'
         }}>
           <div style={{ 
             display: 'flex', 
@@ -543,8 +541,7 @@ export default function ContactsPage() {
 
         {/* Contact Table - Full width with page-level scrolling */}
         <div style={{ 
-          flex: 1,
-          overflow: 'auto'
+          width: '100%'
         }}>
           <ContactTable
             contacts={contacts}
