@@ -1,15 +1,11 @@
+// components/contacts/ContactTable.js
 import React, { useState, useEffect } from 'react';
 import { 
   FaSearch, 
   FaFilter, 
   FaEllipsisV, 
   FaAngleDown, 
-  FaAngleUp, 
-  FaPhone, 
-  FaTasks, 
-  FaEdit, 
-  FaTrash, 
-  FaExternalLinkAlt 
+  FaAngleUp
 } from 'react-icons/fa';
 import theme from '../../styles/theme';
 import ContactRow from './ContactRow';
@@ -32,7 +28,7 @@ const ContactTable = ({
   const [sortField, setSortField] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
 
-  // Filter options - These could come from props too
+  // Filter options
   const filterOptions = [
     { id: 'all', label: 'All Contacts' },
     { id: 'open', label: 'Open', status: 'Open' },
@@ -62,7 +58,6 @@ const ContactTable = ({
 
   // Apply filters and search to contacts
   const filteredContacts = contacts.filter(contact => {
-    // Text search on multiple fields
     const searchMatch = searchTerm === '' || 
       (contact.name && contact.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (contact.email && contact.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -70,7 +65,6 @@ const ContactTable = ({
       (contact.company && contact.company.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (contact.region && contact.region.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    // Filter by status or call outcome
     const filter = filterOptions.find(f => f.id === selectedFilter);
     const filterMatch = selectedFilter === 'all' || 
       (filter.status && contact.status === filter.status) ||
@@ -79,13 +73,11 @@ const ContactTable = ({
     return searchMatch && filterMatch;
   });
 
-  // Sort contacts based on current sort field and direction
+  // Sort contacts
   const sortedContacts = [...filteredContacts].sort((a, b) => {
-    // Default values for null fields to ensure stable sorting
     const aValue = a[sortField] || '';
     const bValue = b[sortField] || '';
 
-    // Handle different field types
     if (sortDirection === 'asc') {
       return aValue.toString().localeCompare(bValue.toString());
     } else {
@@ -93,13 +85,11 @@ const ContactTable = ({
     }
   });
 
-  // Handle sort header click
+  // Handle sort
   const handleSort = (field) => {
     if (sortField === field) {
-      // Toggle direction if same field
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      // New field, default to ascending
       setSortField(field);
       setSortDirection('asc');
     }
@@ -179,6 +169,7 @@ const ContactTable = ({
                 onClick={() => setSelectedFilter(option.id)}
                 variant={selectedFilter === option.id ? 'primary' : 'outline'}
                 size="small"
+                tooltip={`Filter by ${option.label}`}
               >
                 {option.label}
                 {selectedFilter === option.id && filteredContacts.length > 0 && 
@@ -217,12 +208,14 @@ const ContactTable = ({
         <div style={{ 
           border: '1px solid #eee',
           borderRadius: theme.borderRadius.md,
-          overflow: 'hidden'
+          overflow: 'hidden',
+          width: '98%', // Increased width
+          margin: '0 auto' // Center the table
         }}>
           {/* Table Header */}
           <div style={{ 
             display: 'grid',
-            gridTemplateColumns: '3fr 2fr 2fr 1fr 1fr 1fr 1fr',
+            gridTemplateColumns: '2.5fr 2fr 2fr 120px 120px 120px 50px', // Standardized column widths
             backgroundColor: '#f8f9fa',
             padding: '0.75rem 1rem',
             fontWeight: 'bold',
@@ -235,6 +228,7 @@ const ContactTable = ({
                 alignItems: 'center' 
               }}
               onClick={() => handleSort('name')}
+              title="Sort by name"
             >
               Name {renderSortIndicator('name')}
             </div>
@@ -245,10 +239,11 @@ const ContactTable = ({
                 alignItems: 'center' 
               }}
               onClick={() => handleSort('company')}
+              title="Sort by company"
             >
               Company {renderSortIndicator('company')}
             </div>
-            <div>
+            <div title="Contact information">
               Contact Info
             </div>
             <div 
@@ -258,6 +253,7 @@ const ContactTable = ({
                 alignItems: 'center' 
               }}
               onClick={() => handleSort('volume')}
+              title="Sort by volume"
             >
               Volume {renderSortIndicator('volume')}
             </div>
@@ -268,6 +264,7 @@ const ContactTable = ({
                 alignItems: 'center' 
               }}
               onClick={() => handleSort('region')}
+              title="Sort by region"
             >
               Region {renderSortIndicator('region')}
             </div>
@@ -277,12 +274,13 @@ const ContactTable = ({
                 display: 'flex', 
                 alignItems: 'center' 
               }}
-              onClick={() => handleSort('status')}
+              onClick={() => handleSort('lastCallOutcome')}
+              title="Sort by call outcome"
             >
-              Status {renderSortIndicator('status')}
+              Status {renderSortIndicator('lastCallOutcome')}
             </div>
-            <div style={{ textAlign: 'center' }}>
-              Actions
+            <div>
+              {/* No header text for actions */}
             </div>
           </div>
 
