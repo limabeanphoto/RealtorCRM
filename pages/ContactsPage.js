@@ -8,7 +8,7 @@ import ContactReassignForm from '../components/admin/ContactReassignForm';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import Button from '../components/common/Button';
 import theme from '../styles/theme';
-import { FaPlus, FaUpload } from 'react-icons/fa';
+import { FaPlus, FaUpload, FaUserAlt } from 'react-icons/fa';
 
 export default function ContactsPage() {
   const router = useRouter();
@@ -52,10 +52,11 @@ export default function ContactsPage() {
       const contactsData = await contactsResponse.json();
 
       if (contactsData.success) {
-        // Fetch tasks for each contact
-        const contactsWithTasks = await Promise.all(
+        // Fetch tasks and calls for each contact
+        const contactsWithTasksAndCalls = await Promise.all(
           contactsData.data.map(async (contact) => {
             try {
+              // Fetch tasks
               const tasksResponse = await fetch(`/api/tasks?contactId=${contact.id}`, {
                 headers: {
                   'Authorization': `Bearer ${token}`
@@ -64,21 +65,32 @@ export default function ContactsPage() {
               
               const tasksData = await tasksResponse.json();
               
+              // Fetch calls
+              const callsResponse = await fetch(`/api/calls?contactId=${contact.id}`, {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              });
+              
+              const callsData = await callsResponse.json();
+              
               return {
                 ...contact,
-                tasks: tasksData.success ? tasksData.data : []
+                tasks: tasksData.success ? tasksData.data : [],
+                calls: callsData.success ? callsData.data : []
               };
             } catch (error) {
-              console.error(`Error fetching tasks for contact ${contact.id}:`, error);
+              console.error(`Error fetching data for contact ${contact.id}:`, error);
               return {
                 ...contact,
-                tasks: []
+                tasks: [],
+                calls: []
               };
             }
           })
         );
         
-        setContacts(contactsWithTasks);
+        setContacts(contactsWithTasksAndCalls);
       } else {
         console.error('Error fetching contacts:', contactsData.message);
       }
@@ -94,7 +106,7 @@ export default function ContactsPage() {
   const handleContactUpdate = (updatedContact) => {
     setContacts(prevContacts =>
       prevContacts.map(contact =>
-        contact.id === updatedContact.id ? updatedContact : contact
+        contact.id === updatedContact.id ? { ...updatedContact, tasks: contact.tasks, calls: contact.calls } : contact
       )
     );
   };
@@ -153,7 +165,7 @@ export default function ContactsPage() {
 
       if (data.success) {
         // Add the new contact to the list
-        setContacts([{ ...data.data, tasks: [] }, ...contacts]);
+        setContacts([{ ...data.data, tasks: [], calls: [] }, ...contacts]);
         return { success: true, data: data.data };
       } else {
         alert('Error creating contact: ' + data.message);
@@ -188,9 +200,9 @@ export default function ContactsPage() {
       const data = await response.json();
 
       if (data.success) {
-        // Update the contact in the list, preserving tasks
+        // Update the contact in the list, preserving tasks and calls
         setContacts(contacts.map(contact =>
-          contact.id === data.data.id ? { ...data.data, tasks: contact.tasks } : contact
+          contact.id === data.data.id ? { ...data.data, tasks: contact.tasks, calls: contact.calls } : contact
         ));
         return { success: true, data: data.data };
       } else {
@@ -206,9 +218,9 @@ export default function ContactsPage() {
 
   // Handle reassigning a contact (admin only)
   const handleReassignContact = (updatedContact) => {
-    // Update the contact in the list preserving tasks
+    // Update the contact in the list preserving tasks and calls
     setContacts(contacts.map(contact =>
-      contact.id === updatedContact.id ? { ...updatedContact, tasks: contact.tasks } : contact
+      contact.id === updatedContact.id ? { ...updatedContact, tasks: contact.tasks, calls: contact.calls } : contact
     ));
 
     // Close the reassign modal
@@ -357,7 +369,7 @@ export default function ContactsPage() {
           ...selectedContact,
           lastCallOutcome: data.data.outcome,
           lastCallDate: data.data.date,
-          // Optionally add the new call to the contact's calls array if it exists
+          // Add the new call to the contact's calls array
           calls: selectedContact.calls ? [data.data, ...selectedContact.calls] : [data.data]
         };
 
@@ -446,62 +458,94 @@ export default function ContactsPage() {
     router.push('/admin/contacts/import');
   };
 
+  // Navigate to assign contacts page
+  const handleAssignContacts = () => {
+    router.push('/admin/contacts/assign');
+  };
+
   return (
     <ProtectedRoute>
       <div style={{ 
-        padding: '0.75rem 0',  // Reduced vertical padding
         width: '100%',
-        margin: '0',          // Remove any margins
+        margin: '0',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden' // Prevent double scrollbars
       }}>
         <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          marginBottom: '1rem',  // Reduced bottom margin
-          padding: '0 1rem'      // Add padding only to the header
+          padding: '0.75rem 1rem',
+          backgroundColor: 'white',
+          borderBottom: '1px solid #eee'
         }}>
-          <h1 style={{ 
-            margin: 0, 
-            color: theme.colors.brand.primary, 
-            fontSize: '1.75rem', 
-            fontWeight: 'bold' 
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center'
           }}>
-            Contacts
-          </h1>
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <Button
-              onClick={handleImportContacts}
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.5rem',
-                paddingLeft: '1.25rem',
-                paddingRight: '1.25rem'
-              }}
-              variant="secondary"
-            >
-              <FaUpload size={14} />
-              Import Contacts
-            </Button>
-            
-            <Button
-              onClick={() => setIsAddModalOpen(true)}
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.5rem',
-                paddingLeft: '1.25rem',
-                paddingRight: '1.25rem'
-              }}
-            >
-              <FaPlus size={14} />
-              Add Contact
-            </Button>
+            <h1 style={{ 
+              margin: 0, 
+              color: theme.colors.brand.primary, 
+              fontSize: '1.75rem', 
+              fontWeight: 'bold' 
+            }}>
+              Contacts
+            </h1>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              {user && user.role === 'admin' && (
+                <Button
+                  onClick={handleAssignContacts}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.5rem',
+                    paddingLeft: '1.25rem',
+                    paddingRight: '1.25rem'
+                  }}
+                  variant="outline"
+                >
+                  <FaUserAlt size={14} />
+                  Assign Contacts
+                </Button>
+              )}
+              
+              <Button
+                onClick={handleImportContacts}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  paddingLeft: '1.25rem',
+                  paddingRight: '1.25rem'
+                }}
+                variant="secondary"
+              >
+                <FaUpload size={14} />
+                Import Contacts
+              </Button>
+              
+              <Button
+                onClick={() => setIsAddModalOpen(true)}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  paddingLeft: '1.25rem',
+                  paddingRight: '1.25rem'
+                }}
+              >
+                <FaPlus size={14} />
+                Add Contact
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Contact Table - Full width with no container padding */}
-        <div style={{ width: '100%', padding: '0' }}>
+        {/* Contact Table - Full width with page-level scrolling */}
+        <div style={{ 
+          flex: 1,
+          overflow: 'auto'
+        }}>
           <ContactTable
             contacts={contacts}
             onEditContact={handleOpenEditModal}
@@ -510,6 +554,8 @@ export default function ContactsPage() {
             onDeleteContact={handleDeleteContact}
             onContactUpdate={handleContactUpdate}
             onReassignContact={handleOpenReassignModal}
+            onEditTask={handleEditTask}
+            onTaskStatusChange={handleTaskStatusChange}
             loading={loading}
             currentUser={user}
           />
@@ -548,16 +594,9 @@ export default function ContactsPage() {
         <TaskModal
           isOpen={isTaskModalOpen}
           onClose={closeTaskModal}
+          task={selectedTask}
           contact={selectedContact}
           contacts={contacts} // Pass full contacts list for potential dropdown
-          initialData={selectedTask || {
-            contactId: selectedContact?.id,
-            callId: selectedCall?.id,
-            title: selectedCall ? `Follow up with ${selectedContact?.name || 'contact'}` : '',
-            description: selectedCall ? 
-              `Follow-up from call on ${new Date(selectedCall.date).toLocaleDateString()}${selectedCall.notes ? `: ${selectedCall.notes}` : ''}` : 
-              ''
-          }}
           onSubmit={handleTaskSubmit}
         />
 

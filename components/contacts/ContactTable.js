@@ -1,9 +1,8 @@
 // components/contacts/ContactTable.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   FaSearch, 
   FaFilter, 
-  FaEllipsisV, 
   FaAngleDown, 
   FaAngleUp
 } from 'react-icons/fa';
@@ -19,6 +18,8 @@ const ContactTable = ({
   onDeleteContact,
   onContactUpdate,
   onReassignContact,
+  onEditTask,
+  onTaskStatusChange,
   loading,
   currentUser
 }) => {
@@ -61,6 +62,11 @@ const ContactTable = ({
       (contact.phone && contact.phone.includes(searchTerm)) ||
       (contact.company && contact.company.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (contact.region && contact.region.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    // REQUIREMENT #6: Hide "Not Interested" contacts from "All Contacts" filter
+    if (selectedFilter === 'all' && contact.lastCallOutcome === 'Not Interested') {
+      return false;
+    }
     
     const filter = filterOptions.find(f => f.id === selectedFilter);
     const filterMatch = selectedFilter === 'all' || 
@@ -106,7 +112,11 @@ const ContactTable = ({
   };
 
   return (
-    <div className="contact-table-container" style={{ width: '100%', margin: 0, padding: 0 }}>
+    <div className="contact-table-container" style={{ 
+      width: '100%', 
+      margin: 0, 
+      padding: 0
+    }}>
       {/* Search and Filter Bar */}
       <div style={{ 
         display: 'flex', 
@@ -214,7 +224,7 @@ const ContactTable = ({
           {/* Table Header */}
           <div style={{ 
             display: 'grid',
-            gridTemplateColumns: '2.5fr 2fr 2fr 120px 120px 120px 100px', // Adjusted last column to 100px
+            gridTemplateColumns: '2.5fr 2fr 2fr 120px 120px 120px 100px',
             backgroundColor: '#f8f9fa',
             padding: '0.75rem 1rem',
             borderBottom: '2px solid #eee'
@@ -224,9 +234,9 @@ const ContactTable = ({
                 cursor: 'pointer', 
                 display: 'flex', 
                 alignItems: 'center',
-                fontSize: '0.85rem', // Smaller font
-                fontWeight: 'normal', // Not bold
-                color: '#666' // Less prominent color
+                fontSize: '0.85rem',
+                fontWeight: 'normal',
+                color: '#666'
               }}
               onClick={() => handleSort('name')}
               title="Sort by name"
@@ -305,8 +315,8 @@ const ContactTable = ({
             </div>
           </div>
 
-          {/* Table Body */}
-          <div style={{ maxHeight: 'calc(100vh - 250px)', overflowY: 'auto' }}>
+          {/* Table Body - No internal scrolling, just content */}
+          <div>
             {sortedContacts.map(contact => (
               <ContactRow
                 key={contact.id}
@@ -319,6 +329,8 @@ const ContactTable = ({
                 onDeleteContact={onDeleteContact}
                 onContactUpdate={onContactUpdate}
                 onReassignContact={onReassignContact}
+                onEditTask={onEditTask}
+                onTaskStatusChange={onTaskStatusChange}
                 currentUser={currentUser}
                 volumeOptions={volumeOptions}
                 regionOptions={regionOptions}
