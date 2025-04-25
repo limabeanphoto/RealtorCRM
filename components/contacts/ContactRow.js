@@ -63,7 +63,9 @@ const ContactRow = ({
   onTaskStatusChange,
   currentUser,
   volumeOptions,
-  regionOptions
+  regionOptions,
+  isSelected,
+  onSelectContact
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [statusMenuOpen, setStatusMenuOpen] = useState(false);
@@ -287,7 +289,7 @@ const ContactRow = ({
       <div 
         style={{ 
           display: 'grid',
-          gridTemplateColumns: 'minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(80px, 0.5fr)',
+          gridTemplateColumns: '40px minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(80px, 0.5fr)',
           padding: '1rem 1.5rem',
           backgroundColor: 'white',
           borderBottom: '1px solid #eee',
@@ -300,6 +302,20 @@ const ContactRow = ({
         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = expanded ? '#f8f9fa' : 'white'}
       >
+        {/* Checkbox Column */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={(e) => {
+              e.stopPropagation();
+              onSelectContact(contact.id);
+            }}
+            style={{ cursor: 'pointer' }}
+            title={`Select ${contact.name}`}
+          />
+        </div>
+        
         {/* Name Column with profile link and assignment status badge */}
         <div 
           onClick={onToggleExpand} 
@@ -558,7 +574,7 @@ const ContactRow = ({
           </button>
         </div>
       </div>
-      
+
       {/* Dropdowns rendered in portals at calculated positions */}
       {menuOpen && (
         <div style={{
