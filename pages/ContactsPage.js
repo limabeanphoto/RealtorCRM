@@ -468,13 +468,18 @@ export default function ContactsPage() {
       <div style={{ 
         width: '100%',
         margin: '0',
-        padding: '0 1rem',
+        padding: '0',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        maxWidth: '100%',
+        minHeight: '100vh',
+        backgroundColor: theme.colors.brand.background
       }}>
         <div style={{ 
-          padding: '0.75rem 1rem',
-          marginBottom: '1rem'
+          padding: '1rem 2rem',
+          marginBottom: '1rem',
+          backgroundColor: 'white',
+          boxShadow: theme.shadows.sm
         }}>
           <div style={{ 
             display: 'flex', 
@@ -539,9 +544,14 @@ export default function ContactsPage() {
           </div>
         </div>
 
-        {/* Contact Table - Full width with page-level scrolling */}
+        {/* Contact Table - Maximize width */}
         <div style={{ 
-          width: '100%'
+          width: '100%',
+          padding: '0 1rem',
+          flex: 1,
+          overflowX: 'auto',
+          position: 'relative',
+          minHeight: 0
         }}>
           <ContactTable
             contacts={contacts}

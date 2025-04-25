@@ -116,32 +116,34 @@ const ContactTable = ({
       width: '100%', 
       margin: 0, 
       padding: 0,
-      minHeight: '100%'
+      minHeight: '100%',
+      position: 'relative'
     }}>
       {/* Search and Filter Bar */}
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center', 
-        marginBottom: '1rem',
+        marginBottom: '1.5rem',
         flexWrap: 'wrap',
         gap: '1rem',
-        padding: '0 1rem'
+        padding: '0 0.5rem'
       }}>
         {/* Search Input */}
         <div style={{ 
           position: 'relative',
-          minWidth: '250px',
+          minWidth: '300px',
           flex: '1',
-          maxWidth: '400px'
+          maxWidth: '500px'
         }}>
           <FaSearch 
             style={{ 
               position: 'absolute', 
-              left: '10px', 
+              left: '12px', 
               top: '50%', 
               transform: 'translateY(-50%)',
-              color: '#aaa'
+              color: '#aaa',
+              fontSize: '1rem'
             }} 
           />
           <input
@@ -151,10 +153,10 @@ const ContactTable = ({
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
               width: '100%',
-              padding: '10px 10px 10px 35px',
+              padding: '12px 12px 12px 42px',
               borderRadius: theme.borderRadius.sm,
               border: '1px solid #ddd',
-              fontSize: '0.9rem'
+              fontSize: '1rem'
             }}
           />
         </div>
@@ -163,13 +165,13 @@ const ContactTable = ({
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
-          gap: '0.5rem',
+          gap: '0.75rem',
           flexWrap: 'wrap'
         }}>
-          <FaFilter style={{ color: theme.colors.brand.primary }} />
+          <FaFilter style={{ color: theme.colors.brand.primary, fontSize: '1.1rem' }} />
           <div style={{ 
             display: 'flex', 
-            gap: '0.25rem',
+            gap: '0.5rem',
             flexWrap: 'wrap'
           }}>
             {filterOptions.map(option => (
@@ -179,6 +181,10 @@ const ContactTable = ({
                 variant={selectedFilter === option.id ? 'primary' : 'outline'}
                 size="small"
                 tooltip={`Filter by ${option.label}`}
+                style={{ 
+                  padding: '0.6rem 1rem',
+                  fontSize: '0.95rem'
+                }}
               >
                 {option.label}
                 {selectedFilter === option.id && filteredContacts.length > 0 && 
@@ -191,25 +197,29 @@ const ContactTable = ({
 
       {/* The Contact Table */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <div style={{ textAlign: 'center', padding: '3rem' }}>
           <div className="spinner"></div>
-          <p>Loading contacts...</p>
+          <p style={{ fontSize: '1.1rem', marginTop: '1rem' }}>Loading contacts...</p>
         </div>
       ) : filteredContacts.length === 0 ? (
         <div style={{ 
           textAlign: 'center', 
-          padding: '2rem', 
+          padding: '3rem', 
           backgroundColor: '#f9f9f9',
           borderRadius: theme.borderRadius.md,
-          margin: '0 1rem'
+          margin: '0'
         }}>
-          <p>No contacts found matching your criteria</p>
+          <p style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>No contacts found matching your criteria</p>
           <Button 
             onClick={() => {
               setSearchTerm('');
               setSelectedFilter('all');
             }}
-            style={{ marginTop: '1rem' }}
+            style={{ 
+              marginTop: '1rem',
+              padding: '0.75rem 1.5rem',
+              fontSize: '1rem'
+            }}
           >
             Clear Filters
           </Button>
@@ -218,26 +228,29 @@ const ContactTable = ({
         <div style={{ 
           border: '1px solid #eee',
           borderRadius: theme.borderRadius.md,
-          overflow: 'hidden',
           width: '100%',
-          margin: 0
+          margin: 0,
+          backgroundColor: 'white',
+          overflow: 'visible', // Allow dropdowns to show outside
+          boxShadow: theme.shadows.sm
         }}>
           {/* Table Header */}
           <div style={{ 
             display: 'grid',
-            gridTemplateColumns: '2.5fr 2fr 2fr 120px 120px 120px 100px',
+            gridTemplateColumns: '3fr 2.5fr 2.5fr 140px 140px 140px 120px',
             backgroundColor: '#f8f9fa',
-            padding: '0.75rem 1rem',
-            borderBottom: '2px solid #eee'
+            padding: '1rem 1.5rem',
+            borderBottom: '2px solid #eee',
+            fontSize: '1rem',
+            fontWeight: '600',
+            color: theme.colors.brand.text,
+            minWidth: '1200px'
           }}>
             <div 
               style={{ 
                 cursor: 'pointer', 
                 display: 'flex', 
-                alignItems: 'center',
-                fontSize: '0.85rem',
-                fontWeight: 'normal',
-                color: '#666'
+                alignItems: 'center'
               }}
               onClick={() => handleSort('name')}
               title="Sort by name"
@@ -248,31 +261,21 @@ const ContactTable = ({
               style={{ 
                 cursor: 'pointer', 
                 display: 'flex', 
-                alignItems: 'center',
-                fontSize: '0.85rem',
-                fontWeight: 'normal',
-                color: '#666'
+                alignItems: 'center'
               }}
               onClick={() => handleSort('company')}
               title="Sort by company"
             >
               Company {renderSortIndicator('company')}
             </div>
-            <div style={{ 
-              fontSize: '0.85rem',
-              fontWeight: 'normal',
-              color: '#666'
-            }} title="Contact information">
+            <div title="Contact information">
               Contact Info
             </div>
             <div 
               style={{ 
                 cursor: 'pointer', 
                 display: 'flex', 
-                alignItems: 'center',
-                fontSize: '0.85rem',
-                fontWeight: 'normal',
-                color: '#666'
+                alignItems: 'center'
               }}
               onClick={() => handleSort('volume')}
               title="Sort by volume"
@@ -283,10 +286,7 @@ const ContactTable = ({
               style={{ 
                 cursor: 'pointer', 
                 display: 'flex', 
-                alignItems: 'center',
-                fontSize: '0.85rem',
-                fontWeight: 'normal',
-                color: '#666'
+                alignItems: 'center'
               }}
               onClick={() => handleSort('region')}
               title="Sort by region"
@@ -297,27 +297,23 @@ const ContactTable = ({
               style={{ 
                 cursor: 'pointer', 
                 display: 'flex', 
-                alignItems: 'center',
-                fontSize: '0.85rem',
-                fontWeight: 'normal',
-                color: '#666'
+                alignItems: 'center'
               }}
               onClick={() => handleSort('lastCallOutcome')}
               title="Sort by call outcome"
             >
               Status {renderSortIndicator('lastCallOutcome')}
             </div>
-            <div style={{ 
-              fontSize: '0.85rem',
-              fontWeight: 'normal',
-              color: '#666'
-            }}>
+            <div>
               Actions
             </div>
           </div>
 
           {/* Table Body - No internal scrolling, just content */}
-          <div>
+          <div style={{
+            position: 'relative',
+            minWidth: '1200px'
+          }}>
             {sortedContacts.map(contact => (
               <ContactRow
                 key={contact.id}
@@ -345,10 +341,11 @@ const ContactTable = ({
       {filteredContacts.length > 0 && (
         <div style={{ 
           textAlign: 'right', 
-          marginTop: '1rem', 
-          fontSize: '0.9rem', 
+          marginTop: '1.5rem', 
+          fontSize: '1rem', 
           color: theme.colors.brand.text,
-          padding: '0 1rem'
+          padding: '0 0.5rem',
+          fontWeight: '500'
         }}>
           Showing {filteredContacts.length} of {contacts.length} contacts
         </div>
