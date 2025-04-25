@@ -473,13 +473,14 @@ export default function ContactsPage() {
         flexDirection: 'column',
         maxWidth: '100%',
         minHeight: '100vh',
-        backgroundColor: theme.colors.brand.background
+        backgroundColor: 'white' // Changed background color
       }}>
+        {/* Removed background color and shadow from this div */}
         <div style={{ 
           padding: '1rem',
           marginBottom: '1rem',
-          backgroundColor: 'white',
-          boxShadow: theme.shadows.sm
+          // backgroundColor: 'white', <-- Removed
+          // boxShadow: theme.shadows.sm <-- Removed
         }}>
           <div style={{ 
             display: 'flex', 
