@@ -5,7 +5,7 @@ const theme = {
         primary: '#8F9F3B',      // Lima Bean Green
         secondary: '#BCCB5C',    // Wild Willow
         accent: '#6187BC',       // Danube
-        background: '#E3E4F0',   // Fog
+        background: '#FFFFFF',   // White
         highlight: '#FFED8F',    // Picasso
         text: '#7A7A73',         // Boulder
       },
