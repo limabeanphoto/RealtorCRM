@@ -347,7 +347,7 @@ export default function ContactsPage() {
       return { success: false, message: error.message };
     }
   };
-
+  
   // Handle call form submission
   const handleCallSubmit = async (formData) => {
     try {
@@ -476,7 +476,7 @@ export default function ContactsPage() {
         backgroundColor: theme.colors.brand.background
       }}>
         <div style={{ 
-          padding: '1rem 2rem',
+          padding: '1rem',
           marginBottom: '1rem',
           backgroundColor: 'white',
           boxShadow: theme.shadows.sm
@@ -484,17 +484,19 @@ export default function ContactsPage() {
           <div style={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
-            alignItems: 'center'
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '1rem'
           }}>
             <h1 style={{ 
               margin: 0, 
               color: theme.colors.brand.primary, 
-              fontSize: '1.75rem', 
+              fontSize: 'clamp(1.25rem, 4vw, 1.75rem)', 
               fontWeight: 'bold' 
             }}>
               Contacts
             </h1>
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               {user && user.role === 'admin' && (
                 <Button
                   onClick={handleAssignContacts}
@@ -502,12 +504,13 @@ export default function ContactsPage() {
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: '0.5rem',
-                    paddingLeft: '1.25rem',
-                    paddingRight: '1.25rem'
+                    paddingLeft: '1rem',
+                    paddingRight: '1rem',
+                    fontSize: 'clamp(0.8rem, 2vw, 1rem)'
                   }}
                   variant="outline"
                 >
-                  <FaUserAlt size={14} />
+                  <FaUserAlt size={12} />
                   Assign Contacts
                 </Button>
               )}
@@ -518,12 +521,13 @@ export default function ContactsPage() {
                   display: 'flex', 
                   alignItems: 'center', 
                   gap: '0.5rem',
-                  paddingLeft: '1.25rem',
-                  paddingRight: '1.25rem'
+                  paddingLeft: '1rem',
+                  paddingRight: '1rem',
+                  fontSize: 'clamp(0.8rem, 2vw, 1rem)'
                 }}
                 variant="secondary"
               >
-                <FaUpload size={14} />
+                <FaUpload size={12} />
                 Import Contacts
               </Button>
               
@@ -533,11 +537,12 @@ export default function ContactsPage() {
                   display: 'flex', 
                   alignItems: 'center', 
                   gap: '0.5rem',
-                  paddingLeft: '1.25rem',
-                  paddingRight: '1.25rem'
+                  paddingLeft: '1rem',
+                  paddingRight: '1rem',
+                  fontSize: 'clamp(0.8rem, 2vw, 1rem)'
                 }}
               >
-                <FaPlus size={14} />
+                <FaPlus size={12} />
                 Add Contact
               </Button>
             </div>
@@ -549,7 +554,6 @@ export default function ContactsPage() {
           width: '100%',
           padding: '0 1rem',
           flex: 1,
-          overflowX: 'auto',
           position: 'relative',
           minHeight: 0
         }}>

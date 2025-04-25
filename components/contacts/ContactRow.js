@@ -287,14 +287,15 @@ const ContactRow = ({
       <div 
         style={{ 
           display: 'grid',
-          gridTemplateColumns: '3fr 2.5fr 2.5fr 140px 140px 140px 120px',
+          gridTemplateColumns: 'minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(80px, 0.5fr)',
           padding: '1rem 1.5rem',
           backgroundColor: 'white',
           borderBottom: '1px solid #eee',
           alignItems: 'center',
           transition: 'background-color 0.2s ease',
           cursor: 'pointer',
-          fontSize: '1rem'
+          fontSize: '0.9rem',
+          width: '100%'
         }}
         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = expanded ? '#f8f9fa' : 'white'}
@@ -305,11 +306,13 @@ const ContactRow = ({
           style={{ 
             display: 'flex',
             alignItems: 'center',
-            gap: '0.75rem',
-            fontWeight: '500'
+            gap: '0.5rem',
+            fontWeight: '500',
+            minWidth: 0, // Allow text truncation
+            overflow: 'hidden'
           }}
         >
-          {expanded ? <FaAngleUp size={16} /> : <FaAngleDown size={16} />}
+          {expanded ? <FaAngleUp size={14} /> : <FaAngleDown size={14} />}
           
           {contact.profileLink ? (
             <a 
@@ -320,6 +323,9 @@ const ContactRow = ({
                 color: theme.colors.brand.text,
                 textDecoration: 'none',
                 transition: 'color 0.2s ease',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
               }}
               onMouseEnter={(e) => {
                 e.target.style.color = theme.colors.brand.primary;
@@ -335,16 +341,26 @@ const ContactRow = ({
               {contact.name}
             </a>
           ) : (
-            <span title={`${contact.name} - No profile available`}>{contact.name}</span>
+            <span 
+              title={`${contact.name} - No profile available`}
+              style={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {contact.name}
+            </span>
           )}
           
           {/* Assignment status badge */}
           <span style={{
             display: 'inline-block',
-            padding: '0.2rem 0.4rem',
-            borderRadius: '4px',
-            fontSize: '0.8rem',
-            ...getAssignmentStatusStyle(contact.status)
+            padding: '0.15rem 0.3rem',
+            borderRadius: '3px',
+            fontSize: '0.75rem',
+            ...getAssignmentStatusStyle(contact.status),
+            flexShrink: 0
           }}
           title={`Assignment status: ${contact.status}`}>
             {contact.status}
@@ -352,25 +368,50 @@ const ContactRow = ({
         </div>
         
         {/* Company */}
-        <div onClick={onToggleExpand} title={contact.company || 'No company'}>
+        <div 
+          onClick={onToggleExpand} 
+          title={contact.company || 'No company'}
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}
+        >
           {contact.company || '-'}
         </div>
         
         {/* Contact Info */}
         <div onClick={onToggleExpand}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }} title={`Phone: ${contact.phone}`}>
-            <FaPhone size={14} color={theme.colors.brand.text} />
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.4rem', 
+            marginBottom: '0.2rem',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }} 
+          title={`Phone: ${contact.phone}`}>
+            <FaPhone size={12} color={theme.colors.brand.text} />
             {contact.phone}
           </div>
           {contact.email && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} title={`Email: ${contact.email}`}>
-              <FaEnvelope size={14} color={theme.colors.brand.text} />
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.4rem',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }} 
+            title={`Email: ${contact.email}`}>
+              <FaEnvelope size={12} color={theme.colors.brand.text} />
               {contact.email}
             </div>
           )}
         </div>
         
-        {/* Volume - Fixed width */}
+        {/* Volume */}
         <div style={{ position: 'relative' }}>
           <div
             ref={volumeButtonRef}
@@ -385,13 +426,16 @@ const ContactRow = ({
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '120px',
-              padding: '0.4rem 0.6rem',
+              width: '90px',
+              padding: '0.3rem 0.5rem',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '0.95rem',
+              fontSize: '0.85rem',
               textAlign: 'center',
-              ...(contact.volume ? getVolumeStyle(contact.volume) : { border: '1px dashed #ccc' })
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              ...(contact.volume ? getVolumeStyle(contact.volume) : { border: '1px dashed #ccc', fontSize: '0.8rem' })
             }}
             title={`Volume: ${contact.volume ? 
               volumeOptions.find(o => o.value === contact.volume)?.label || contact.volume : 
@@ -403,7 +447,7 @@ const ContactRow = ({
           </div>
         </div>
         
-        {/* Region - Fixed width */}
+        {/* Region */}
         <div style={{ position: 'relative' }}>
           <div
             ref={regionButtonRef}
@@ -418,14 +462,17 @@ const ContactRow = ({
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '120px',
-              padding: '0.4rem 0.6rem',
+              width: '90px',
+              padding: '0.3rem 0.5rem',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '0.95rem',
+              fontSize: '0.85rem',
               border: '1px solid #eee',
               backgroundColor: '#f8f9fa',
-              textAlign: 'center'
+              textAlign: 'center',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
             }}
             title={`Region: ${contact.region ? 
               regionOptions.find(o => o.value === contact.region)?.label || contact.region : 
@@ -437,8 +484,8 @@ const ContactRow = ({
           </div>
         </div>
         
-        {/* Call Outcome Status - Fixed width */}
-        <div style={{ position: 'relative' }}>
+      {/* Call Outcome Status */}
+      <div style={{ position: 'relative' }}>
           <div
             ref={statusButtonRef}
             onClick={(e) => {
@@ -452,15 +499,18 @@ const ContactRow = ({
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '120px',
-              padding: '0.4rem 0.6rem',
+              width: '90px',
+              padding: '0.3rem 0.5rem',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '0.95rem',
+              fontSize: '0.85rem',
               textAlign: 'center',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
               ...(contact.lastCallOutcome ? 
                 getOutcomeStyle(contact.lastCallOutcome) : 
-                { border: '1px dashed #ccc', color: '#666' })
+                { border: '1px dashed #ccc', color: '#666', fontSize: '0.8rem' })
             }}
             title={`Call outcome: ${contact.lastCallOutcome || 'No calls yet'} - Click to change`}
           >
@@ -468,7 +518,7 @@ const ContactRow = ({
           </div>
         </div>
         
-        {/* Actions Menu - Standardized width */}
+        {/* Actions Menu */}
         <div style={{ textAlign: 'center', position: 'relative' }}>
           <button
             ref={actionButtonRef}
@@ -486,12 +536,12 @@ const ContactRow = ({
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '100px',
-              height: '36px',
+              width: '75px',
+              height: '32px',
               borderRadius: '4px',
               transition: 'all 0.2s ease',
-              gap: '0.5rem',
-              fontSize: '0.95rem',
+              gap: '0.3rem',
+              fontSize: '0.8rem',
               color: theme.colors.brand.text
             }}
             onMouseEnter={(e) => {
@@ -504,7 +554,7 @@ const ContactRow = ({
             }}
             title="More actions"
           >
-            Actions <FaEllipsisV size={12} />
+            Actions <FaEllipsisV size={10} />
           </button>
         </div>
       </div>

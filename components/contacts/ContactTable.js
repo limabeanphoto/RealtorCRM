@@ -132,8 +132,8 @@ const ContactTable = ({
         {/* Search Input */}
         <div style={{ 
           position: 'relative',
-          minWidth: '300px',
-          flex: '1',
+          minWidth: '200px',
+          flex: '1 1 300px',
           maxWidth: '500px'
         }}>
           <FaSearch 
@@ -226,113 +226,116 @@ const ContactTable = ({
         </div>
       ) : (
         <div style={{ 
-          border: '1px solid #eee',
-          borderRadius: theme.borderRadius.md,
+          overflowX: 'auto', // Enable horizontal scrolling when needed
           width: '100%',
-          margin: 0,
-          backgroundColor: 'white',
-          overflow: 'visible', // Allow dropdowns to show outside
-          boxShadow: theme.shadows.sm
+          margin: 0
         }}>
-          {/* Table Header */}
           <div style={{ 
-            display: 'grid',
-            gridTemplateColumns: '3fr 2.5fr 2.5fr 140px 140px 140px 120px',
-            backgroundColor: '#f8f9fa',
-            padding: '1rem 1.5rem',
-            borderBottom: '2px solid #eee',
-            fontSize: '1rem',
-            fontWeight: '600',
-            color: theme.colors.brand.text,
-            minWidth: '1200px'
+            border: '1px solid #eee',
+            borderRadius: theme.borderRadius.md,
+            minWidth: '800px', // Reduced minimum width for better mobile experience
+            margin: 0,
+            backgroundColor: 'white',
+            overflow: 'visible', 
+            boxShadow: theme.shadows.sm
           }}>
-            <div 
-              style={{ 
-                cursor: 'pointer', 
-                display: 'flex', 
-                alignItems: 'center'
-              }}
-              onClick={() => handleSort('name')}
-              title="Sort by name"
-            >
-              Name {renderSortIndicator('name')}
+            {/* Table Header */}
+            <div style={{ 
+              display: 'grid',
+              gridTemplateColumns: 'minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(80px, 0.5fr)',
+              backgroundColor: '#f8f9fa',
+              padding: '1rem 1.5rem',
+              borderBottom: '2px solid #eee',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              color: theme.colors.brand.text,
+              width: '100%'
+            }}>
+              <div 
+                style={{ 
+                  cursor: 'pointer', 
+                  display: 'flex', 
+                  alignItems: 'center'
+                }}
+                onClick={() => handleSort('name')}
+                title="Sort by name"
+              >
+                Name {renderSortIndicator('name')}
+              </div>
+              <div 
+                style={{ 
+                  cursor: 'pointer', 
+                  display: 'flex', 
+                  alignItems: 'center'
+                }}
+                onClick={() => handleSort('company')}
+                title="Sort by company"
+              >
+                Company {renderSortIndicator('company')}
+              </div>
+              <div title="Contact information">
+                Contact Info
+              </div>
+              <div 
+                style={{ 
+                  cursor: 'pointer', 
+                  display: 'flex', 
+                  alignItems: 'center'
+                }}
+                onClick={() => handleSort('volume')}
+                title="Sort by volume"
+              >
+                Volume {renderSortIndicator('volume')}
+              </div>
+              <div 
+                style={{ 
+                  cursor: 'pointer', 
+                  display: 'flex', 
+                  alignItems: 'center'
+                }}
+                onClick={() => handleSort('region')}
+                title="Sort by region"
+              >
+                Region {renderSortIndicator('region')}
+              </div>
+              <div 
+                style={{ 
+                  cursor: 'pointer', 
+                  display: 'flex', 
+                  alignItems: 'center'
+                }}
+                onClick={() => handleSort('lastCallOutcome')}
+                title="Sort by call outcome"
+              >
+                Status {renderSortIndicator('lastCallOutcome')}
+              </div>
+              <div>
+                Actions
+              </div>
             </div>
-            <div 
-              style={{ 
-                cursor: 'pointer', 
-                display: 'flex', 
-                alignItems: 'center'
-              }}
-              onClick={() => handleSort('company')}
-              title="Sort by company"
-            >
-              Company {renderSortIndicator('company')}
-            </div>
-            <div title="Contact information">
-              Contact Info
-            </div>
-            <div 
-              style={{ 
-                cursor: 'pointer', 
-                display: 'flex', 
-                alignItems: 'center'
-              }}
-              onClick={() => handleSort('volume')}
-              title="Sort by volume"
-            >
-              Volume {renderSortIndicator('volume')}
-            </div>
-            <div 
-              style={{ 
-                cursor: 'pointer', 
-                display: 'flex', 
-                alignItems: 'center'
-              }}
-              onClick={() => handleSort('region')}
-              title="Sort by region"
-            >
-              Region {renderSortIndicator('region')}
-            </div>
-            <div 
-              style={{ 
-                cursor: 'pointer', 
-                display: 'flex', 
-                alignItems: 'center'
-              }}
-              onClick={() => handleSort('lastCallOutcome')}
-              title="Sort by call outcome"
-            >
-              Status {renderSortIndicator('lastCallOutcome')}
-            </div>
-            <div>
-              Actions
-            </div>
-          </div>
 
-          {/* Table Body - No internal scrolling, just content */}
-          <div style={{
-            position: 'relative',
-            minWidth: '1200px'
-          }}>
-            {sortedContacts.map(contact => (
-              <ContactRow
-                key={contact.id}
-                contact={contact}
-                expanded={expandedContactId === contact.id}
-                onToggleExpand={() => toggleExpand(contact.id)}
-                onEditContact={onEditContact}
-                onLogCall={onLogCall}
-                onAddTask={onAddTask}
-                onDeleteContact={onDeleteContact}
-                onContactUpdate={onContactUpdate}
-                onReassignContact={onReassignContact}
-                onEditTask={onEditTask}
-                onTaskStatusChange={onTaskStatusChange}
-                currentUser={currentUser}
-                volumeOptions={volumeOptions}
-                regionOptions={regionOptions}
-              />
-            ))}
+            {/* Table Body */}
+            <div>
+              {sortedContacts.map(contact => (
+                <ContactRow
+                  key={contact.id}
+                  contact={contact}
+                  expanded={expandedContactId === contact.id}
+                  onToggleExpand={() => toggleExpand(contact.id)}
+                  onEditContact={onEditContact}
+                  onLogCall={onLogCall}
+                  onAddTask={onAddTask}
+                  onDeleteContact={onDeleteContact}
+                  onContactUpdate={onContactUpdate}
+                  onReassignContact={onReassignContact}
+                  onEditTask={onEditTask}
+                  onTaskStatusChange={onTaskStatusChange}
+                  currentUser={currentUser}
+                  volumeOptions={volumeOptions}
+                  regionOptions={regionOptions}
+                />
+              ))}
+            </div>
           </div>
         </div>
       )}

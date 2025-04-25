@@ -55,7 +55,7 @@ export default function Layout({ children, customHeader }) {
         width: isSidebarCollapsed ? '70px' : '240px',
         zIndex: 10,
         transition: 'width 0.3s ease',
-        overflowX: 'hidden',
+        // overflowX: 'hidden', // Removed this line to prevent clipping
       }}>
         <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
       </div>
