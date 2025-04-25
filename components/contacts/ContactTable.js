@@ -1,4 +1,3 @@
-// components/contacts/ContactTable.js
 import React, { useState } from 'react';
 import { 
   FaSearch, 
@@ -7,7 +6,8 @@ import {
   FaAngleUp,
   FaTrash,
   FaUserAlt,
-  FaCheck
+  FaCheck,
+  FaUserMinus
 } from 'react-icons/fa';
 import theme from '../../styles/theme';
 import ContactRow from './ContactRow';
@@ -158,6 +158,54 @@ const ContactTable = ({
     
     setBulkActionDropdownOpen(false);
     setShowBulkReassignModal(true);
+  };
+  
+  // Handle bulk unassign
+  const handleBulkUnassign = async () => {
+    if (selectedContacts.size === 0) return;
+    
+    const confirmMessage = `Are you sure you want to unassign ${selectedContacts.size} contact${selectedContacts.size > 1 ? 's' : ''}? These contacts will be set to Open status.`;
+    if (!window.confirm(confirmMessage)) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Process unassignments
+      const unassignPromises = Array.from(selectedContacts).map(contactId => 
+        fetch('/api/contacts/assign', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            contactId,
+            userId: null, // null sets it to unassigned
+            newStatus: 'Open' // Set status to Open
+          })
+        })
+      );
+
+      const responses = await Promise.all(unassignPromises);
+      
+      // Check for errors
+      const errorResponses = responses.filter(response => !response.ok);
+      
+      if (errorResponses.length > 0) {
+        alert(`Failed to unassign ${errorResponses.length} contacts. Please try again.`);
+      } else {
+        // Refresh contacts list if a refresh function is provided
+        if (onRefresh) {
+          onRefresh();
+        }
+        
+        setSelectedContacts(new Set());
+        setBulkActionDropdownOpen(false);
+      }
+    } catch (error) {
+      console.error('Error during bulk unassign:', error);
+      alert('An error occurred while unassigning contacts. Please try again.');
+    }
   };
   
   // Handle successful bulk reassignment
@@ -311,6 +359,44 @@ const ContactTable = ({
                 minWidth: '150px',
                 zIndex: 10
               }}>
+                {currentUser && currentUser.role === 'admin' && (
+                  <>
+                    <div
+                      onClick={handleBulkReassign}
+                      style={{
+                        padding: '0.75rem 1rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        color: theme.colors.brand.primary,
+                        borderBottom: '1px solid #eee'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                    >
+                      <FaUserAlt size={14} /> Reassign
+                    </div>
+                    
+                    <div
+                      onClick={handleBulkUnassign}
+                      style={{
+                        padding: '0.75rem 1rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        color: theme.colors.brand.accent,
+                        borderBottom: '1px solid #eee'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                    >
+                      <FaUserMinus size={14} /> Unassign
+                    </div>
+                  </>
+                )}
+                
                 <div
                   onClick={handleBulkDelete}
                   style={{
@@ -319,32 +405,13 @@ const ContactTable = ({
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.5rem',
-                    color: '#e74c3c',
-                    borderBottom: '1px solid #eee'
+                    color: '#e74c3c'
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
                 >
                   <FaTrash size={14} /> Delete
                 </div>
-                
-                {currentUser && currentUser.role === 'admin' && (
-                  <div
-                    onClick={handleBulkReassign}
-                    style={{
-                      padding: '0.75rem 1rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      color: theme.colors.brand.primary
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-                  >
-                    <FaUserAlt size={14} /> Reassign
-                  </div>
-                )}
               </div>
             )}
           </div>
