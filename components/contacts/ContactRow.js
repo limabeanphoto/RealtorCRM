@@ -1,5 +1,5 @@
 // components/contacts/ContactRow.js
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   FaPhone, 
   FaEnvelope, 
@@ -17,6 +17,37 @@ import {
 import theme from '../../styles/theme';
 import MiniCallCard from '../calls/MiniCallCard';
 import MiniTaskCard from '../tasks/MiniTaskCard';
+
+// Custom hook for dropdown positioning
+const useDropdownPosition = (triggerRef, isOpen) => {
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  
+  useEffect(() => {
+    if (isOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      
+      // Calculate optimal position
+      let top = rect.bottom + 5;
+      let left = rect.left;
+      
+      // If dropdown would go below viewport, position it above
+      if (top + 250 > viewportHeight) { // Estimate dropdown height as 250px
+        top = rect.top - 250 - 5;
+      }
+      
+      // If dropdown would go beyond right edge, align to right edge
+      if (left + 200 > viewportWidth) { // Dropdown width is ~200px
+        left = rect.right - 200;
+      }
+      
+      setPosition({ top, left });
+    }
+  }, [isOpen, triggerRef]);
+  
+  return position;
+};
 
 const ContactRow = ({
   contact,
@@ -39,7 +70,40 @@ const ContactRow = ({
   const [volumeMenuOpen, setVolumeMenuOpen] = useState(false);
   const [regionMenuOpen, setRegionMenuOpen] = useState(false);
   
-  // Get assignment status style (for badge next to name)
+  // Refs for dropdown triggers
+  const actionButtonRef = useRef(null);
+  const statusButtonRef = useRef(null);
+  const volumeButtonRef = useRef(null);
+  const regionButtonRef = useRef(null);
+  
+  // Get positions for dropdowns
+  const actionMenuPosition = useDropdownPosition(actionButtonRef, menuOpen);
+  const statusMenuPosition = useDropdownPosition(statusButtonRef, statusMenuOpen);
+  const volumeMenuPosition = useDropdownPosition(volumeButtonRef, volumeMenuOpen);
+  const regionMenuPosition = useDropdownPosition(regionButtonRef, regionMenuOpen);
+  
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuOpen && !actionButtonRef.current?.contains(event.target)) {
+        setMenuOpen(false);
+      }
+      if (statusMenuOpen && !statusButtonRef.current?.contains(event.target)) {
+        setStatusMenuOpen(false);
+      }
+      if (volumeMenuOpen && !volumeButtonRef.current?.contains(event.target)) {
+        setVolumeMenuOpen(false);
+      }
+      if (regionMenuOpen && !regionButtonRef.current?.contains(event.target)) {
+        setRegionMenuOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen, statusMenuOpen, volumeMenuOpen, regionMenuOpen]);
+  
+  // Get assignment status style
   const getAssignmentStatusStyle = (status) => {
     switch (status) {
       case 'Open':
@@ -206,206 +270,16 @@ const ContactRow = ({
     }
   };
 
-  // Actions menu component (no icons)
-  const ActionsMenu = () => (
-    <div style={{ 
-      position: 'absolute', 
-      top: '100%', 
-      right: 0,
-      backgroundColor: 'white',
-      boxShadow: theme.shadows.md,
-      borderRadius: theme.borderRadius.sm,
-      zIndex: 100,
-      width: '180px',
-    }}>
-      <div
-        onClick={() => {
-          setMenuOpen(false);
-          onEditContact(contact);
-        }}
-        style={{
-          padding: '0.75rem 1rem',
-          cursor: 'pointer',
-          borderBottom: '1px solid #eee',
-          transition: 'background-color 0.2s ease',
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-      >
-        Edit Contact
-      </div>
-      
-      <div
-        onClick={() => {
-          setMenuOpen(false);
-          onLogCall(contact);
-        }}
-        style={{
-          padding: '0.75rem 1rem',
-          cursor: 'pointer',
-          borderBottom: '1px solid #eee',
-          transition: 'background-color 0.2s ease',
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-      >
-        Log Call
-      </div>
-      
-      <div
-        onClick={() => {
-          setMenuOpen(false);
-          onAddTask(contact);
-        }}
-        style={{
-          padding: '0.75rem 1rem',
-          cursor: 'pointer',
-          borderBottom: '1px solid #eee',
-          transition: 'background-color 0.2s ease',
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-      >
-        Add Task
-      </div>
-      
-      {currentUser && currentUser.role === 'admin' && (
-        <div
-          onClick={() => {
-            setMenuOpen(false);
-            onReassignContact(contact);
-          }}
-          style={{
-            padding: '0.75rem 1rem',
-            cursor: 'pointer',
-            borderBottom: '1px solid #eee',
-            transition: 'background-color 0.2s ease',
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-        >
-          Reassign Contact
-        </div>
-      )}
-      
-      <div
-        onClick={() => {
-          setMenuOpen(false);
-          if (window.confirm('Are you sure you want to delete this contact? This cannot be undone.')) {
-            onDeleteContact(contact.id);
-          }
-        }}
-        style={{
-          padding: '0.75rem 1rem',
-          cursor: 'pointer',
-          color: '#e74c3c',
-          transition: 'background-color 0.2s ease',
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-      >
-        Delete Contact
-      </div>
-    </div>
-  );
-
-  // Status menu component - unified container
-  const StatusMenu = () => (
-    <div style={{ 
-      position: 'absolute', 
-      top: '100%', 
-      right: 0,
-      backgroundColor: 'white',
-      boxShadow: theme.shadows.md,
-      borderRadius: theme.borderRadius.sm,
-      zIndex: 100,
-      width: '180px',
-    }}>
-      {['Follow Up', 'Deal Closed', 'No Answer', 'Not Interested'].map(status => (
-        <div
-          key={status}
-          onClick={() => handleStatusChange(status)}
-          style={{
-            padding: '0.5rem 1rem',
-            cursor: 'pointer',
-            backgroundColor: status === contact.lastCallOutcome ? '#f0f0f0' : 'white',
-            borderBottom: status === 'Not Interested' ? 'none' : '1px solid #eee',
-            ...getOutcomeStyle(status),
-            transition: 'background-color 0.2s ease',
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = status === contact.lastCallOutcome ? '#f0f0f0' : 'white'}
-        >
-          {status}
-        </div>
-      ))}
-    </div>
-  );
-
-  // Volume menu component
-  const VolumeMenu = () => (
-    <div style={{ 
-      position: 'absolute', 
-      top: '100%', 
-      right: 0,
-      backgroundColor: 'white',
-      boxShadow: theme.shadows.md,
-      borderRadius: theme.borderRadius.sm,
-      zIndex: 100,
-      width: '150px',
-    }}>
-      {volumeOptions.map(option => (
-        <div
-          key={option.value}
-          onClick={() => handleVolumeChange(option.value)}
-          style={{
-            padding: '0.5rem',
-            cursor: 'pointer',
-            backgroundColor: option.value === contact.volume ? '#f0f0f0' : 'white',
-            borderBottom: '1px solid #eee',
-            ...getVolumeStyle(option.value),
-            transition: 'background-color 0.2s ease',
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = option.value === contact.volume ? '#f0f0f0' : 'white'}
-        >
-          {option.label}
-        </div>
-      ))}
-    </div>
-  );
-
-  // Region menu component
-  const RegionMenu = () => (
-    <div style={{ 
-      position: 'absolute', 
-      top: '100%', 
-      right: 0,
-      backgroundColor: 'white',
-      boxShadow: theme.shadows.md,
-      borderRadius: theme.borderRadius.sm,
-      zIndex: 100,
-      width: '180px',
-    }}>
-      {regionOptions.map(option => (
-        <div
-          key={option.value}
-          onClick={() => handleRegionChange(option.value)}
-          style={{
-            padding: '0.5rem',
-            cursor: 'pointer',
-            backgroundColor: option.value === contact.region ? '#f0f0f0' : 'white',
-            borderBottom: '1px solid #eee',
-            transition: 'background-color 0.2s ease',
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = option.value === contact.region ? '#f0f0f0' : 'white'}
-        >
-          {option.label}
-        </div>
-      ))}
-    </div>
-  );
+  // Base dropdown menu styles
+  const dropdownBaseStyle = {
+    position: 'fixed',
+    backgroundColor: 'white',
+    boxShadow: theme.shadows.lg,
+    borderRadius: theme.borderRadius.sm,
+    zIndex: 1000,
+    border: '1px solid #eee',
+    minWidth: '180px'
+  };
 
   return (
     <>
@@ -413,13 +287,14 @@ const ContactRow = ({
       <div 
         style={{ 
           display: 'grid',
-          gridTemplateColumns: '2.5fr 2fr 2fr 120px 120px 120px 100px',
-          padding: '0.75rem 1rem',
+          gridTemplateColumns: '3fr 2.5fr 2.5fr 140px 140px 140px 120px',
+          padding: '1rem 1.5rem',
           backgroundColor: 'white',
           borderBottom: '1px solid #eee',
           alignItems: 'center',
           transition: 'background-color 0.2s ease',
           cursor: 'pointer',
+          fontSize: '1rem'
         }}
         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = expanded ? '#f8f9fa' : 'white'}
@@ -430,11 +305,11 @@ const ContactRow = ({
           style={{ 
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem',
+            gap: '0.75rem',
             fontWeight: '500'
           }}
         >
-          {expanded ? <FaAngleUp size={14} /> : <FaAngleDown size={14} />}
+          {expanded ? <FaAngleUp size={16} /> : <FaAngleDown size={16} />}
           
           {contact.profileLink ? (
             <a 
@@ -466,9 +341,9 @@ const ContactRow = ({
           {/* Assignment status badge */}
           <span style={{
             display: 'inline-block',
-            padding: '0.15rem 0.3rem',
-            borderRadius: '3px',
-            fontSize: '0.7rem',
+            padding: '0.2rem 0.4rem',
+            borderRadius: '4px',
+            fontSize: '0.8rem',
             ...getAssignmentStatusStyle(contact.status)
           }}
           title={`Assignment status: ${contact.status}`}>
@@ -482,14 +357,14 @@ const ContactRow = ({
         </div>
         
         {/* Contact Info */}
-        <div onClick={onToggleExpand} style={{ fontSize: '0.9rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }} title={`Phone: ${contact.phone}`}>
-            <FaPhone size={12} color={theme.colors.brand.text} />
+        <div onClick={onToggleExpand}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }} title={`Phone: ${contact.phone}`}>
+            <FaPhone size={14} color={theme.colors.brand.text} />
             {contact.phone}
           </div>
           {contact.email && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }} title={`Email: ${contact.email}`}>
-              <FaEnvelope size={12} color={theme.colors.brand.text} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} title={`Email: ${contact.email}`}>
+              <FaEnvelope size={14} color={theme.colors.brand.text} />
               {contact.email}
             </div>
           )}
@@ -497,22 +372,24 @@ const ContactRow = ({
         
         {/* Volume - Fixed width */}
         <div style={{ position: 'relative' }}>
-          <div 
+          <div
+            ref={volumeButtonRef}
             onClick={(e) => {
               e.stopPropagation();
               setVolumeMenuOpen(!volumeMenuOpen);
               setRegionMenuOpen(false);
               setStatusMenuOpen(false);
+              setMenuOpen(false);
             }}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '100px',
-              padding: '0.25rem 0.5rem',
+              width: '120px',
+              padding: '0.4rem 0.6rem',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '0.8rem',
+              fontSize: '0.95rem',
               textAlign: 'center',
               ...(contact.volume ? getVolumeStyle(contact.volume) : { border: '1px dashed #ccc' })
             }}
@@ -524,27 +401,28 @@ const ContactRow = ({
               volumeOptions.find(o => o.value === contact.volume)?.label || 'Unknown' : 
               'Set Volume'}
           </div>
-          {volumeMenuOpen && <VolumeMenu />}
         </div>
         
         {/* Region - Fixed width */}
         <div style={{ position: 'relative' }}>
-          <div 
+          <div
+            ref={regionButtonRef}
             onClick={(e) => {
               e.stopPropagation();
               setRegionMenuOpen(!regionMenuOpen);
               setVolumeMenuOpen(false);
               setStatusMenuOpen(false);
+              setMenuOpen(false);
             }}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '100px',
-              padding: '0.25rem 0.5rem',
+              width: '120px',
+              padding: '0.4rem 0.6rem',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '0.8rem',
+              fontSize: '0.95rem',
               border: '1px solid #eee',
               backgroundColor: '#f8f9fa',
               textAlign: 'center'
@@ -557,27 +435,28 @@ const ContactRow = ({
               regionOptions.find(o => o.value === contact.region)?.label || contact.region : 
               'Set Region'}
           </div>
-          {regionMenuOpen && <RegionMenu />}
         </div>
         
         {/* Call Outcome Status - Fixed width */}
         <div style={{ position: 'relative' }}>
-          <div 
+          <div
+            ref={statusButtonRef}
             onClick={(e) => {
               e.stopPropagation();
               setStatusMenuOpen(!statusMenuOpen);
               setRegionMenuOpen(false);
               setVolumeMenuOpen(false);
+              setMenuOpen(false);
             }}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '100px',
-              padding: '0.25rem 0.5rem',
+              width: '120px',
+              padding: '0.4rem 0.6rem',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '0.8rem',
+              fontSize: '0.95rem',
               textAlign: 'center',
               ...(contact.lastCallOutcome ? 
                 getOutcomeStyle(contact.lastCallOutcome) : 
@@ -587,12 +466,12 @@ const ContactRow = ({
           >
             {contact.lastCallOutcome || 'Set Status'}
           </div>
-          {statusMenuOpen && <StatusMenu />}
         </div>
         
         {/* Actions Menu - Standardized width */}
         <div style={{ textAlign: 'center', position: 'relative' }}>
           <button
+            ref={actionButtonRef}
             onClick={(e) => {
               e.stopPropagation();
               setMenuOpen(!menuOpen);
@@ -607,12 +486,12 @@ const ContactRow = ({
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '80px',
-              height: '32px',
+              width: '100px',
+              height: '36px',
               borderRadius: '4px',
               transition: 'all 0.2s ease',
               gap: '0.5rem',
-              fontSize: '0.8rem',
+              fontSize: '0.95rem',
               color: theme.colors.brand.text
             }}
             onMouseEnter={(e) => {
@@ -627,10 +506,189 @@ const ContactRow = ({
           >
             Actions <FaEllipsisV size={12} />
           </button>
-          
-          {menuOpen && <ActionsMenu />}
         </div>
       </div>
+      
+      {/* Dropdowns rendered in portals at calculated positions */}
+      {menuOpen && (
+        <div style={{
+          ...dropdownBaseStyle,
+          top: actionMenuPosition.top,
+          left: actionMenuPosition.left
+        }}>
+          <div
+            onClick={() => {
+              setMenuOpen(false);
+              onEditContact(contact);
+            }}
+            style={{
+              padding: '0.75rem 1rem',
+              cursor: 'pointer',
+              borderBottom: '1px solid #eee',
+              transition: 'background-color 0.2s ease',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+          >
+            Edit Contact
+          </div>
+          
+          <div
+            onClick={() => {
+              setMenuOpen(false);
+              onLogCall(contact);
+            }}
+            style={{
+              padding: '0.75rem 1rem',
+              cursor: 'pointer',
+              borderBottom: '1px solid #eee',
+              transition: 'background-color 0.2s ease',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+          >
+            Log Call
+          </div>
+          
+          <div
+            onClick={() => {
+              setMenuOpen(false);
+              onAddTask(contact);
+            }}
+            style={{
+              padding: '0.75rem 1rem',
+              cursor: 'pointer',
+              borderBottom: '1px solid #eee',
+              transition: 'background-color 0.2s ease',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+          >
+            Add Task
+          </div>
+          
+          {currentUser && currentUser.role === 'admin' && (
+            <div
+              onClick={() => {
+                setMenuOpen(false);
+                onReassignContact(contact);
+              }}
+              style={{
+                padding: '0.75rem 1rem',
+                cursor: 'pointer',
+                borderBottom: '1px solid #eee',
+                transition: 'background-color 0.2s ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+            >
+              Reassign Contact
+            </div>
+          )}
+          
+          <div
+            onClick={() => {
+              setMenuOpen(false);
+              if (window.confirm('Are you sure you want to delete this contact? This cannot be undone.')) {
+                onDeleteContact(contact.id);
+              }
+            }}
+            style={{
+              padding: '0.75rem 1rem',
+              cursor: 'pointer',
+              color: '#e74c3c',
+              transition: 'background-color 0.2s ease',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+          >
+            Delete Contact
+          </div>
+        </div>
+      )}
+      
+      {/* Status dropdown */}
+      {statusMenuOpen && (
+        <div style={{
+          ...dropdownBaseStyle,
+          top: statusMenuPosition.top,
+          left: statusMenuPosition.left
+        }}>
+          {['Follow Up', 'Deal Closed', 'No Answer', 'Not Interested'].map(status => (
+            <div
+              key={status}
+              onClick={() => handleStatusChange(status)}
+              style={{
+                padding: '0.5rem 1rem',
+                cursor: 'pointer',
+                backgroundColor: status === contact.lastCallOutcome ? '#f0f0f0' : 'white',
+                borderBottom: status === 'Not Interested' ? 'none' : '1px solid #eee',
+                ...getOutcomeStyle(status),
+                transition: 'background-color 0.2s ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = status === contact.lastCallOutcome ? '#f0f0f0' : 'white'}
+            >
+              {status}
+            </div>
+          ))}
+        </div>
+      )}
+      
+      {/* Volume dropdown */}
+      {volumeMenuOpen && (
+        <div style={{
+          ...dropdownBaseStyle,
+          top: volumeMenuPosition.top,
+          left: volumeMenuPosition.left
+        }}>
+          {volumeOptions.map((option, index) => (
+            <div
+              key={option.value}
+              onClick={() => handleVolumeChange(option.value)}
+              style={{
+                padding: '0.5rem 1rem',
+                cursor: 'pointer',
+                backgroundColor: option.value === contact.volume ? '#f0f0f0' : 'white',
+                borderBottom: index === volumeOptions.length - 1 ? 'none' : '1px solid #eee',
+                ...getVolumeStyle(option.value),
+                transition: 'background-color 0.2s ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = option.value === contact.volume ? '#f0f0f0' : 'white'}
+            >
+              {option.label}
+            </div>
+          ))}
+        </div>
+      )}
+      
+      {/* Region dropdown */}
+      {regionMenuOpen && (
+        <div style={{
+          ...dropdownBaseStyle,
+          top: regionMenuPosition.top,
+          left: regionMenuPosition.left
+        }}>
+          {regionOptions.map((option, index) => (
+            <div
+              key={option.value}
+              onClick={() => handleRegionChange(option.value)}
+              style={{
+                padding: '0.5rem 1rem',
+                cursor: 'pointer',
+                backgroundColor: option.value === contact.region ? '#f0f0f0' : 'white',
+                borderBottom: index === regionOptions.length - 1 ? 'none' : '1px solid #eee',
+                transition: 'background-color 0.2s ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = option.value === contact.region ? '#f0f0f0' : 'white'}
+            >
+              {option.label}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Expanded View */}
       {expanded && (
