@@ -391,13 +391,13 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
         <div
           ref={userMenuRef}
           style={{
-            position: 'fixed', // Change to fixed positioning
+            position: 'fixed', // Keep fixed positioning
             top: isCollapsed ? 
-              userMenuTriggerRef.current?.getBoundingClientRect().top || 0 : // Align with trigger when collapsed
+              'auto' : // Set top to auto when collapsed
               'auto',
-            bottom: !isCollapsed ? 
-              window.innerHeight - (userMenuTriggerRef.current?.getBoundingClientRect().top || 0) : // Position from bottom when expanded
-              'auto',
+            bottom: isCollapsed ? 
+              window.innerHeight - (userMenuTriggerRef.current?.getBoundingClientRect().bottom || 0) : // Align bottom with trigger bottom when collapsed
+              window.innerHeight - (userMenuTriggerRef.current?.getBoundingClientRect().top || 0), // Position from bottom when expanded
             left: isCollapsed ? 
               (userMenuTriggerRef.current?.getBoundingClientRect().left || 0) + 70 : // Position right of sidebar when collapsed
               (userMenuTriggerRef.current?.getBoundingClientRect().left || 0) + 20, // Slight offset when expanded
