@@ -4,11 +4,15 @@ import {
   FaSearch, 
   FaFilter, 
   FaAngleDown, 
-  FaAngleUp
+  FaAngleUp,
+  FaTrash,
+  FaUserAlt,
+  FaCheck
 } from 'react-icons/fa';
 import theme from '../../styles/theme';
 import ContactRow from './ContactRow';
 import Button from '../common/Button';
+import BulkReassignModal from './BulkReassignModal';
 
 const ContactTable = ({
   contacts,
@@ -21,13 +25,17 @@ const ContactTable = ({
   onEditTask,
   onTaskStatusChange,
   loading,
-  currentUser
+  currentUser,
+  onRefresh // Add this prop for refreshing contacts after bulk operations
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [expandedContactId, setExpandedContactId] = useState(null);
   const [sortField, setSortField] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
+  const [selectedContacts, setSelectedContacts] = useState(new Set());
+  const [bulkActionDropdownOpen, setBulkActionDropdownOpen] = useState(false);
+  const [showBulkReassignModal, setShowBulkReassignModal] = useState(false);
 
   // Filter options - removed open, active, closed
   const filterOptions = [
@@ -100,6 +108,67 @@ const ContactTable = ({
   // Toggle contact expansion
   const toggleExpand = (contactId) => {
     setExpandedContactId(expandedContactId === contactId ? null : contactId);
+  };
+
+  // Handle select all
+  const handleSelectAll = () => {
+    if (selectedContacts.size === sortedContacts.length) {
+      setSelectedContacts(new Set());
+    } else {
+      setSelectedContacts(new Set(sortedContacts.map(contact => contact.id)));
+    }
+  };
+
+  // Handle individual contact selection
+  const handleSelectContact = (contactId) => {
+    const newSelectedContacts = new Set(selectedContacts);
+    if (newSelectedContacts.has(contactId)) {
+      newSelectedContacts.delete(contactId);
+    } else {
+      newSelectedContacts.add(contactId);
+    }
+    setSelectedContacts(newSelectedContacts);
+  };
+
+  // Handle bulk delete
+  const handleBulkDelete = async () => {
+    if (selectedContacts.size === 0) return;
+    
+    const confirmMessage = `Are you sure you want to delete ${selectedContacts.size} contact${selectedContacts.size > 1 ? 's' : ''}? This action cannot be undone.`;
+    if (!window.confirm(confirmMessage)) return;
+
+    // Process deletions
+    const deletePromises = Array.from(selectedContacts).map(contactId => 
+      onDeleteContact(contactId)
+    );
+
+    try {
+      await Promise.all(deletePromises);
+      setSelectedContacts(new Set());
+      setBulkActionDropdownOpen(false);
+    } catch (error) {
+      console.error('Error during bulk delete:', error);
+      alert('Some contacts could not be deleted. Please try again.');
+    }
+  };
+
+  // Handle bulk reassign
+  const handleBulkReassign = () => {
+    if (selectedContacts.size === 0) return;
+    
+    setBulkActionDropdownOpen(false);
+    setShowBulkReassignModal(true);
+  };
+  
+  // Handle successful bulk reassignment
+  const handleBulkReassignComplete = () => {
+    setSelectedContacts(new Set());
+    setShowBulkReassignModal(false);
+    
+    // Refresh contacts list if a refresh function is provided
+    if (onRefresh) {
+      onRefresh();
+    }
   };
 
   // Render sort indicator
@@ -195,6 +264,101 @@ const ContactTable = ({
         </div>
       </div>
 
+      {/* Bulk Actions Bar - Appears when contacts are selected */}
+      {selectedContacts.size > 0 && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: '1rem',
+          backgroundColor: '#f8f9fa',
+          borderRadius: theme.borderRadius.sm,
+          marginBottom: '1rem',
+          gap: '1rem'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem',
+            color: theme.colors.brand.primary,
+            fontWeight: 'bold'
+          }}>
+            <FaCheck size={14} />
+            {selectedContacts.size} selected
+          </div>
+          
+          <div style={{ position: 'relative' }}>
+            <Button
+              onClick={() => setBulkActionDropdownOpen(!bulkActionDropdownOpen)}
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem' 
+              }}
+            >
+              Bulk Actions <FaAngleDown size={14} />
+            </Button>
+            
+            {bulkActionDropdownOpen && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                marginTop: '0.25rem',
+                backgroundColor: 'white',
+                border: '1px solid #ddd',
+                borderRadius: theme.borderRadius.sm,
+                boxShadow: theme.shadows.sm,
+                minWidth: '150px',
+                zIndex: 10
+              }}>
+                <div
+                  onClick={handleBulkDelete}
+                  style={{
+                    padding: '0.75rem 1rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    color: '#e74c3c',
+                    borderBottom: '1px solid #eee'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                >
+                  <FaTrash size={14} /> Delete
+                </div>
+                
+                {currentUser && currentUser.role === 'admin' && (
+                  <div
+                    onClick={handleBulkReassign}
+                    style={{
+                      padding: '0.75rem 1rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      color: theme.colors.brand.primary
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                  >
+                    <FaUserAlt size={14} /> Reassign
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
+          <Button
+            variant="outline"
+            onClick={() => setSelectedContacts(new Set())}
+            style={{ marginLeft: 'auto' }}
+          >
+            Clear Selection
+          </Button>
+        </div>
+      )}
+
       {/* The Contact Table */}
       {loading ? (
         <div style={{ textAlign: 'center', padding: '3rem' }}>
@@ -226,14 +390,14 @@ const ContactTable = ({
         </div>
       ) : (
         <div style={{ 
-          overflowX: 'auto', // Enable horizontal scrolling when needed
+          overflowX: 'auto',
           width: '100%',
           margin: 0
         }}>
           <div style={{ 
             border: '1px solid #eee',
             borderRadius: theme.borderRadius.md,
-            minWidth: '800px', // Reduced minimum width for better mobile experience
+            minWidth: '800px',
             margin: 0,
             backgroundColor: 'white',
             overflow: 'visible', 
@@ -242,7 +406,7 @@ const ContactTable = ({
             {/* Table Header */}
             <div style={{ 
               display: 'grid',
-              gridTemplateColumns: 'minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(80px, 0.5fr)',
+              gridTemplateColumns: '40px minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(80px, 0.5fr)',
               backgroundColor: '#f8f9fa',
               padding: '1rem 1.5rem',
               borderBottom: '2px solid #eee',
@@ -251,6 +415,15 @@ const ContactTable = ({
               color: theme.colors.brand.text,
               width: '100%'
             }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <input
+                  type="checkbox"
+                  checked={selectedContacts.size === sortedContacts.length && sortedContacts.length > 0}
+                  onChange={handleSelectAll}
+                  style={{ cursor: 'pointer' }}
+                  title="Select all contacts"
+                />
+              </div>
               <div 
                 style={{ 
                   cursor: 'pointer', 
@@ -333,6 +506,8 @@ const ContactTable = ({
                   currentUser={currentUser}
                   volumeOptions={volumeOptions}
                   regionOptions={regionOptions}
+                  isSelected={selectedContacts.has(contact.id)}
+                  onSelectContact={handleSelectContact}
                 />
               ))}
             </div>
@@ -352,6 +527,16 @@ const ContactTable = ({
         }}>
           Showing {filteredContacts.length} of {contacts.length} contacts
         </div>
+      )}
+      
+      {/* Bulk Reassign Modal */}
+      {currentUser && currentUser.role === 'admin' && (
+        <BulkReassignModal
+          isOpen={showBulkReassignModal}
+          onClose={() => setShowBulkReassignModal(false)}
+          selectedContacts={selectedContacts}
+          onReassign={handleBulkReassignComplete}
+        />
       )}
     </div>
   );

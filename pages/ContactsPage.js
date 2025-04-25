@@ -8,7 +8,7 @@ import ContactReassignForm from '../components/admin/ContactReassignForm';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import Button from '../components/common/Button';
 import theme from '../styles/theme';
-import { FaPlus, FaUpload, FaUserAlt } from 'react-icons/fa';
+import { FaPlus, FaUpload } from 'react-icons/fa';
 
 export default function ContactsPage() {
   const router = useRouter();
@@ -411,8 +411,6 @@ export default function ContactsPage() {
 
       if (data.success) {
         const updatedOrNewTask = data.data;
-
-        // Update the task list within the relevant contact
         setContacts(prevContacts => prevContacts.map(contact => {
           if (contact.id === updatedOrNewTask.contactId) {
             const currentTasks = contact.tasks || [];
@@ -458,11 +456,6 @@ export default function ContactsPage() {
     router.push('/admin/contacts/import');
   };
 
-  // Navigate to assign contacts page
-  const handleAssignContacts = () => {
-    router.push('/admin/contacts/assign');
-  };
-
   return (
     <ProtectedRoute>
       <div style={{ 
@@ -473,14 +466,11 @@ export default function ContactsPage() {
         flexDirection: 'column',
         maxWidth: '100%',
         minHeight: '100vh',
-        backgroundColor: 'white' // Changed background color
+        backgroundColor: 'white'
       }}>
-        {/* Removed background color and shadow from this div */}
         <div style={{ 
           padding: '1rem',
-          marginBottom: '1rem',
-          // backgroundColor: 'white', <-- Removed
-          // boxShadow: theme.shadows.sm <-- Removed
+          marginBottom: '1rem'
         }}>
           <div style={{ 
             display: 'flex', 
@@ -498,24 +488,6 @@ export default function ContactsPage() {
               Contacts
             </h1>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {user && user.role === 'admin' && (
-                <Button
-                  onClick={handleAssignContacts}
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '0.5rem',
-                    paddingLeft: '1rem',
-                    paddingRight: '1rem',
-                    fontSize: 'clamp(0.8rem, 2vw, 1rem)'
-                  }}
-                  variant="outline"
-                >
-                  <FaUserAlt size={12} />
-                  Assign Contacts
-                </Button>
-              )}
-              
               <Button
                 onClick={handleImportContacts}
                 style={{ 
@@ -570,6 +542,7 @@ export default function ContactsPage() {
             onTaskStatusChange={handleTaskStatusChange}
             loading={loading}
             currentUser={user}
+            onRefresh={fetchContacts} // Pass refresh function
           />
         </div>
 
@@ -612,7 +585,7 @@ export default function ContactsPage() {
           onSubmit={handleTaskSubmit}
         />
 
-        {/* Admin-only Reassign Modal */}
+        {/* Admin-only Reassign Modal for individual contacts */}
         {user && user.role === 'admin' && (
           <div
             style={{
