@@ -26,7 +26,7 @@ const ContactTable = ({
   onTaskStatusChange,
   loading,
   currentUser,
-  onRefresh // Add this prop for refreshing contacts after bulk operations
+  onRefresh
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
@@ -37,7 +37,7 @@ const ContactTable = ({
   const [bulkActionDropdownOpen, setBulkActionDropdownOpen] = useState(false);
   const [showBulkReassignModal, setShowBulkReassignModal] = useState(false);
 
-  // Filter options - removed open, active, closed
+  // Filter options
   const filterOptions = [
     { id: 'all', label: 'All Contacts' },
     { id: 'followUp', label: 'Follow Up', callOutcome: 'Follow Up' },
@@ -62,6 +62,19 @@ const ContactTable = ({
     { value: 'other', label: 'Other' }
   ];
 
+  // Function to get owner display name
+  const getOwnerDisplay = (contact) => {
+    if (contact.status === 'Open') {
+      return 'Open';
+    } else if (contact.assignedToUser) {
+      return `${contact.assignedToUser.firstName} ${contact.assignedToUser.lastName}`;
+    } else if (contact.assignedTo) {
+      return 'Assigned';
+    } else {
+      return 'Open';
+    }
+  };
+
   // Apply filters and search to contacts
   const filteredContacts = contacts.filter(contact => {
     const searchMatch = searchTerm === '' || 
@@ -71,7 +84,7 @@ const ContactTable = ({
       (contact.company && contact.company.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (contact.region && contact.region.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    // REQUIREMENT #6: Hide "Not Interested" contacts from "All Contacts" filter
+    // Hide "Not Interested" contacts from "All Contacts" filter
     if (selectedFilter === 'all' && contact.lastCallOutcome === 'Not Interested') {
       return false;
     }
@@ -85,8 +98,14 @@ const ContactTable = ({
 
   // Sort contacts
   const sortedContacts = [...filteredContacts].sort((a, b) => {
-    const aValue = a[sortField] || '';
-    const bValue = b[sortField] || '';
+    let aValue = a[sortField] || '';
+    let bValue = b[sortField] || '';
+    
+    // Special handling for assignedTo field
+    if (sortField === 'assignedTo') {
+      aValue = getOwnerDisplay(a);
+      bValue = getOwnerDisplay(b);
+    }
 
     if (sortDirection === 'asc') {
       return aValue.toString().localeCompare(bValue.toString());
@@ -397,16 +416,16 @@ const ContactTable = ({
           <div style={{ 
             border: '1px solid #eee',
             borderRadius: theme.borderRadius.md,
-            minWidth: '800px',
+            minWidth: '1100px',
             margin: 0,
             backgroundColor: 'white',
             overflow: 'visible', 
             boxShadow: theme.shadows.sm
           }}>
-            {/* Table Header */}
+            {/* Table Header - Added Owner column */}
             <div style={{ 
               display: 'grid',
-              gridTemplateColumns: '40px minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(80px, 0.5fr)',
+              gridTemplateColumns: '40px minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(120px, 1.5fr) 40px',
               backgroundColor: '#f8f9fa',
               padding: '1rem 1.5rem',
               borderBottom: '2px solid #eee',
@@ -482,8 +501,20 @@ const ContactTable = ({
               >
                 Status {renderSortIndicator('lastCallOutcome')}
               </div>
-              <div>
-                Actions
+              {/* New Owner column */}
+              <div 
+                style={{ 
+                  cursor: 'pointer', 
+                  display: 'flex', 
+                  alignItems: 'center'
+                }}
+                onClick={() => handleSort('assignedTo')}
+                title="Sort by owner"
+              >
+                Owner {renderSortIndicator('assignedTo')}
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                
               </div>
             </div>
 
@@ -508,6 +539,7 @@ const ContactTable = ({
                   regionOptions={regionOptions}
                   isSelected={selectedContacts.has(contact.id)}
                   onSelectContact={handleSelectContact}
+                  getOwnerDisplay={getOwnerDisplay}
                 />
               ))}
             </div>

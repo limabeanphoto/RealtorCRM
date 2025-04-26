@@ -65,7 +65,8 @@ const ContactRow = ({
   volumeOptions,
   regionOptions,
   isSelected,
-  onSelectContact
+  onSelectContact,
+  getOwnerDisplay
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [statusMenuOpen, setStatusMenuOpen] = useState(false);
@@ -285,11 +286,10 @@ const ContactRow = ({
 
   return (
     <>
-      {/* Contact Row */}
       <div 
         style={{ 
           display: 'grid',
-          gridTemplateColumns: '40px minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(80px, 0.5fr)',
+          gridTemplateColumns: '40px minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(120px, 1.5fr) 40px',
           padding: '1rem 1.5rem',
           backgroundColor: 'white',
           borderBottom: '1px solid #eee',
@@ -500,8 +500,8 @@ const ContactRow = ({
           </div>
         </div>
         
-      {/* Call Outcome Status */}
-      <div style={{ position: 'relative' }}>
+        {/* Call Outcome Status */}
+        <div style={{ position: 'relative' }}>
           <div
             ref={statusButtonRef}
             onClick={(e) => {
@@ -534,8 +534,29 @@ const ContactRow = ({
           </div>
         </div>
         
-        {/* Actions Menu */}
-        <div style={{ textAlign: 'center', position: 'relative' }}>
+        {/* Owner Column - New */}
+        <div 
+          onClick={onToggleExpand}
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            color: contact.status === 'Open' ? theme.colors.brand.primary : theme.colors.brand.text,
+            fontWeight: contact.status === 'Open' ? '500' : 'normal'
+          }}
+          title={getOwnerDisplay(contact)}
+        >
+          {getOwnerDisplay(contact)}
+        </div>
+        
+        {/* Actions Menu - Updated to be more compact */}
+        <div style={{ 
+          textAlign: 'center', 
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
           <button
             ref={actionButtonRef}
             onClick={(e) => {
@@ -547,35 +568,29 @@ const ContactRow = ({
             }}
             style={{
               background: 'none',
-              border: '1px solid #eee',
+              border: 'none',
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '75px',
-              height: '32px',
+              width: '28px',
+              height: '28px',
               borderRadius: '4px',
               transition: 'all 0.2s ease',
-              gap: '0.3rem',
-              fontSize: '0.8rem',
               color: theme.colors.brand.text
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = '#f0f0f0';
-              e.currentTarget.style.borderColor = '#ddd';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.borderColor = '#eee';
             }}
             title="More actions"
           >
-            Actions <FaEllipsisV size={10} />
+            <FaEllipsisV size={14} />
           </button>
         </div>
       </div>
-
-      {/* Dropdowns rendered in portals at calculated positions */}
       {menuOpen && (
         <div style={{
           ...dropdownBaseStyle,
@@ -756,7 +771,7 @@ const ContactRow = ({
         </div>
       )}
 
-      {/* Expanded View */}
+      {/* Expanded View - Including Owner information */}
       {expanded && (
         <div style={{ 
           padding: '1.5rem',
@@ -834,6 +849,19 @@ const ContactRow = ({
                   </div>
                 )}
                 
+                {/* Added Owner information in expanded view */}
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                    Owner
+                  </div>
+                  <div style={{
+                    color: contact.status === 'Open' ? theme.colors.brand.primary : theme.colors.brand.text,
+                    fontWeight: contact.status === 'Open' ? '500' : 'normal'
+                  }}>
+                    {getOwnerDisplay(contact)}
+                  </div>
+                </div>
+                
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                   <div>
                     <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
@@ -851,7 +879,6 @@ const ContactRow = ({
                       </span>
                     </div>
                   </div>
-                  
                   <div>
                     <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
                       Volume
