@@ -1,4 +1,4 @@
-/* styles/contacts-table.css */
+/* styles/contacts-table.css - Updated with visual tweaks */
 
 .contact-table-container {
   width: 100%;
@@ -19,29 +19,31 @@
   border-radius: 8px;
   background-color: white;
   box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-  min-width: 1100px; /* Increased to accommodate owner column */
+  min-width: 1100px; /* Adjusted to accommodate updated layout */
 }
 
 .contact-table-header {
   display: grid;
-  grid-template-columns: 40px minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(120px, 1.5fr) 40px;
+  /* Updated grid layout to reduce space between Owner column and menu button */
+  grid-template-columns: 40px minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(120px, 1.5fr) 30px;
   background-color: #f8f9fa;
   padding: 1rem 1.5rem;
   border-bottom: 2px solid #eee;
-  font-size: 0.9rem;
+  font-size: 0.95rem; /* Increased font size */
   font-weight: 600;
   color: #7A7A73;
 }
 
 .contact-table-row {
   display: grid;
-  grid-template-columns: 40px minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(120px, 1.5fr) 40px;
+  /* Updated grid layout to match header */
+  grid-template-columns: 40px minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(120px, 1.5fr) 30px;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #eee;
   align-items: center;
   transition: background-color 0.2s ease;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.95rem; /* Increased font size */
 }
 
 .contact-table-row:hover {
@@ -56,9 +58,9 @@
   
   .contact-table-header,
   .contact-table-row {
-    grid-template-columns: 40px minmax(120px, 2fr) minmax(100px, 1.5fr) minmax(140px, 2fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(100px, 1.5fr) 35px;
+    grid-template-columns: 40px minmax(120px, 2fr) minmax(100px, 1.5fr) minmax(140px, 2fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(100px, 1.5fr) 28px;
     padding: 0.75rem 1rem;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
   }
 }
 
@@ -69,9 +71,9 @@
   
   .contact-table-header,
   .contact-table-row {
-    grid-template-columns: 35px minmax(100px, 2fr) minmax(90px, 1.5fr) minmax(120px, 2fr) minmax(70px, 0.75fr) minmax(70px, 0.75fr) minmax(70px, 0.75fr) minmax(90px, 1.25fr) 30px;
+    grid-template-columns: 35px minmax(100px, 2fr) minmax(90px, 1.5fr) minmax(120px, 2fr) minmax(70px, 0.75fr) minmax(70px, 0.75fr) minmax(70px, 0.75fr) minmax(90px, 1.25fr) 25px;
     padding: 0.5rem 0.75rem;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
   
   /* Hide labels on mobile and show only icons */
@@ -95,9 +97,9 @@
   
   /* Compact action button */
   .action-button.compact {
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
   }
 }
 
@@ -191,7 +193,7 @@
   opacity: 1;
 }
 
-/* Compact action button styling */
+/* Compact action button styling - Reduced size */
 .action-button-compact {
   background: none;
   border: none;
@@ -199,8 +201,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 4px;
   transition: all 0.2s ease;
   color: #7A7A73;

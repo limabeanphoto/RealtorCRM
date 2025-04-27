@@ -1,4 +1,4 @@
-// components/contacts/ContactTable.js
+// components/contacts/ContactTable.js - Complete with all visual tweaks
 import React, { useState } from 'react';
 import { 
   FaSearch, 
@@ -422,14 +422,14 @@ const ContactTable = ({
             overflow: 'visible', 
             boxShadow: theme.shadows.sm
           }}>
-            {/* Table Header - Added Owner column */}
+            {/* Table Header - Adjusted grid layout to match ContactRow */}
             <div style={{ 
               display: 'grid',
-              gridTemplateColumns: '40px minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(120px, 1.5fr) 40px',
+              gridTemplateColumns: '40px minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(120px, 1.5fr) 30px',
               backgroundColor: '#f8f9fa',
               padding: '1rem 1.5rem',
               borderBottom: '2px solid #eee',
-              fontSize: '0.9rem',
+              fontSize: '0.95rem',
               fontWeight: '600',
               color: theme.colors.brand.text,
               width: '100%'
@@ -501,7 +501,7 @@ const ContactTable = ({
               >
                 Status {renderSortIndicator('lastCallOutcome')}
               </div>
-              {/* New Owner column */}
+              {/* Owner column */}
               <div 
                 style={{ 
                   cursor: 'pointer', 
@@ -532,7 +532,6 @@ const ContactTable = ({
                   onDeleteContact={onDeleteContact}
                   onContactUpdate={onContactUpdate}
                   onReassignContact={onReassignContact}
-                  onEditTask={onEditTask}
                   onTaskStatusChange={onTaskStatusChange}
                   currentUser={currentUser}
                   volumeOptions={volumeOptions}

@@ -1,4 +1,4 @@
-// components/contacts/ContactRow.js
+// components/contacts/ContactRow.js - Complete with all visual tweaks
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   FaPhone, 
@@ -10,8 +10,6 @@ import {
   FaEdit, 
   FaTrash, 
   FaExternalLinkAlt,
-  FaAngleDown,
-  FaAngleUp,
   FaHistory
 } from 'react-icons/fa';
 import theme from '../../styles/theme';
@@ -289,14 +287,16 @@ const ContactRow = ({
       <div 
         style={{ 
           display: 'grid',
-          gridTemplateColumns: '40px minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(120px, 1.5fr) 40px',
+          // Updated grid layout to adjust spacing between Owner column and menu button
+          gridTemplateColumns: '40px minmax(150px, 2fr) minmax(120px, 1.5fr) minmax(150px, 2fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(100px, 1fr) minmax(120px, 1.5fr) 30px',
           padding: '1rem 1.5rem',
           backgroundColor: 'white',
           borderBottom: '1px solid #eee',
           alignItems: 'center',
           transition: 'background-color 0.2s ease',
           cursor: 'pointer',
-          fontSize: '0.9rem',
+          // Increased font size for better readability
+          fontSize: '0.95rem',
           width: '100%'
         }}
         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
@@ -316,20 +316,17 @@ const ContactRow = ({
           />
         </div>
         
-        {/* Name Column with profile link and assignment status badge */}
+        {/* Name Column - Removed expand arrow and status badge */}
         <div 
           onClick={onToggleExpand} 
           style={{ 
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem',
             fontWeight: '500',
-            minWidth: 0, // Allow text truncation
+            minWidth: 0,
             overflow: 'hidden'
           }}
         >
-          {expanded ? <FaAngleUp size={14} /> : <FaAngleDown size={14} />}
-          
           {contact.profileLink ? (
             <a 
               href={contact.profileLink}
@@ -368,19 +365,6 @@ const ContactRow = ({
               {contact.name}
             </span>
           )}
-          
-          {/* Assignment status badge */}
-          <span style={{
-            display: 'inline-block',
-            padding: '0.15rem 0.3rem',
-            borderRadius: '3px',
-            fontSize: '0.75rem',
-            ...getAssignmentStatusStyle(contact.status),
-            flexShrink: 0
-          }}
-          title={`Assignment status: ${contact.status}`}>
-            {contact.status}
-          </span>
         </div>
         
         {/* Company */}
@@ -534,7 +518,7 @@ const ContactRow = ({
           </div>
         </div>
         
-        {/* Owner Column - New */}
+        {/* Owner Column */}
         <div 
           onClick={onToggleExpand}
           style={{
@@ -548,8 +532,8 @@ const ContactRow = ({
         >
           {getOwnerDisplay(contact)}
         </div>
-        
-        {/* Actions Menu - Updated to be more compact */}
+
+        {/* Actions Menu - Adjusted width for better spacing */}
         <div style={{ 
           textAlign: 'center', 
           position: 'relative',
@@ -573,8 +557,8 @@ const ContactRow = ({
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '28px',
-              height: '28px',
+              width: '24px',
+              height: '24px',
               borderRadius: '4px',
               transition: 'all 0.2s ease',
               color: theme.colors.brand.text
@@ -771,7 +755,7 @@ const ContactRow = ({
         </div>
       )}
 
-      {/* Expanded View - Including Owner information */}
+      {/* Expanded View */}
       {expanded && (
         <div style={{ 
           padding: '1.5rem',
