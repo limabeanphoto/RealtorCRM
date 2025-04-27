@@ -1,3 +1,4 @@
+// Updated components/dashboard/StatCard.js with enhanced shadows
 import React from 'react';
 import { FaPhone, FaCalendarAlt, FaChartLine, FaUsers, FaCheckCircle } from 'react-icons/fa';
 

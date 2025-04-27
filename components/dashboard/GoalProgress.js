@@ -1,3 +1,4 @@
+// Updated components/dashboard/GoalProgress.js with enhanced shadows
 import React from 'react';
 import { FaPhone, FaTrophy } from 'react-icons/fa';
 

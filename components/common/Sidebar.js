@@ -1,4 +1,4 @@
-// components/common/Sidebar.js
+// Updated components/common/Sidebar.js - Part 1
 import { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -15,7 +15,9 @@ import {
   FaAngleLeft, 
   FaAngleRight,
   FaEllipsisV,
-  FaBars
+  FaBars,
+  FaUsersCog,
+  FaChartLine
 } from 'react-icons/fa';
 import SearchResults from '../search/SearchResults';
 
@@ -43,7 +45,6 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
     
     // Base navigation items
     const items = [
-      // Dashboard link is conditional based on user role
       {
         href: isAdmin ? '/admin/dashboard' : '/',
         label: 'Dashboard',
@@ -54,6 +55,15 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
       { href: '/tasks', label: 'Tasks', icon: <FaTasks size={18} /> },
       { href: '/stats', label: 'Analytics', icon: <FaChartBar size={18} /> },
     ];
+    
+    // Add Team Analytics for admins only
+    if (isAdmin) {
+      items.push({
+        href: '/admin/team-analytics',
+        label: 'Team Analytics',
+        icon: <FaChartLine size={18} />
+      });
+    }
     
     return items;
   }, [user]);
@@ -143,7 +153,7 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
       backgroundColor: theme.colors.brand.primary,
       color: 'white',
       width: '100%',
-      overflow: 'hidden', // Prevent vertical scrolling in sidebar
+      overflow: 'hidden',
     }}>
       {/* Top section with toggle and search */}
       <div style={{
@@ -228,7 +238,7 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
           </div>
         )}
         
-        {/* Search Modal - Updated for better positioning */}
+        {/* Search Modal */}
         {isSearchOpen && (
           <div 
             ref={searchRef}
@@ -386,21 +396,21 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
         </div>
       </div>
       
-      {/* User Menu Dropdown - Completely separate from sidebar */}
+      {/* User Menu Dropdown - Updated with Manage Users for admins */}
       {isUserMenuOpen && (
         <div
           ref={userMenuRef}
           style={{
-            position: 'fixed', // Keep fixed positioning
+            position: 'fixed',
             top: isCollapsed ? 
-              'auto' : // Set top to auto when collapsed
+              'auto' :
               'auto',
             bottom: isCollapsed ? 
-              window.innerHeight - (userMenuTriggerRef.current?.getBoundingClientRect().bottom || 0) : // Align bottom with trigger bottom when collapsed
-              window.innerHeight - (userMenuTriggerRef.current?.getBoundingClientRect().top || 0), // Position from bottom when expanded
+              window.innerHeight - (userMenuTriggerRef.current?.getBoundingClientRect().bottom || 0) :
+              window.innerHeight - (userMenuTriggerRef.current?.getBoundingClientRect().top || 0),
             left: isCollapsed ? 
-              (userMenuTriggerRef.current?.getBoundingClientRect().left || 0) + 70 : // Position right of sidebar when collapsed
-              (userMenuTriggerRef.current?.getBoundingClientRect().left || 0) + 20, // Slight offset when expanded
+              (userMenuTriggerRef.current?.getBoundingClientRect().left || 0) + 70 :
+              (userMenuTriggerRef.current?.getBoundingClientRect().left || 0) + 20,
             backgroundColor: 'white',
             borderRadius: '4px',
             boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
@@ -434,6 +444,25 @@ export default function Sidebar({ isCollapsed, toggleSidebar }) {
             <FaCog size={16} />
             <span>Settings</span>
           </Link>
+          
+          {/* Manage Users link for admins only */}
+          {user && user.role === 'admin' && (
+            <Link 
+              href="/admin/users"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.75rem 1rem',
+                color: theme.colors.brand.text,
+                textDecoration: 'none',
+                transition: 'background-color 0.2s ease',
+              }}
+            >
+              <FaUsersCog size={16} />
+              <span>Manage Users</span>
+            </Link>
+          )}
           
           <div 
             onClick={handleLogout}

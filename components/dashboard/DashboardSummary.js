@@ -1,4 +1,4 @@
-// Modified components/dashboard/DashboardSummary.js with fixes for goal metrics
+// Modified components/dashboard/DashboardSummary.js - Part 1
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import StatCard from './StatCard';
@@ -13,7 +13,7 @@ export default function DashboardSummary() {
     callsToday: 0,
     callsThisMonth: 0,
     callsThisYear: 0,
-    dealsToday: 0, // Added to track deals today
+    dealsToday: 0,
     loading: true
   });
   const [goals, setGoals] = useState({
@@ -96,7 +96,7 @@ export default function DashboardSummary() {
           callsToday: todayData.callsMetrics.total || 0,
           callsThisMonth: monthData.callsMetrics.total || 0,
           callsThisYear: yearData.callsMetrics.total || 0,
-          dealsToday: todayData.dealsMetrics.total || 0, // Store deals today
+          dealsToday: todayData.dealsMetrics.total || 0,
           loading: false,
           conversionRate: todayData.conversionRates?.rate || 0
         });
@@ -209,8 +209,6 @@ export default function DashboardSummary() {
       </div>
     );
   }
-  
-  const isAdmin = user && user.role === 'admin';
 
   return (
     <div className="dashboard-container">
@@ -277,43 +275,6 @@ export default function DashboardSummary() {
           color={theme.colors.brand.secondary}
         />
       </div>
-      
-      {/* Admin Section */}
-      {isAdmin && (
-      <div className="dashboard-card admin-actions">
-        <h2>Admin Actions</h2>
-        <div className="admin-buttons">
-          <button 
-            className="admin-button" 
-            onClick={() => router.push('/admin/users')}
-          >
-            Manage Users
-          </button>
-          <button 
-            className="admin-button" 
-            onClick={() => router.push('/admin/contacts/assign')}
-          >
-            Assign Contacts
-          </button>
-          <button 
-            className="admin-button" 
-            onClick={() => router.push('/admin/contacts/import')}
-          >
-            Import Contacts
-          </button>
-          <button 
-          className="admin-button" 
-          onClick={() => router.push('/admin/team-analytics')}
-          style={{ 
-            backgroundColor: theme.colors.brand.accent,
-            color: 'white' 
-          }}
-          >
-            Team Analytics
-          </button> 
-        </div>
-      </div>
-      )}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+// Updated components/dashboard/ActionPanel.js with enhanced shadows
 import React from 'react';
 import { useRouter } from 'next/router';
 import { FaTasks, FaUsers, FaPhone, FaCalendarAlt, FaCheck, FaChevronRight } from 'react-icons/fa';
