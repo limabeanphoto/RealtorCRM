@@ -10,7 +10,6 @@ export default function Home() {
   useEffect(() => {
     // Check if user is authenticated
     const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
     
     if (!token) {
       // Redirect to login if not authenticated
@@ -18,10 +17,7 @@ export default function Home() {
       return;
     }
     
-    // Redirect admin users to admin dashboard
-    if (user.role === 'admin') {
-      router.push('/admin/dashboard');
-    }
+    // Removed the admin redirect logic - all users now use the same dashboard
   }, [router]);
   
   return (
