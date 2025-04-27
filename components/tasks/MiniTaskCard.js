@@ -215,18 +215,6 @@ export default function MiniTaskCard({
             >
               <FaEdit size={12} />
             </Button>
-            
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleStatusChange(e);
-              }}
-              variant={task.status === 'Completed' ? 'outline' : 'primary'}
-              size="small"
-              tooltip={task.status === 'Completed' ? 'Mark as Active' : 'Mark as Completed'}
-            >
-              {task.status === 'Completed' ? 'Mark as Active' : 'Mark as Completed'}
-            </Button>
           </div>
         </div>
       )}
