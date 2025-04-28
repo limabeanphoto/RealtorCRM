@@ -1,315 +1,216 @@
-import BaseCard from '../common/BaseCard';
-import Button from '../common/Button';
+import React from 'react';
+import { FaCheck, FaCalendarAlt, FaEdit, FaClock, FaExclamationCircle } from 'react-icons/fa';
 import theme from '../../styles/theme';
-import { FaCheck, FaCalendarAlt, FaPhone, FaEdit, FaTrash } from 'react-icons/fa';
+import Button from '../common/Button';
+import { formatDateToPacificTime } from '../../utils/dateUtils';
 
-const MiniTaskCard = ({ task, onEditTask, onUpdateStatus, onDeleteTask }) => {
+const MiniTaskCard = ({ task, onEditTask, onStatusChange }) => {
+  // Format date for display using our utility function
   const formatDate = (dateString) => {
-    const options = { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric',
-      timeZone: 'America/Los_Angeles' // Display in Pacific Time
-    };
-    return new Date(dateString).toLocaleDateString('en-US', options);
+    if (!dateString) return 'No date set';
+    
+    // Use the utility function that handles Pacific Time
+    const formatted = formatDateToPacificTime(dateString);
+    
+    // Extract just the date part (without time)
+    const datePart = formatted.split(',')[0];
+    return datePart;
   };
 
+  // Format time for display
+  const formatTime = (dateString) => {
+    if (!dateString) return '';
+    
+    // Use the utility function that handles Pacific Time
+    const formatted = formatDateToPacificTime(dateString);
+    
+    // Extract just the time part
+    const timePart = formatted.split(',')[1].trim();
+    return timePart;
+  };
+
+  // Check if task is due soon (within 2 days)
   const isDueSoon = (dueDate) => {
+    if (!dueDate) return false;
     const now = new Date();
     const due = new Date(dueDate);
     const daysDiff = (due - now) / (1000 * 60 * 60 * 24);
     return daysDiff <= 2 && daysDiff >= 0;
   };
 
+  // Check if task is overdue
   const isOverdue = (dueDate) => {
+    if (!dueDate) return false;
     return new Date(dueDate) < new Date();
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Completed': return '#28a745';
-      case 'Active': return '#007bff';
-      default: return '#6c757d';
+  // Handle status change
+  const handleStatusToggle = () => {
+    if (onStatusChange) {
+      onStatusChange(task.id, task.status === 'Completed' ? 'Active' : 'Completed');
     }
   };
 
-  const handleStatusChange = async (taskId, newStatus) => {
-    if (onUpdateStatus) {
-      const result = await onUpdateStatus(taskId, newStatus);
-      // The parent component (ContactTable) will handle refreshing the data
-      return result;
+  // Handle edit button click
+  const handleEdit = (e) => {
+    e.stopPropagation();
+    if (onEditTask) {
+      onEditTask(task);
     }
   };
 
-  const handleDelete = async (taskId) => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
-      if (onDeleteTask) {
-        await onDeleteTask(taskId);
-      }
-    }
-  };
-
-  // Styles for task card elements
-  const HeaderContent = (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-      <div>
-        <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>
-          {task.title}
-        </div>
-      </div>
-    </div>
-  );
-
-  const SubtitleContent = (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
-      <FaCalendarAlt />
-      <span>Due: {formatDate(task.dueDate)}</span>
-      {isDueSoon(task.dueDate) && !isOverdue(task.dueDate) && (
-        <span style={{ 
-          backgroundColor: '#fff3cd', 
-          color: '#856404', 
-          padding: '2px 6px', 
-          borderRadius: '4px',
-          fontSize: '0.75rem',
-          fontWeight: 'bold'
-        }}>
-          Due Soon!
-        </span>
-      )}
-      {isOverdue(task.dueDate) && (
-        <span style={{ 
-          backgroundColor: '#f8d7da', 
-          color: '#721c24', 
-          padding: '2px 6px', 
-          borderRadius: '4px',
-          fontSize: '0.75rem',
-          fontWeight: 'bold'
-        }}>
-          Overdue
-        </span>
-      )}
-    </div>
-  );
-
-  const StatusToggle = (
-    <div 
-      onClick={(e) => {
-        e.stopPropagation();
-        handleStatusChange(task.id, task.status === 'Completed' ? 'Active' : 'Completed');
-      }}
-      style={{
-        backgroundColor: task.status === 'Completed' ? '#28a745' : 'white',
-        border: `2px solid ${task.status === 'Completed' ? '#28a745' : '#ddd'}`,
-        width: '24px',
-        height: '24px',
-        borderRadius: '12px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}
-    >
-      {task.status === 'Completed' && <FaCheck color="white" size={12} />}
-    </div>
-  );
-
-  const ButtonGroup = (
-    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginLeft: '0.5rem' }}>
-      {/* Edit Button */}
-      <Button 
-        onClick={(e) => {
-          e.stopPropagation();
-          onEditTask(task);
-        }}
-        variant="outline"
-        size="small"
-        title="Edit task"
-        style={{ borderRadius: '4px', padding: '0.25rem 0.5rem' }}
-      >
-        <FaEdit />
-        <span style={{ marginLeft: '0.25rem' }}>Edit</span>
-      </Button>
-    </div>
-  );
-
-  const ExpandedContent = (
-    <div>
-      {/* Status toggle in expanded view */}
-      <div style={{ 
-        marginTop: '1rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        flexWrap: 'wrap'
-      }}>
-        <strong>Status:</strong>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          {StatusToggle}
-          <span>{task.status === 'Completed' ? 'Completed' : 'Active'}</span>
-        </div>
-      </div>
-
-      {/* Description section */}
-      {task.description && (
-        <div style={{ marginTop: '1rem' }}>
-          <strong>Description:</strong>
-          <p style={{ margin: '0.5rem 0' }}>{task.description}</p>
-        </div>
-      )}
-
-      {/* Created and Due Date information */}
-      <div style={{ 
-        marginTop: '1rem',
-        padding: '0.5rem',
-        backgroundColor: theme.colors.brand.background,
-        borderRadius: '4px'
-      }}>
-        <div style={{ fontSize: '0.85rem', marginBottom: '0.3rem' }}>
-          <strong>Created:</strong> {formatDate(task.createdAt)}
-        </div>
-        <div style={{ fontSize: '0.85rem' }}>
-          <strong>Due:</strong> {formatDate(task.dueDate)}
-          {isDueSoon(task.dueDate) && !isOverdue(task.dueDate) && (
-            <span style={{ 
-              marginLeft: '0.5rem',
-              backgroundColor: '#fff3cd', 
-              color: '#856404', 
-              padding: '2px 6px', 
-              borderRadius: '4px'
-            }}>
-              Due Soon!
-            </span>
-          )}
-          {isOverdue(task.dueDate) && (
-            <span style={{ 
-              marginLeft: '0.5rem',
-              backgroundColor: '#f8d7da', 
-              color: '#721c24', 
-              padding: '2px 6px', 
-              borderRadius: '4px'
-            }}>
-              Overdue
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* If this task is linked to a call */}
-      {task.call && (
-        <div style={{ 
-          marginTop: '1rem',
-          padding: '0.75rem',
-          backgroundColor: '#e8f4fd',
-          borderRadius: theme.borderRadius.sm,
-          border: '1px solid #b8daff'
-        }}>
-          <h4 style={{ 
-            margin: '0 0 0.5rem 0', 
+  return (
+    <div style={{ 
+      backgroundColor: 'white', 
+      padding: '0.75rem', 
+      borderRadius: theme.borderRadius.sm,
+      border: `1px solid ${isOverdue(task.dueDate) ? '#f8d7da' : 
+                          isDueSoon(task.dueDate) ? '#fff3cd' : '#eee'}`,
+      marginBottom: '0.5rem',
+      transition: 'all 0.2s ease',
+      position: 'relative'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        {/* Task Info */}
+        <div style={{ flex: 1, marginRight: '0.5rem' }}>
+          <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
-            gap: '0.5rem',
-            color: '#004085'
+            gap: '0.5rem', 
+            marginBottom: '0.25rem'
           }}>
-            <FaPhone /> Related Call
-          </h4>
-          <div style={{ fontSize: '0.9rem', color: '#004085' }}>
-            <div>
-              <strong>Date:</strong> {formatDate(task.call.date)}
+            {/* Status Checkbox */}
+            <div 
+              onClick={handleStatusToggle}
+              style={{
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                border: `2px solid ${task.status === 'Completed' ? theme.colors.brand.primary : '#ddd'}`,
+                backgroundColor: task.status === 'Completed' ? theme.colors.brand.primary : 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                flexShrink: 0
+              }}
+              title={task.status === 'Completed' ? 'Mark as To-Do' : 'Mark as Completed'}
+            >
+              {task.status === 'Completed' && <FaCheck size={10} color="white" />}
             </div>
-            <div>
-              <strong>Outcome:</strong> {task.call.outcome}
-            </div>
-            {task.call.notes && (
-              <div style={{ marginTop: '0.25rem' }}>
-                <strong>Notes:</strong> {task.call.notes}
-              </div>
+            
+            {/* Task Title */}
+            <strong style={{ 
+              textDecoration: task.status === 'Completed' ? 'line-through' : 'none',
+              color: task.status === 'Completed' ? theme.colors.brand.text : 'inherit'
+            }}>
+              {task.title}
+            </strong>
+          </div>
+          
+          {/* Due Date */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.25rem', 
+            fontSize: '0.9rem', 
+            color: theme.colors.brand.text,
+            marginBottom: '0.25rem'
+          }}>
+            <FaCalendarAlt size={12} />
+            <span>Due: {formatDate(task.dueDate)} at {formatTime(task.dueDate)}</span>
+          </div>
+          
+          {/* Task Status Badges */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem', 
+            marginTop: '0.25rem' 
+          }}>
+            {isDueSoon(task.dueDate) && !isOverdue(task.dueDate) && (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                padding: '0.15rem 0.3rem',
+                borderRadius: '3px',
+                fontSize: '0.75rem',
+                backgroundColor: '#fff3cd',
+                color: '#856404'
+              }}>
+                <FaClock size={10} />
+                Due Soon
+              </span>
+            )}
+            
+            {isOverdue(task.dueDate) && (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                padding: '0.15rem 0.3rem',
+                borderRadius: '3px',
+                fontSize: '0.75rem',
+                backgroundColor: '#f8d7da',
+                color: '#721c24'
+              }}>
+                <FaExclamationCircle size={10} />
+                Overdue
+              </span>
+            )}
+            
+            {task.status === 'Completed' && (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                padding: '0.15rem 0.3rem',
+                borderRadius: '3px',
+                fontSize: '0.75rem',
+                backgroundColor: '#d4edda',
+                color: '#155724'
+              }}>
+                <FaCheck size={10} />
+                Completed
+              </span>
             )}
           </div>
         </div>
-      )}
-
-      {/* Task Completion info */}
-      {task.completed && task.completedAt && (
-        <div style={{ 
-          marginTop: '1rem',
-          color: '#28a745',
-          fontSize: '0.85rem'
-        }}>
-          <FaCheck style={{ marginRight: '0.5rem' }} />
-          Completed on {formatDate(task.completedAt)}
-        </div>
-      )}
-
-      {/* Action buttons */}
-      <div style={{ 
-        marginTop: '1rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderTop: '1px solid #eee',
-        paddingTop: '1rem'
-      }}>
-        <Button 
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDelete(task.id);
-          }}
-          variant="outline"
-          size="small"
-          title="Delete task"
-          style={{ 
-            color: '#dc3545', 
-            borderColor: '#dc3545',
-            padding: '0.25rem 0.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.25rem'
-          }}
-        >
-          <FaTrash />
-          <span>Delete Task</span>
-        </Button>
         
-        <Button 
-          onClick={(e) => {
-            e.stopPropagation();
-            onEditTask(task);
-          }}
-          variant="primary"
-          size="small"
-          title="Edit task details"
+        {/* Action Button */}
+        <Button
+          onClick={handleEdit}
           style={{ 
-            padding: '0.25rem 0.5rem',
+            width: '28px',
+            height: '28px',
+            padding: '0',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.25rem'
+            justifyContent: 'center',
+            minWidth: '28px'
           }}
+          variant="secondary"
+          tooltip="Edit task details"
         >
-          <FaEdit />
-          <span>Edit Details</span>
+          <FaEdit size={12} />
         </Button>
       </div>
+      
+      {/* Task Description (if available) */}
+      {task.description && (
+        <div style={{ 
+          marginTop: '0.5rem', 
+          fontSize: '0.9rem',
+          backgroundColor: '#f8f9fa',
+          padding: '0.5rem',
+          borderRadius: theme.borderRadius.sm,
+          color: theme.colors.brand.text
+        }}>
+          {task.description}
+        </div>
+      )}
     </div>
-  );
-
-  return (
-    <BaseCard
-      title={HeaderContent}
-      subtitle={SubtitleContent}
-      actions={ButtonGroup}
-      expandedContent={ExpandedContent}
-      accentColor={getStatusColor(task.status)}
-      style={{
-        width: '90%',
-        margin: '0.5rem auto',
-        border: isOverdue(task.dueDate) ? '2px solid #f8d7da' : 
-                isDueSoon(task.dueDate) ? '2px solid #fff3cd' : '1px solid #e2e8f0',
-        backgroundColor: isOverdue(task.dueDate) ? '#fff5f5' : 
-                        isDueSoon(task.dueDate) ? '#fffdf0' : 'white'
-      }}
-    />
   );
 };
 
