@@ -962,7 +962,8 @@ const ContactRow = ({
               <div>
                 <h4 style={{ marginTop: 0, marginBottom: '0.5rem', color: theme.colors.brand.text, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <FaTasks size={14} />
-                  Tasks ({contact.tasks && contact.tasks.length > 0 ? contact.tasks.length : '0'})
+                  Tasks ({contact.tasks && contact.tasks.filter(task => task.status !== 'Completed').length > 0 ? 
+                    contact.tasks.filter(task => task.status !== 'Completed').length : '0'})
                 </h4>
                 <div style={{ 
                   backgroundColor: 'white',
@@ -970,20 +971,22 @@ const ContactRow = ({
                   borderRadius: theme.borderRadius.sm,
                   border: '1px solid #eee'
                 }}>
-                  {contact.tasks && contact.tasks.length > 0 ? (
+                  {contact.tasks && contact.tasks.filter(task => task.status !== 'Completed').length > 0 ? (
                     <div>
-                      {contact.tasks.map(task => (
-                        <MiniTaskCard 
-                          key={task.id}
-                          task={task}
-                          onStatusChange={onTaskStatusChange}
-                          onEdit={onEditTask}
-                        />
-                      ))}
+                      {contact.tasks
+                        .filter(task => task.status !== 'Completed') // Filter out completed tasks
+                        .map(task => (
+                          <MiniTaskCard 
+                            key={task.id}
+                            task={task}
+                            onStatusChange={onTaskStatusChange}
+                            onEditTask={onEditTask}
+                          />
+                        ))}
                     </div>
                   ) : (
                     <p style={{ margin: '0 0 0.5rem 0', color: theme.colors.brand.text }}>
-                      No tasks associated with this contact
+                      No active tasks associated with this contact
                     </p>
                   )}
                 </div>

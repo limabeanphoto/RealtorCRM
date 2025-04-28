@@ -25,7 +25,7 @@ const MiniTaskCard = ({ task, onEditTask, onStatusChange }) => {
     const formatted = formatDateToPacificTime(dateString);
     
     // Extract just the time part
-    const timePart = formatted.split(',')[1].trim();
+    const timePart = formatted.split(',')[1]?.trim() || '';
     return timePart;
   };
 
@@ -45,31 +45,47 @@ const MiniTaskCard = ({ task, onEditTask, onStatusChange }) => {
   };
 
   // Handle status change
-  const handleStatusToggle = () => {
+  const handleStatusToggle = (e) => {
+    e.stopPropagation(); // Prevent event from bubbling up
+    
     if (onStatusChange) {
       onStatusChange(task.id, task.status === 'Completed' ? 'Active' : 'Completed');
     }
   };
 
-  // Handle edit button click
+  // Handle edit button click - FIXED to ensure correct task object is passed
   const handleEdit = (e) => {
-    e.stopPropagation();
-    if (onEditTask) {
-      onEditTask(task);
+    e.stopPropagation(); // Prevent event from bubbling up
+    e.preventDefault(); // Prevent any default behavior
+    
+    // Make sure we have a properly formatted task for the edit modal
+    const formattedTask = {
+      ...task,
+      // Ensure dueDate is properly formatted for datetime-local input
+      dueDate: task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : ''
+    };
+    
+    if (onEditTask && typeof onEditTask === 'function') {
+      onEditTask(formattedTask);
+    } else {
+      console.error('onEditTask is not a function or not provided to MiniTaskCard');
     }
   };
 
   return (
-    <div style={{ 
-      backgroundColor: 'white', 
-      padding: '0.75rem', 
-      borderRadius: theme.borderRadius.sm,
-      border: `1px solid ${isOverdue(task.dueDate) ? '#f8d7da' : 
-                          isDueSoon(task.dueDate) ? '#fff3cd' : '#eee'}`,
-      marginBottom: '0.5rem',
-      transition: 'all 0.2s ease',
-      position: 'relative'
-    }}>
+    <div 
+      style={{ 
+        backgroundColor: 'white', 
+        padding: '0.75rem', 
+        borderRadius: theme.borderRadius.sm,
+        border: `1px solid ${isOverdue(task.dueDate) ? '#f8d7da' : 
+                            isDueSoon(task.dueDate) ? '#fff3cd' : '#eee'}`,
+        marginBottom: '0.5rem',
+        transition: 'all 0.2s ease',
+        position: 'relative'
+      }}
+      onClick={(e) => e.stopPropagation()} // Prevent clicks from affecting parent elements
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         {/* Task Info */}
         <div style={{ flex: 1, marginRight: '0.5rem' }}>
