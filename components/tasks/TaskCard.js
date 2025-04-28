@@ -3,6 +3,7 @@ import { FaCheck, FaClock, FaEdit, FaTrash, FaTasks } from 'react-icons/fa';
 import theme from '../../styles/theme';
 import Button from '../common/Button';
 import BaseCard from '../common/BaseCard';
+import MiniContactCard from '../contacts/MiniContactCard'; // Add this import
 
 // Utility function to format date in Pacific Time
 const formatDate = (dateString) => {
