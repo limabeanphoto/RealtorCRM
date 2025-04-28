@@ -123,7 +123,7 @@ export default function Tasks() {
     }
   }
   
-  // Handle task status change - updated for Active/Completed
+  // Handle task status change - updated for Active/Completed only
   const handleStatusChange = async (taskId, newStatus) => {
     try {
       const token = localStorage.getItem('token')
@@ -223,9 +223,11 @@ export default function Tasks() {
   
   // Handle opening the edit modal
   const handleOpenEditModal = (task) => {
+    // Make a copy of the task for editing
+    // Note: We don't need to modify the dueDate here anymore
+    // The TaskModal component will handle the conversion
     setEditingTask({
-      ...task,
-      dueDate: new Date(task.dueDate).toISOString().slice(0, 16)
+      ...task
     })
     setIsTaskModalOpen(true)
   }

@@ -14,7 +14,7 @@ export default function TaskModal({
     // Convert status to match our new system
     const updatedFormData = {
       ...formData,
-      // Ensure API compatibility with Active/Open mapping
+      // Ensure API compatibility with Active/Completed mapping
       status: formData.status === 'Active' ? 'Active' : 'Completed',
       completed: formData.status === 'Completed'
     };
@@ -31,6 +31,13 @@ export default function TaskModal({
   const initialData = task || {};
   if (contact && !initialData.contactId) {
     initialData.contactId = contact.id;
+  }
+  
+  // Convert date to ISO string format for the form if it exists
+  if (initialData.dueDate && typeof initialData.dueDate === 'string') {
+    // Keep the date in its ISO format for the datetime-local input
+    // The input will display it in the user's local time zone
+    initialData.dueDate = new Date(initialData.dueDate).toISOString().slice(0, 16);
   }
   
   // Ensure status is properly mapped for our simplified system

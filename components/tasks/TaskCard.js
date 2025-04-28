@@ -1,31 +1,20 @@
 import { useState, useEffect } from 'react';
 import { FaCheck, FaClock, FaEdit, FaTrash, FaTasks } from 'react-icons/fa';
 import theme from '../../styles/theme';
-import MiniContactCard from '../contacts/MiniContactCard';
 import Button from '../common/Button';
 import BaseCard from '../common/BaseCard';
 
-// Utility function to format date
+// Utility function to format date in Pacific Time
 const formatDate = (dateString) => {
   const options = { 
     year: 'numeric', 
     month: 'short', 
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    timeZone: 'America/Los_Angeles' // Display in Pacific Time
   };
-  return new Date(dateString).toLocaleDateString(undefined, options);
-};
-
-// Utility function to get color based on priority
-const getPriorityStyle = (priority) => {
-  const styles = {
-    'High': { backgroundColor: '#f8d7da', color: '#721c24' },
-    'Medium': { backgroundColor: theme.colors.brand.highlight, color: theme.colors.brand.text },
-    'Low': { backgroundColor: theme.colors.brand.secondary, color: 'white' }
-  };
-  
-  return styles[priority] || {};
+  return new Date(dateString).toLocaleString('en-US', options);
 };
 
 // Calculate time remaining or overdue
@@ -160,16 +149,6 @@ export default function TaskCard({
       </div>
       
       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-        <span style={{ 
-          display: 'inline-block',
-          padding: '0.2rem 0.5rem',
-          borderRadius: theme.borderRadius.sm,
-          fontSize: '0.8rem',
-          ...getPriorityStyle(task.priority)
-        }}>
-          {task.priority}
-        </span>
-        
         <span style={{ 
           display: 'flex',
           alignItems: 'center',

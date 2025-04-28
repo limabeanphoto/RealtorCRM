@@ -1,16 +1,16 @@
-// components/tasks/TaskFormRefactored.js
+// components/tasks/TaskForm.js
 import { useEffect } from 'react';
 import { useForm } from '../common/useForm';
 import Button from '../common/Button';
+import { getTomorrowNoonPacific } from '../../utils/dateUtils';
 
 export default function TaskForm({ onSubmit, initialData = {}, onCancel, contacts = [] }) {
   // Use our custom form hook with initial values
   const { values, setFieldValue, handleChange, createSubmitHandler } = useForm({
     title: '',
     description: '',
-    status: 'Open',
-    priority: 'Medium',
-    dueDate: new Date(new Date().setHours(17, 0, 0, 0) + 86400000).toISOString().slice(0, 16), // Tomorrow at 5 PM
+    status: 'Active',
+    dueDate: getTomorrowNoonPacific(), // Tomorrow at 12 PM Pacific Time
     contactId: '',
     callId: '',
     ...initialData
@@ -100,39 +100,12 @@ export default function TaskForm({ onSubmit, initialData = {}, onCancel, contact
         />
       </div>
       
-      {/* Status */}
-      <div style={{ marginBottom: '1rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-          Status
-        </label>
-        <select
-          name="status"
-          value={values.status}
-          onChange={handleChange}
-          style={{ width: '100%', padding: '0.5rem' }}
-        >
-          <option value="Open">Open</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Completed">Completed</option>
-        </select>
-      </div>
-      
-      {/* Priority */}
-      <div style={{ marginBottom: '1rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-          Priority
-        </label>
-        <select
-          name="priority"
-          value={values.priority}
-          onChange={handleChange}
-          style={{ width: '100%', padding: '0.5rem' }}
-        >
-          <option value="Low">Low</option>
-          <option value="Medium">Medium</option>
-          <option value="High">High</option>
-        </select>
-      </div>
+      {/* Hidden Status Field - No longer shown in UI but still tracked */}
+      <input
+        type="hidden"
+        name="status"
+        value={values.status}
+      />
       
       {/* Buttons */}
       <div style={{ display: 'flex', gap: '0.5rem' }}>

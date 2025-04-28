@@ -4,24 +4,14 @@ import theme from '../../styles/theme';
 import { FaCheck, FaCalendarAlt, FaPhone, FaEdit, FaTrash } from 'react-icons/fa';
 
 const MiniTaskCard = ({ task, onEditTask, onUpdateStatus, onDeleteTask }) => {
-  const getPriorityColor = (priority) => {
-    const colors = {
-      'High': '#e74c3c',
-      'Medium': '#f39c12',
-      'Low': '#3498db'
-    };
-    
-    // Default to Low if priority is not defined
-    return colors[priority] || colors['Low'];
-  };
-
   const formatDate = (dateString) => {
     const options = { 
       year: 'numeric', 
       month: 'short', 
-      day: 'numeric'
+      day: 'numeric',
+      timeZone: 'America/Los_Angeles' // Display in Pacific Time
     };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+    return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
   const isDueSoon = (dueDate) => {
@@ -67,20 +57,6 @@ const MiniTaskCard = ({ task, onEditTask, onUpdateStatus, onDeleteTask }) => {
           {task.title}
         </div>
       </div>
-      {/* High Priority Badge shown in header */}
-      {task.priority === 'High' && (
-        <span style={{
-          backgroundColor: getPriorityColor(task.priority),
-          color: 'white',
-          padding: '0.2rem 0.5rem',
-          borderRadius: '4px',
-          fontSize: '0.75rem',
-          fontWeight: '500',
-          marginLeft: '0.5rem'
-        }}>
-          {task.priority}
-        </span>
-      )}
     </div>
   );
 
@@ -115,55 +91,52 @@ const MiniTaskCard = ({ task, onEditTask, onUpdateStatus, onDeleteTask }) => {
     </div>
   );
 
-  const StatusDropdown = (
-    <select
-      value={task.status}
-      onChange={(e) => {
+  const StatusToggle = (
+    <div 
+      onClick={(e) => {
         e.stopPropagation();
-        handleStatusChange(task.id, e.target.value);
+        handleStatusChange(task.id, task.status === 'Completed' ? 'Active' : 'Completed');
       }}
       style={{
-        backgroundColor: getStatusColor(task.status),
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        padding: '0.25rem 0.5rem',
-        fontSize: '0.8rem',
+        backgroundColor: task.status === 'Completed' ? '#28a745' : 'white',
+        border: `2px solid ${task.status === 'Completed' ? '#28a745' : '#ddd'}`,
+        width: '24px',
+        height: '24px',
+        borderRadius: '12px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         cursor: 'pointer',
-        fontWeight: 'bold',
-        margin: '0.25rem 0'
+        transition: 'all 0.2s ease',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
       }}
-      onClick={(e) => e.stopPropagation()}
     >
-      <option value="Active">Active</option>
-      <option value="Completed">Completed</option>
-    </select>
+      {task.status === 'Completed' && <FaCheck color="white" size={12} />}
+    </div>
   );
 
   const ButtonGroup = (
     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginLeft: '0.5rem' }}>
-      <ButtonGroup>
-        {/* Edit Button */}
-        <Button 
-          onClick={(e) => {
-            e.stopPropagation();
-            onEditTask(task);
-          }}
-          variant="outline"
-          size="small"
-          title="Edit task"
-          style={{ borderRadius: '4px', padding: '0.25rem 0.5rem' }}
-        >
-          <FaEdit />
-          <span style={{ marginLeft: '0.25rem' }}>Edit</span>
-        </Button>
-      </ButtonGroup>
+      {/* Edit Button */}
+      <Button 
+        onClick={(e) => {
+          e.stopPropagation();
+          onEditTask(task);
+        }}
+        variant="outline"
+        size="small"
+        title="Edit task"
+        style={{ borderRadius: '4px', padding: '0.25rem 0.5rem' }}
+      >
+        <FaEdit />
+        <span style={{ marginLeft: '0.25rem' }}>Edit</span>
+      </Button>
     </div>
   );
 
   const ExpandedContent = (
     <div>
-      {/* Status dropdown in expanded view */}
+      {/* Status toggle in expanded view */}
       <div style={{ 
         marginTop: '1rem',
         display: 'flex',
@@ -171,7 +144,11 @@ const MiniTaskCard = ({ task, onEditTask, onUpdateStatus, onDeleteTask }) => {
         gap: '0.5rem',
         flexWrap: 'wrap'
       }}>
-        <strong>Current Status:</strong> {StatusDropdown}
+        <strong>Status:</strong>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {StatusToggle}
+          <span>{task.status === 'Completed' ? 'Completed' : 'Active'}</span>
+        </div>
       </div>
 
       {/* Description section */}
@@ -217,26 +194,6 @@ const MiniTaskCard = ({ task, onEditTask, onUpdateStatus, onDeleteTask }) => {
             </span>
           )}
         </div>
-      </div>
-
-      {/* Priority section */}
-      <div style={{ 
-        marginTop: '1rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem'
-      }}>
-        <strong>Priority:</strong>
-        <span style={{
-          backgroundColor: getPriorityColor(task.priority),
-          color: 'white',
-          padding: '0.2rem 0.5rem',
-          borderRadius: '4px',
-          fontSize: '0.85rem',
-          fontWeight: '500'
-        }}>
-          {task.priority}
-        </span>
       </div>
 
       {/* If this task is linked to a call */}
@@ -356,4 +313,4 @@ const MiniTaskCard = ({ task, onEditTask, onUpdateStatus, onDeleteTask }) => {
   );
 };
 
-export default MiniTaskCard;  
+export default MiniTaskCard;
