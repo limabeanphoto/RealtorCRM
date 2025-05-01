@@ -1,4 +1,4 @@
-// Fixed ContactRow.js - Part 1
+// components/contacts/ContactRow.js - Complete with all visual tweaks
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   FaPhone, 
@@ -15,6 +15,37 @@ import {
 import theme from '../../styles/theme';
 import MiniCallCard from '../calls/MiniCallCard';
 import MiniTaskCard from '../tasks/MiniTaskCard';
+
+// Custom hook for dropdown positioning
+const useDropdownPosition = (triggerRef, isOpen) => {
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  
+  useEffect(() => {
+    if (isOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      
+      // Calculate optimal position
+      let top = rect.bottom + 5;
+      let left = rect.left;
+      
+      // If dropdown would go below viewport, position it above
+      if (top + 250 > viewportHeight) { // Estimate dropdown height as 250px
+        top = rect.top - 250 - 5;
+      }
+      
+      // If dropdown would go beyond right edge, align to right edge
+      if (left + 200 > viewportWidth) { // Dropdown width is ~200px
+        left = rect.right - 200;
+      }
+      
+      setPosition({ top, left });
+    }
+  }, [isOpen, triggerRef]);
+  
+  return position;
+};
 
 const ContactRow = ({
   contact,
@@ -45,6 +76,12 @@ const ContactRow = ({
   const statusButtonRef = useRef(null);
   const volumeButtonRef = useRef(null);
   const regionButtonRef = useRef(null);
+  
+  // Get positions for dropdowns
+  const actionMenuPosition = useDropdownPosition(actionButtonRef, menuOpen);
+  const statusMenuPosition = useDropdownPosition(statusButtonRef, statusMenuOpen);
+  const volumeMenuPosition = useDropdownPosition(volumeButtonRef, volumeMenuOpen);
+  const regionMenuPosition = useDropdownPosition(regionButtonRef, regionMenuOpen);
   
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -119,11 +156,9 @@ const ContactRow = ({
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // FIXED: Handle status change
+  // Handle status change
   const handleStatusChange = async (newStatus) => {
     try {
-      setStatusMenuOpen(false); // Close the menu immediately to improve UX
-      
       const token = localStorage.getItem('token');
       const response = await fetch(`/api/contacts/${contact.id}/status`, {
         method: 'PUT',
@@ -131,22 +166,18 @@ const ContactRow = ({
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ 
-          lastCallOutcome: newStatus 
-        })
+        body: JSON.stringify({ lastCallOutcome: newStatus })
       });
       
       const data = await response.json();
       
       if (data.success) {
-        // Create a properly updated contact object
         const updatedContact = {
           ...contact,
           lastCallOutcome: newStatus,
-          status: data.data.status // Make sure to use the status returned from the API
+          status: data.data.status
         };
         
-        // Call the parent component's update function
         if (onContactUpdate) {
           onContactUpdate(updatedContact);
         }
@@ -157,17 +188,15 @@ const ContactRow = ({
     } catch (error) {
       console.error('Error updating contact status:', error);
       alert('Error updating contact status');
+    } finally {
+      setStatusMenuOpen(false);
     }
   };
 
-  // FIXED: Handle volume change
+  // Handle volume change
   const handleVolumeChange = async (newVolume) => {
     try {
-      setVolumeMenuOpen(false); // Close the menu immediately to improve UX
-      
       const token = localStorage.getItem('token');
-      
-      // Only send the necessary data for the update
       const response = await fetch(`/api/contacts/${contact.id}`, {
         method: 'PUT',
         headers: {
@@ -175,10 +204,7 @@ const ContactRow = ({
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          // Include required fields
-          name: contact.name,
-          phone: contact.phone,
-          // Include the field we want to update
+          ...contact,
           volume: newVolume
         })
       });
@@ -186,13 +212,11 @@ const ContactRow = ({
       const data = await response.json();
       
       if (data.success) {
-        // Create a properly updated contact object
         const updatedContact = {
           ...contact,
           volume: newVolume
         };
         
-        // Call the parent component's update function
         if (onContactUpdate) {
           onContactUpdate(updatedContact);
         }
@@ -203,17 +227,15 @@ const ContactRow = ({
     } catch (error) {
       console.error('Error updating contact volume:', error);
       alert('Error updating contact volume');
+    } finally {
+      setVolumeMenuOpen(false);
     }
   };
 
-  // FIXED: Handle region change
+  // Handle region change
   const handleRegionChange = async (newRegion) => {
     try {
-      setRegionMenuOpen(false); // Close the menu immediately to improve UX
-      
       const token = localStorage.getItem('token');
-      
-      // Only send the necessary data for the update
       const response = await fetch(`/api/contacts/${contact.id}`, {
         method: 'PUT',
         headers: {
@@ -221,10 +243,7 @@ const ContactRow = ({
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          // Include required fields
-          name: contact.name,
-          phone: contact.phone,
-          // Include the field we want to update
+          ...contact,
           region: newRegion
         })
       });
@@ -232,13 +251,11 @@ const ContactRow = ({
       const data = await response.json();
       
       if (data.success) {
-        // Create a properly updated contact object
         const updatedContact = {
           ...contact,
           region: newRegion
         };
         
-        // Call the parent component's update function
         if (onContactUpdate) {
           onContactUpdate(updatedContact);
         }
@@ -249,6 +266,8 @@ const ContactRow = ({
     } catch (error) {
       console.error('Error updating contact region:', error);
       alert('Error updating contact region');
+    } finally {
+      setRegionMenuOpen(false);
     }
   };
 
@@ -391,13 +410,13 @@ const ContactRow = ({
             </div>
           )}
         </div>
-
-        {/* FIXED: Volume Button */}
+        
+        {/* Volume */}
         <div style={{ position: 'relative' }}>
           <div
             ref={volumeButtonRef}
             onClick={(e) => {
-              e.stopPropagation(); // Stop event propagation
+              e.stopPropagation();
               setVolumeMenuOpen(!volumeMenuOpen);
               setRegionMenuOpen(false);
               setStatusMenuOpen(false);
@@ -428,12 +447,12 @@ const ContactRow = ({
           </div>
         </div>
         
-        {/* FIXED: Region Button */}
+        {/* Region */}
         <div style={{ position: 'relative' }}>
           <div
             ref={regionButtonRef}
             onClick={(e) => {
-              e.stopPropagation(); // Stop event propagation
+              e.stopPropagation();
               setRegionMenuOpen(!regionMenuOpen);
               setVolumeMenuOpen(false);
               setStatusMenuOpen(false);
@@ -465,12 +484,12 @@ const ContactRow = ({
           </div>
         </div>
         
-        {/* FIXED: Status Button */}
+        {/* Call Outcome Status */}
         <div style={{ position: 'relative' }}>
           <div
             ref={statusButtonRef}
             onClick={(e) => {
-              e.stopPropagation(); // Stop event propagation
+              e.stopPropagation();
               setStatusMenuOpen(!statusMenuOpen);
               setRegionMenuOpen(false);
               setVolumeMenuOpen(false);
@@ -556,23 +575,14 @@ const ContactRow = ({
           </button>
         </div>
       </div>
-
-      {/* FIXED: Action Menu Dropdown */}
       {menuOpen && (
         <div style={{
-          position: 'absolute',
-          top: actionButtonRef.current?.getBoundingClientRect().bottom + 5 || 0,
-          right: 10,
-          backgroundColor: 'white',
-          boxShadow: theme.shadows.lg,
-          borderRadius: theme.borderRadius.sm,
-          zIndex: 1000,
-          border: '1px solid #eee',
-          minWidth: '180px'
+          ...dropdownBaseStyle,
+          top: actionMenuPosition.top,
+          left: actionMenuPosition.left
         }}>
           <div
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={() => {
               setMenuOpen(false);
               onEditContact(contact);
             }}
@@ -589,8 +599,7 @@ const ContactRow = ({
           </div>
           
           <div
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={() => {
               setMenuOpen(false);
               onLogCall(contact);
             }}
@@ -607,8 +616,7 @@ const ContactRow = ({
           </div>
           
           <div
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={() => {
               setMenuOpen(false);
               onAddTask(contact);
             }}
@@ -626,8 +634,7 @@ const ContactRow = ({
           
           {currentUser && currentUser.role === 'admin' && (
             <div
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={() => {
                 setMenuOpen(false);
                 onReassignContact(contact);
               }}
@@ -645,8 +652,7 @@ const ContactRow = ({
           )}
           
           <div
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={() => {
               setMenuOpen(false);
               if (window.confirm('Are you sure you want to delete this contact? This cannot be undone.')) {
                 onDeleteContact(contact.id);
@@ -666,26 +672,17 @@ const ContactRow = ({
         </div>
       )}
       
-      {/* FIXED: Status Dropdown */}
+      {/* Status dropdown */}
       {statusMenuOpen && (
         <div style={{
-          position: 'absolute',
-          top: statusButtonRef.current?.getBoundingClientRect().bottom + 5 || 0,
-          left: statusButtonRef.current?.getBoundingClientRect().left || 0,
-          backgroundColor: 'white',
-          boxShadow: theme.shadows.lg,
-          borderRadius: theme.borderRadius.sm,
-          zIndex: 1000,
-          border: '1px solid #eee',
-          minWidth: '180px'
+          ...dropdownBaseStyle,
+          top: statusMenuPosition.top,
+          left: statusMenuPosition.left
         }}>
           {['Follow Up', 'Deal Closed', 'No Answer', 'Not Interested'].map(status => (
             <div
               key={status}
-              onClick={(e) => {
-                e.stopPropagation(); // Stop event propagation
-                handleStatusChange(status);
-              }}
+              onClick={() => handleStatusChange(status)}
               style={{
                 padding: '0.5rem 1rem',
                 cursor: 'pointer',
@@ -702,165 +699,304 @@ const ContactRow = ({
           ))}
         </div>
       )}
-
-{/* FIXED: Volume Dropdown */}
-{volumeMenuOpen && (
-  <div style={{
-    position: 'absolute',
-    top: volumeButtonRef.current?.getBoundingClientRect().bottom + 5 || 0,
-    left: volumeButtonRef.current?.getBoundingClientRect().left || 0,
-    backgroundColor: 'white',
-    boxShadow: theme.shadows.lg,
-    borderRadius: theme.borderRadius.sm,
-    zIndex: 1000,
-    border: '1px solid #eee',
-    minWidth: '180px'
-  }}>
-    {volumeOptions.map((option, index) => (
-      <div
-        key={option.value}
-        onClick={(e) => {
-          e.stopPropagation(); // Stop event propagation
-          handleVolumeChange(option.value);
-        }}
-        style={{
-          padding: '0.5rem 1rem',
-          cursor: 'pointer',
-          backgroundColor: option.value === contact.volume ? '#f0f0f0' : 'white',
-          borderBottom: index === volumeOptions.length - 1 ? 'none' : '1px solid #eee',
-          ...getVolumeStyle(option.value),
-          transition: 'background-color 0.2s ease',
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = option.value === contact.volume ? '#f0f0f0' : 'white'}
-      >
-        {option.label}
-      </div>
-    ))}
-  </div>
-)}
-
-{/* FIXED: Region Dropdown */}
-{regionMenuOpen && (
-  <div style={{
-    position: 'absolute',
-    top: regionButtonRef.current?.getBoundingClientRect().bottom + 5 || 0,
-    left: regionButtonRef.current?.getBoundingClientRect().left || 0,
-    backgroundColor: 'white',
-    boxShadow: theme.shadows.lg,
-    borderRadius: theme.borderRadius.sm,
-    zIndex: 1000,
-    border: '1px solid #eee',
-    minWidth: '180px'
-  }}>
-    {regionOptions.map((option, index) => (
-      <div
-        key={option.value}
-        onClick={(e) => {
-          e.stopPropagation(); // Stop event propagation
-          handleRegionChange(option.value);
-        }}
-        style={{
-          padding: '0.5rem 1rem',
-          cursor: 'pointer',
-          backgroundColor: option.value === contact.region ? '#f0f0f0' : 'white',
-          borderBottom: index === regionOptions.length - 1 ? 'none' : '1px solid #eee',
-          transition: 'background-color 0.2s ease',
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = option.value === contact.region ? '#f0f0f0' : 'white'}
-      >
-        {option.label}
-      </div>
-    ))}
-  </div>
-)}
-
-{/* Expanded View */}
-{expanded && (
-  <div style={{ 
-    padding: '1.5rem',
-    backgroundColor: '#f8f9fa',
-    borderBottom: '1px solid #eee'
-  }}>
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-      {/* Left Column */}
-      <div>
-        <h3 style={{ marginTop: 0, marginBottom: '1rem', color: theme.colors.brand.primary }}>
-          Contact Details
-        </h3>
-        
-        {/* Details Card */}
-        <div style={{ 
-          backgroundColor: 'white',
-          padding: '1rem',
-          borderRadius: theme.borderRadius.sm,
-          border: '1px solid #eee',
-          marginBottom: '1.5rem'
-        }}>
-          {/* Contact details content */}
-          <div style={{ marginBottom: '0.75rem' }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
-              Full Name
-            </div>
-            <div>{contact.name}</div>
-          </div>
-          
-          {contact.company && (
-            <div style={{ marginBottom: '0.75rem' }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
-                Company
-              </div>
-              <div>{contact.company}</div>
-            </div>
-          )}
-          
-          <div style={{ marginBottom: '0.75rem' }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
-              Phone
-            </div>
-            <div>{contact.phone}</div>
-          </div>
-          
-          {contact.email && (
-            <div style={{ marginBottom: '0.75rem' }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
-                Email
-              </div>
-              <div>{contact.email}</div>
-            </div>
-          )}
-          
-          {/* Additional contact details... */}
-        </div>
-        
-        {/* Notes Section */}
-        {contact.notes && (
-          <div>
-            <h4 style={{ marginTop: 0, marginBottom: '0.5rem', color: theme.colors.brand.text }}>
-              Notes
-            </h4>
-            <div style={{ 
-              backgroundColor: 'white',
-              padding: '1rem',
-              borderRadius: theme.borderRadius.sm,
-              border: '1px solid #eee'
-            }}>
-              {contact.notes}
-            </div>
-          </div>
-        )}
-      </div>
       
-      {/* Right Column */}
-      <div>
-        {/* Activity sections... */}
-      </div>
-    </div>
-  </div>
-)}
-</>
-);
+      {/* Volume dropdown */}
+      {volumeMenuOpen && (
+        <div style={{
+          ...dropdownBaseStyle,
+          top: volumeMenuPosition.top,
+          left: volumeMenuPosition.left
+        }}>
+          {volumeOptions.map((option, index) => (
+            <div
+              key={option.value}
+              onClick={() => handleVolumeChange(option.value)}
+              style={{
+                padding: '0.5rem 1rem',
+                cursor: 'pointer',
+                backgroundColor: option.value === contact.volume ? '#f0f0f0' : 'white',
+                borderBottom: index === volumeOptions.length - 1 ? 'none' : '1px solid #eee',
+                ...getVolumeStyle(option.value),
+                transition: 'background-color 0.2s ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = option.value === contact.volume ? '#f0f0f0' : 'white'}
+            >
+              {option.label}
+            </div>
+          ))}
+        </div>
+      )}
+      
+      {/* Region dropdown */}
+      {regionMenuOpen && (
+        <div style={{
+          ...dropdownBaseStyle,
+          top: regionMenuPosition.top,
+          left: regionMenuPosition.left
+        }}>
+          {regionOptions.map((option, index) => (
+            <div
+              key={option.value}
+              onClick={() => handleRegionChange(option.value)}
+              style={{
+                padding: '0.5rem 1rem',
+                cursor: 'pointer',
+                backgroundColor: option.value === contact.region ? '#f0f0f0' : 'white',
+                borderBottom: index === regionOptions.length - 1 ? 'none' : '1px solid #eee',
+                transition: 'background-color 0.2s ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = option.value === contact.region ? '#f0f0f0' : 'white'}
+            >
+              {option.label}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Expanded View */}
+      {expanded && (
+        <div style={{ 
+          padding: '1.5rem',
+          backgroundColor: '#f8f9fa',
+          borderBottom: '1px solid #eee'
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+            {/* Left Column */}
+            <div>
+              <h3 style={{ marginTop: 0, marginBottom: '1rem', color: theme.colors.brand.primary }}>
+                Contact Details
+              </h3>
+              
+              {/* Details Card */}
+              <div style={{ 
+                backgroundColor: 'white',
+                padding: '1rem',
+                borderRadius: theme.borderRadius.sm,
+                border: '1px solid #eee',
+                marginBottom: '1.5rem'
+              }}>
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                    Full Name
+                  </div>
+                  <div>{contact.name}</div>
+                </div>
+                
+                {contact.company && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                      Company
+                    </div>
+                    <div>{contact.company}</div>
+                  </div>
+                )}
+                
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                    Phone
+                  </div>
+                  <div>{contact.phone}</div>
+                </div>
+                
+                {contact.email && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                      Email
+                    </div>
+                    <div>{contact.email}</div>
+                  </div>
+                )}
+                
+                {contact.profileLink && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                      Profile
+                    </div>
+                    <div>
+                      <a 
+                        href={contact.profileLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ 
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          color: theme.colors.brand.primary,
+                          gap: '0.25rem'
+                        }}
+                      >
+                        <FaExternalLinkAlt size={12} />
+                        View Profile
+                      </a>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Added Owner information in expanded view */}
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                    Owner
+                  </div>
+                  <div style={{
+                    color: contact.status === 'Open' ? theme.colors.brand.primary : theme.colors.brand.text,
+                    fontWeight: contact.status === 'Open' ? '500' : 'normal'
+                  }}>
+                    {getOwnerDisplay(contact)}
+                  </div>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                      Status
+                    </div>
+                    <div>
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '4px',
+                        fontSize: '0.8rem',
+                        ...getAssignmentStatusStyle(contact.status)
+                      }}>
+                        {contact.status}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                      Volume
+                    </div>
+                    <div>
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '4px',
+                        fontSize: '0.8rem',
+                        ...(contact.volume ? getVolumeStyle(contact.volume) : { border: '1px dashed #ccc', color: '#666' })
+                      }}>
+                        {contact.volume ? 
+                          volumeOptions.find(o => o.value === contact.volume)?.label || 'Unknown' : 
+                          'Not Set'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
+                      Region
+                    </div>
+                    <div>
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '4px',
+                        fontSize: '0.8rem',
+                        border: '1px solid #eee',
+                        backgroundColor: contact.region ? '#f8f9fa' : 'transparent'
+                      }}>
+                        {contact.region ? 
+                          regionOptions.find(o => o.value === contact.region)?.label || contact.region : 
+                          'Not Set'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Notes Section */}
+              {contact.notes && (
+                <div>
+                  <h4 style={{ marginTop: 0, marginBottom: '0.5rem', color: theme.colors.brand.text }}>
+                    Notes
+                  </h4>
+                  <div style={{ 
+                    backgroundColor: 'white',
+                    padding: '1rem',
+                    borderRadius: theme.borderRadius.sm,
+                    border: '1px solid #eee'
+                  }}>
+                    {contact.notes}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Right Column */}
+            <div>
+              <h3 style={{ marginTop: 0, marginBottom: '1rem', color: theme.colors.brand.primary }}>
+                Recent Activity
+              </h3>
+              
+              {/* Call History */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h4 style={{ marginTop: 0, marginBottom: '0.5rem', color: theme.colors.brand.text, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <FaHistory size={14} />
+                  Call History
+                </h4>
+                <div style={{ 
+                  backgroundColor: 'white',
+                  padding: '1rem',
+                  borderRadius: theme.borderRadius.sm,
+                  border: '1px solid #eee'
+                }}>
+                  {contact.calls && contact.calls.length > 0 ? (
+                    <div>
+                      {contact.calls.map(call => (
+                        <MiniCallCard 
+                          key={call.id}
+                          call={call}
+                          onAddTask={() => onAddTask(contact, call)}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div>
+                      <p style={{ margin: '0 0 0.5rem 0', color: theme.colors.brand.text }}>No calls recorded yet</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Tasks Section */}
+              <div>
+                <h4 style={{ marginTop: 0, marginBottom: '0.5rem', color: theme.colors.brand.text, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <FaTasks size={14} />
+                  Tasks ({contact.tasks && contact.tasks.filter(task => task.status !== 'Completed').length > 0 ? 
+                    contact.tasks.filter(task => task.status !== 'Completed').length : '0'})
+                </h4>
+                <div style={{ 
+                  backgroundColor: 'white',
+                  padding: '1rem',
+                  borderRadius: theme.borderRadius.sm,
+                  border: '1px solid #eee'
+                }}>
+                  {contact.tasks && contact.tasks.filter(task => task.status !== 'Completed').length > 0 ? (
+                    <div>
+                      {contact.tasks
+                        .filter(task => task.status !== 'Completed') // Filter out completed tasks
+                        .map(task => (
+                          <MiniTaskCard 
+                            key={task.id}
+                            task={task}
+                            onStatusChange={onTaskStatusChange}
+                            onEditTask={onEditTask}
+                          />
+                        ))}
+                    </div>
+                  ) : (
+                    <p style={{ margin: '0 0 0.5rem 0', color: theme.colors.brand.text }}>
+                      No active tasks associated with this contact
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 };
 
 export default ContactRow;
