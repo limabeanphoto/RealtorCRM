@@ -1,4 +1,4 @@
-// components/contacts/ContactRow.js - Complete with all visual tweaks
+// components/contacts/ContactRow.js - Fixed version Part 1
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   FaPhone, 
@@ -71,6 +71,11 @@ const ContactRow = ({
   const [volumeMenuOpen, setVolumeMenuOpen] = useState(false);
   const [regionMenuOpen, setRegionMenuOpen] = useState(false);
   
+  // State for tracking loading states of each dropdown action
+  const [statusLoading, setStatusLoading] = useState(false);
+  const [volumeLoading, setVolumeLoading] = useState(false);
+  const [regionLoading, setRegionLoading] = useState(false);
+  
   // Refs for dropdown triggers
   const actionButtonRef = useRef(null);
   const statusButtonRef = useRef(null);
@@ -86,23 +91,24 @@ const ContactRow = ({
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Don't close dropdowns if they're in a loading state
       if (menuOpen && !actionButtonRef.current?.contains(event.target)) {
         setMenuOpen(false);
       }
-      if (statusMenuOpen && !statusButtonRef.current?.contains(event.target)) {
+      if (statusMenuOpen && !statusButtonRef.current?.contains(event.target) && !statusLoading) {
         setStatusMenuOpen(false);
       }
-      if (volumeMenuOpen && !volumeButtonRef.current?.contains(event.target)) {
+      if (volumeMenuOpen && !volumeButtonRef.current?.contains(event.target) && !volumeLoading) {
         setVolumeMenuOpen(false);
       }
-      if (regionMenuOpen && !regionButtonRef.current?.contains(event.target)) {
+      if (regionMenuOpen && !regionButtonRef.current?.contains(event.target) && !regionLoading) {
         setRegionMenuOpen(false);
       }
     };
     
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [menuOpen, statusMenuOpen, volumeMenuOpen, regionMenuOpen]);
+  }, [menuOpen, statusMenuOpen, volumeMenuOpen, regionMenuOpen, statusLoading, volumeLoading, regionLoading]);
   
   // Get assignment status style
   const getAssignmentStatusStyle = (status) => {
@@ -156,8 +162,17 @@ const ContactRow = ({
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // Handle status change
+  // Handle status change - FIXED
   const handleStatusChange = async (newStatus) => {
+    // Don't do anything if it's the same status
+    if (newStatus === contact.lastCallOutcome) {
+      setStatusMenuOpen(false);
+      return;
+    }
+    
+    // Set loading state
+    setStatusLoading(true);
+    
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`/api/contacts/${contact.id}/status`, {
@@ -171,15 +186,10 @@ const ContactRow = ({
       
       const data = await response.json();
       
-      if (data.success) {
-        const updatedContact = {
-          ...contact,
-          lastCallOutcome: newStatus,
-          status: data.data.status
-        };
-        
+      if (data.success && data.data) {
+        // Use the data returned from the API to update the contact
         if (onContactUpdate) {
-          onContactUpdate(updatedContact);
+          onContactUpdate(data.data);
         }
       } else {
         console.error("Error updating status:", data.message);
@@ -187,16 +197,27 @@ const ContactRow = ({
       }
     } catch (error) {
       console.error('Error updating contact status:', error);
-      alert('Error updating contact status');
+      alert('Error updating contact status: ' + (error.message || 'Unknown error'));
     } finally {
+      setStatusLoading(false);
       setStatusMenuOpen(false);
     }
   };
 
-  // Handle volume change
+  // Handle volume change - FIXED
   const handleVolumeChange = async (newVolume) => {
+    // Don't do anything if it's the same volume
+    if (newVolume === contact.volume) {
+      setVolumeMenuOpen(false);
+      return;
+    }
+    
+    // Set loading state
+    setVolumeLoading(true);
+    
     try {
       const token = localStorage.getItem('token');
+      // Only send the specific field that needs to be updated
       const response = await fetch(`/api/contacts/${contact.id}`, {
         method: 'PUT',
         headers: {
@@ -204,21 +225,18 @@ const ContactRow = ({
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          ...contact,
-          volume: newVolume
+          name: contact.name, // Required fields
+          phone: contact.phone, // Required fields
+          volume: newVolume // The field we're updating
         })
       });
       
       const data = await response.json();
       
-      if (data.success) {
-        const updatedContact = {
-          ...contact,
-          volume: newVolume
-        };
-        
+      if (data.success && data.data) {
+        // Use the data returned from the API to update the contact
         if (onContactUpdate) {
-          onContactUpdate(updatedContact);
+          onContactUpdate(data.data);
         }
       } else {
         console.error("Error updating volume:", data.message);
@@ -226,16 +244,27 @@ const ContactRow = ({
       }
     } catch (error) {
       console.error('Error updating contact volume:', error);
-      alert('Error updating contact volume');
+      alert('Error updating contact volume: ' + (error.message || 'Unknown error'));
     } finally {
+      setVolumeLoading(false);
       setVolumeMenuOpen(false);
     }
   };
 
-  // Handle region change
+  // Handle region change - FIXED
   const handleRegionChange = async (newRegion) => {
+    // Don't do anything if it's the same region
+    if (newRegion === contact.region) {
+      setRegionMenuOpen(false);
+      return;
+    }
+    
+    // Set loading state
+    setRegionLoading(true);
+    
     try {
       const token = localStorage.getItem('token');
+      // Only send the specific field that needs to be updated
       const response = await fetch(`/api/contacts/${contact.id}`, {
         method: 'PUT',
         headers: {
@@ -243,21 +272,18 @@ const ContactRow = ({
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          ...contact,
-          region: newRegion
+          name: contact.name, // Required fields
+          phone: contact.phone, // Required fields
+          region: newRegion // The field we're updating
         })
       });
       
       const data = await response.json();
       
-      if (data.success) {
-        const updatedContact = {
-          ...contact,
-          region: newRegion
-        };
-        
+      if (data.success && data.data) {
+        // Use the data returned from the API to update the contact
         if (onContactUpdate) {
-          onContactUpdate(updatedContact);
+          onContactUpdate(data.data);
         }
       } else {
         console.error("Error updating region:", data.message);
@@ -265,8 +291,9 @@ const ContactRow = ({
       }
     } catch (error) {
       console.error('Error updating contact region:', error);
-      alert('Error updating contact region');
+      alert('Error updating contact region: ' + (error.message || 'Unknown error'));
     } finally {
+      setRegionLoading(false);
       setRegionMenuOpen(false);
     }
   };
@@ -417,10 +444,13 @@ const ContactRow = ({
             ref={volumeButtonRef}
             onClick={(e) => {
               e.stopPropagation();
-              setVolumeMenuOpen(!volumeMenuOpen);
-              setRegionMenuOpen(false);
-              setStatusMenuOpen(false);
-              setMenuOpen(false);
+              // Do not open menu if currently loading
+              if (!volumeLoading) {
+                setVolumeMenuOpen(!volumeMenuOpen);
+                setRegionMenuOpen(false);
+                setStatusMenuOpen(false);
+                setMenuOpen(false);
+              }
             }}
             style={{
               display: 'inline-flex',
@@ -429,34 +459,40 @@ const ContactRow = ({
               width: '90px',
               padding: '0.3rem 0.5rem',
               borderRadius: '4px',
-              cursor: 'pointer',
+              cursor: volumeLoading ? 'wait' : 'pointer',
               fontSize: '0.85rem',
               textAlign: 'center',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
+              opacity: volumeLoading ? 0.7 : 1, // Visual indicator of loading state
               ...(contact.volume ? getVolumeStyle(contact.volume) : { border: '1px dashed #ccc', fontSize: '0.8rem' })
             }}
             title={`Volume: ${contact.volume ? 
               volumeOptions.find(o => o.value === contact.volume)?.label || contact.volume : 
               'Not set'} - Click to change`}
           >
-            {contact.volume ? 
-              volumeOptions.find(o => o.value === contact.volume)?.label || 'Unknown' : 
-              'Set Volume'}
+            {volumeLoading ? 'Loading...' : (
+              contact.volume ? 
+                volumeOptions.find(o => o.value === contact.volume)?.label || 'Unknown' : 
+                'Set Volume'
+            )}
           </div>
         </div>
-        
+
         {/* Region */}
         <div style={{ position: 'relative' }}>
           <div
             ref={regionButtonRef}
             onClick={(e) => {
               e.stopPropagation();
-              setRegionMenuOpen(!regionMenuOpen);
-              setVolumeMenuOpen(false);
-              setStatusMenuOpen(false);
-              setMenuOpen(false);
+              // Do not open menu if currently loading
+              if (!regionLoading) {
+                setRegionMenuOpen(!regionMenuOpen);
+                setVolumeMenuOpen(false);
+                setStatusMenuOpen(false);
+                setMenuOpen(false);
+              }
             }}
             style={{
               display: 'inline-flex',
@@ -465,22 +501,25 @@ const ContactRow = ({
               width: '90px',
               padding: '0.3rem 0.5rem',
               borderRadius: '4px',
-              cursor: 'pointer',
+              cursor: regionLoading ? 'wait' : 'pointer',
               fontSize: '0.85rem',
               border: '1px solid #eee',
               backgroundColor: '#f8f9fa',
               textAlign: 'center',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
+              opacity: regionLoading ? 0.7 : 1 // Visual indicator of loading state
             }}
             title={`Region: ${contact.region ? 
               regionOptions.find(o => o.value === contact.region)?.label || contact.region : 
               'Not set'} - Click to change`}
           >
-            {contact.region ? 
-              regionOptions.find(o => o.value === contact.region)?.label || contact.region : 
-              'Set Region'}
+            {regionLoading ? 'Loading...' : (
+              contact.region ? 
+                regionOptions.find(o => o.value === contact.region)?.label || contact.region : 
+                'Set Region'
+            )}
           </div>
         </div>
         
@@ -490,10 +529,13 @@ const ContactRow = ({
             ref={statusButtonRef}
             onClick={(e) => {
               e.stopPropagation();
-              setStatusMenuOpen(!statusMenuOpen);
-              setRegionMenuOpen(false);
-              setVolumeMenuOpen(false);
-              setMenuOpen(false);
+              // Do not open menu if currently loading
+              if (!statusLoading) {
+                setStatusMenuOpen(!statusMenuOpen);
+                setRegionMenuOpen(false);
+                setVolumeMenuOpen(false);
+                setMenuOpen(false);
+              }
             }}
             style={{
               display: 'inline-flex',
@@ -502,19 +544,20 @@ const ContactRow = ({
               width: '90px',
               padding: '0.3rem 0.5rem',
               borderRadius: '4px',
-              cursor: 'pointer',
+              cursor: statusLoading ? 'wait' : 'pointer',
               fontSize: '0.85rem',
               textAlign: 'center',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
+              opacity: statusLoading ? 0.7 : 1, // Visual indicator of loading state
               ...(contact.lastCallOutcome ? 
                 getOutcomeStyle(contact.lastCallOutcome) : 
                 { border: '1px dashed #ccc', color: '#666', fontSize: '0.8rem' })
             }}
             title={`Call outcome: ${contact.lastCallOutcome || 'No calls yet'} - Click to change`}
           >
-            {contact.lastCallOutcome || 'Set Status'}
+            {statusLoading ? 'Loading...' : (contact.lastCallOutcome || 'Set Status')}
           </div>
         </div>
         
@@ -671,8 +714,8 @@ const ContactRow = ({
           </div>
         </div>
       )}
-      
-      {/* Status dropdown */}
+
+      {/* Status dropdown - with loading indicators */}
       {statusMenuOpen && (
         <div style={{
           ...dropdownBaseStyle,
@@ -685,14 +728,23 @@ const ContactRow = ({
               onClick={() => handleStatusChange(status)}
               style={{
                 padding: '0.5rem 1rem',
-                cursor: 'pointer',
+                cursor: statusLoading ? 'wait' : 'pointer',
                 backgroundColor: status === contact.lastCallOutcome ? '#f0f0f0' : 'white',
                 borderBottom: status === 'Not Interested' ? 'none' : '1px solid #eee',
                 ...getOutcomeStyle(status),
                 transition: 'background-color 0.2s ease',
+                opacity: statusLoading ? 0.7 : 1, // Visual indicator of loading state
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = status === contact.lastCallOutcome ? '#f0f0f0' : 'white'}
+              onMouseEnter={(e) => {
+                if (!statusLoading) {
+                  e.currentTarget.style.backgroundColor = '#f8f9fa';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!statusLoading) {
+                  e.currentTarget.style.backgroundColor = status === contact.lastCallOutcome ? '#f0f0f0' : 'white';
+                }
+              }}
             >
               {status}
             </div>
@@ -700,7 +752,7 @@ const ContactRow = ({
         </div>
       )}
       
-      {/* Volume dropdown */}
+      {/* Volume dropdown - with loading indicators */}
       {volumeMenuOpen && (
         <div style={{
           ...dropdownBaseStyle,
@@ -713,14 +765,23 @@ const ContactRow = ({
               onClick={() => handleVolumeChange(option.value)}
               style={{
                 padding: '0.5rem 1rem',
-                cursor: 'pointer',
+                cursor: volumeLoading ? 'wait' : 'pointer',
                 backgroundColor: option.value === contact.volume ? '#f0f0f0' : 'white',
                 borderBottom: index === volumeOptions.length - 1 ? 'none' : '1px solid #eee',
                 ...getVolumeStyle(option.value),
                 transition: 'background-color 0.2s ease',
+                opacity: volumeLoading ? 0.7 : 1, // Visual indicator of loading state
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = option.value === contact.volume ? '#f0f0f0' : 'white'}
+              onMouseEnter={(e) => {
+                if (!volumeLoading) {
+                  e.currentTarget.style.backgroundColor = '#f8f9fa';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!volumeLoading) {
+                  e.currentTarget.style.backgroundColor = option.value === contact.volume ? '#f0f0f0' : 'white';
+                }
+              }}
             >
               {option.label}
             </div>
@@ -728,7 +789,7 @@ const ContactRow = ({
         </div>
       )}
       
-      {/* Region dropdown */}
+      {/* Region dropdown - with loading indicators */}
       {regionMenuOpen && (
         <div style={{
           ...dropdownBaseStyle,
@@ -741,13 +802,22 @@ const ContactRow = ({
               onClick={() => handleRegionChange(option.value)}
               style={{
                 padding: '0.5rem 1rem',
-                cursor: 'pointer',
+                cursor: regionLoading ? 'wait' : 'pointer',
                 backgroundColor: option.value === contact.region ? '#f0f0f0' : 'white',
                 borderBottom: index === regionOptions.length - 1 ? 'none' : '1px solid #eee',
                 transition: 'background-color 0.2s ease',
+                opacity: regionLoading ? 0.7 : 1, // Visual indicator of loading state
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = option.value === contact.region ? '#f0f0f0' : 'white'}
+              onMouseEnter={(e) => {
+                if (!regionLoading) {
+                  e.currentTarget.style.backgroundColor = '#f8f9fa';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!regionLoading) {
+                  e.currentTarget.style.backgroundColor = option.value === contact.region ? '#f0f0f0' : 'white';
+                }
+              }}
             >
               {option.label}
             </div>
