@@ -6,9 +6,6 @@ import jwt from 'jsonwebtoken'
 const prisma = new PrismaClient()
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key' // Use environment variable in production
 
-// Extend token lifetime to 30 days
-const JWT_EXPIRATION = '30d'
-
 export default async function handler(req, res) {
   // Only allow POST requests
   if (req.method !== 'POST') {
@@ -52,8 +49,8 @@ export default async function handler(req, res) {
       role: user.role
     }
 
-    // Generate JWT token with extended expiration (30 days)
-    const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRATION })
+    // Generate JWT token
+    const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '24h' })
 
     // Return user data and token
     return res.status(200).json({
