@@ -31,9 +31,19 @@ export default function withAuth(handler, options = {}) {
       try {
         decoded = jwt.verify(token, JWT_SECRET);
       } catch (error) {
+        // Handle different JWT errors more specifically
+        if (error.name === 'TokenExpiredError') {
+          return res.status(401).json({ 
+            success: false, 
+            message: 'Token expired',
+            errorType: 'TOKEN_EXPIRED'
+          });
+        }
+        
         return res.status(401).json({ 
           success: false, 
-          message: 'Invalid or expired token'
+          message: 'Invalid token',
+          errorType: 'TOKEN_INVALID'
         });
       }
       
@@ -45,7 +55,8 @@ export default function withAuth(handler, options = {}) {
       if (!user) {
         return res.status(401).json({ 
           success: false, 
-          message: 'User not found'
+          message: 'User not found',
+          errorType: 'USER_NOT_FOUND'
         });
       }
       
@@ -55,7 +66,8 @@ export default function withAuth(handler, options = {}) {
         if (user.role !== 'admin') {
           return res.status(403).json({ 
             success: false, 
-            message: `Requires ${options.requiredRole} role`
+            message: `Requires ${options.requiredRole} role`,
+            errorType: 'INSUFFICIENT_PERMISSIONS'
           });
         }
       }
@@ -75,7 +87,8 @@ export default function withAuth(handler, options = {}) {
       console.error('Auth error:', error);
       return res.status(500).json({ 
         success: false, 
-        message: 'Authentication error'
+        message: 'Authentication error',
+        errorType: 'AUTH_ERROR'
       });
     }
   };
