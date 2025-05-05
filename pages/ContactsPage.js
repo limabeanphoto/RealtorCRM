@@ -1,3 +1,4 @@
+// pages/ContactsPage.js
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import ContactTable from '../components/contacts/ContactTable';
@@ -7,8 +8,9 @@ import TaskModal from '../components/tasks/TaskModal';
 import ContactReassignForm from '../components/admin/ContactReassignForm';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import Button from '../components/common/Button';
+import ScrapeContactModal from '../components/contacts/ScrapeContactModal'; // New import
 import theme from '../styles/theme';
-import { FaPlus, FaUpload } from 'react-icons/fa';
+import { FaPlus, FaUpload, FaSearch } from 'react-icons/fa'; // Added FaSearch
 
 export default function ContactsPage() {
   const router = useRouter();
@@ -22,6 +24,7 @@ export default function ContactsPage() {
   const [isCallModalOpen, setIsCallModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isReassignModalOpen, setIsReassignModalOpen] = useState(false);
+  const [isScrapeModalOpen, setIsScrapeModalOpen] = useState(false); // New state for Scrape Contact modal
   const [selectedContact, setSelectedContact] = useState(null);
   const [selectedCall, setSelectedCall] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -504,6 +507,23 @@ export default function ContactsPage() {
                 Import Contacts
               </Button>
               
+              {/* New Scrape Contact Button */}
+              <Button
+                onClick={() => setIsScrapeModalOpen(true)}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  paddingLeft: '1rem',
+                  paddingRight: '1rem',
+                  fontSize: 'clamp(0.8rem, 2vw, 1rem)'
+                }}
+                variant="secondary"
+              >
+                <FaSearch size={12} />
+                Scrape Contact
+              </Button>
+              
               <Button
                 onClick={() => setIsAddModalOpen(true)}
                 style={{ 
@@ -583,6 +603,14 @@ export default function ContactsPage() {
           contact={selectedContact}
           contacts={contacts} // Pass full contacts list for potential dropdown
           onSubmit={handleTaskSubmit}
+        />
+
+        {/* Scrape Contact Modal - New */}
+        <ScrapeContactModal
+          isOpen={isScrapeModalOpen}
+          onClose={() => setIsScrapeModalOpen(false)}
+          onSubmit={handleAddContact}
+          onViewExistingContact={handleViewExistingContact}
         />
 
         {/* Admin-only Reassign Modal for individual contacts */}

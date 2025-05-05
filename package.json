@@ -21,7 +21,9 @@
     "react-icons": "^4.11.0",
     "recharts": "^2.9.3",
     "uuid": "^9.0.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "axios": "^1.4.0",
+    "cheerio": "^1.0.0-rc.12"
   },
   "devDependencies": {
     "prisma": "5.4.2"
