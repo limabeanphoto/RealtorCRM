@@ -1,6 +1,6 @@
-// pages/api/contacts/scrape.config.js
+// scrape.config.js - Updated with precise selectors from actual HTML
 /**
- * Configuration options for the ScraperAPI integration
+ * Configuration options for the ScraperAPI integration with precise selectors
  */
 const scraperConfig = {
     // API key for ScraperAPI
@@ -18,7 +18,7 @@ const scraperConfig = {
       keepHeaders: true,
       
       // Timeout in milliseconds
-      timeout: 30000,
+      timeout: 15000,
       
       // Country to scrape from (US for Realtor.com)
       country_code: 'us',
@@ -30,77 +30,57 @@ const scraperConfig = {
       device_type: 'desktop'
     },
     
-    // Selectors to use for extraction
+    // Precise selectors based on actual Realtor.com HTML
     selectors: {
-      name: [
-        '.agent-name',
-        '[data-testid="agent-name"]',
-        'h1[data-testid="agent-name"]',
-        'h1.agent-details-title',
-        'h1',
-        '[itemprop="name"]',
-        '.profile-card h1',
-        '.profile-section-header',
-        '.profile-display-name'
-      ],
-      company: [
-        '.agent-company',
-        '[data-testid="agent-company"]',
-        '.agent-details .company-details',
-        '[itemprop="affiliation"]',
-        '.agent-brokerage',
-        '.profile-card .company',
-        '.office-info',
-        '.broker-name',
-        '.company-name'
-      ],
-      phone: [
-        '.agent-phone',
-        '[data-testid="agent-phone"]',
-        'a[href^="tel:"]',
-        '.contact-info .phone',
-        '[itemprop="telephone"]',
-        '.profile-contact-phone',
-        '.phone-number',
-        '[aria-label="phone"]'
-      ],
-      email: [
-        '.agent-email',
-        '[data-testid="agent-email"]',
-        'a[href^="mailto:"]',
-        '.contact-info .email',
-        '[itemprop="email"]',
-        '.profile-contact-email',
-        '.email-address',
-        '[aria-label="email"]'
-      ]
-    },
-    
-    // Regex patterns for extraction
-    patterns: {
-      name: [
-        /Agent: ([A-Z][a-z]+ [A-Z][a-z]+)/,
-        /Realtor®: ([A-Z][a-z]+ [A-Z][a-z]+)/,
-        /([A-Z][a-z]+ [A-Z][a-z]+), Realtor®/
-      ],
-      company: [
-        /(?:with|at) ([\w\s]+,\s*(?:LLC|Inc|Realty))/i,
-        /Office: ([\w\s]+(?:LLC|Inc|Realty|Real Estate|Properties))/i,
-        /([\w\s]+(?:LLC|Inc|Realty|Real Estate|Properties))/i
-      ],
-      phone: [
-        /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/,
-        /\d{3}[-.\s]?\d{3}[-.\s]?\d{4}/,
-        /Phone:\s*(\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})/i
-      ],
-      email: [
-        /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/,
-        /Email:\s*([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i
-      ]
+      // Primary selectors - these are the most accurate based on the provided HTML
+      primary: {
+        name: '.profile-details h2.base__StyledType-rui__sc-108xfm0-0.dQAzyh',
+        company: '.profile-details p.base__StyledType-rui__sc-108xfm0-0.GLfFQ',
+        phone: 'a[data-linkname="realtors:_details:top:phone_number"]',
+        phoneHref: 'a[href^="tel:"]',
+        description: '#agent-description',
+        profileImg: '.profile-details .profile-img'
+      },
+      
+      // Fallback selectors in case the primary ones change
+      fallback: {
+        name: [
+          'h2:contains("Justin")',
+          '.profile-info h2',
+          '.agent-name',
+          '[data-testid="agent-name"]',
+          'h1[data-testid="agent-name"]'
+        ],
+        company: [
+          'p[content*="Harcourts"]',
+          '.profile-info p:first-of-type',
+          '.agent-company',
+          '[data-testid="agent-company"]'
+        ],
+        phone: [
+          '.profile-mobile-icon a',
+          'a[href^="tel:"]',
+          '.agent-phone',
+          '[data-testid="agent-phone"]'
+        ],
+        description: [
+          '#agent-description',
+          '.profile-description',
+          '.agent-bio'
+        ]
+      }
     },
     
     // Validation requirements
-    required: ['name', 'phone', 'profileLink']
+    required: ['name', 'phone', 'profileLink'],
+    
+    // Retry configuration
+    retry: {
+      // Maximum number of retry attempts
+      maxAttempts: 2,
+      // Delay between retries in milliseconds
+      delay: 1000
+    }
   };
   
   export default scraperConfig;

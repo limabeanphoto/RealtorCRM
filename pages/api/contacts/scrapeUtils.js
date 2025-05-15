@@ -1,4 +1,4 @@
-// pages/api/contacts/scrapeUtils.js
+// pages/api/contacts/scrapeUtils.js - Updated with precise selector logic
 import cheerio from 'cheerio';
 import scraperConfig from './scrape.config';
 
@@ -34,60 +34,117 @@ export function buildScraperUrl(targetUrl, options = {}) {
 }
 
 /**
- * Extract data using multiple selector strategies
+ * Extract agent name using precise selectors
  * @param {Object} $ - Cheerio instance
- * @param {string} html - Raw HTML content
- * @param {string} fieldName - Name of the field to extract
- * @returns {string} - Extracted data
+ * @returns {string} - Extracted name
  */
-export function extractWithSelectors($, html, fieldName) {
-  // Get selectors and patterns for this field
-  const selectors = scraperConfig.selectors[fieldName] || [];
-  const patterns = scraperConfig.patterns[fieldName] || [];
+export function extractName($) {
+  // Try primary selector first
+  const primarySelector = scraperConfig.selectors.primary.name;
+  const nameFromPrimary = $(primarySelector).text().trim();
   
-  // Special handling for different field types
-  if (fieldName === 'phone' || fieldName === 'email') {
-    // Try each selector
-    for (const selector of selectors) {
-      const element = $(selector).first();
-      
-      // Check for href attribute first (for tel: or mailto: links)
-      const hrefAttr = element.attr('href');
-      if (hrefAttr) {
-        if (fieldName === 'phone' && hrefAttr.startsWith('tel:')) {
-          return hrefAttr.replace('tel:', '');
-        }
-        if (fieldName === 'email' && hrefAttr.startsWith('mailto:')) {
-          return hrefAttr.replace('mailto:', '');
-        }
-      }
-      
-      // Otherwise get text content
-      const text = element.text().trim();
-      if (text && text.length > 0) {
-        // For email, verify it contains @ symbol
-        if (fieldName === 'email' && !text.includes('@')) {
-          continue;
-        }
-        return text;
-      }
-    }
-  } else {
-    // For other fields (name, company), just check text content
-    for (const selector of selectors) {
-      const text = $(selector).first().text().trim();
-      if (text && text.length > 0) {
-        return text;
-      }
+  if (nameFromPrimary) {
+    return nameFromPrimary;
+  }
+  
+  // Try fallback selectors if primary fails
+  for (const selector of scraperConfig.selectors.fallback.name) {
+    const name = $(selector).first().text().trim();
+    if (name) {
+      return name;
     }
   }
   
-  // Fallback: try to find patterns in the HTML
-  for (const pattern of patterns) {
-    const match = html.match(pattern);
-    if (match) {
-      // If the pattern has a capture group, return the first group
-      return match[1] || match[0];
+  return '';
+}
+
+/**
+ * Extract company/brokerage name using precise selectors
+ * @param {Object} $ - Cheerio instance
+ * @returns {string} - Extracted company name
+ */
+export function extractCompany($) {
+  // Try primary selector first
+  const primarySelector = scraperConfig.selectors.primary.company;
+  const companyFromPrimary = $(primarySelector).first().text().trim();
+  
+  if (companyFromPrimary) {
+    return companyFromPrimary;
+  }
+  
+  // Try fallback selectors if primary fails
+  for (const selector of scraperConfig.selectors.fallback.company) {
+    const company = $(selector).first().text().trim();
+    if (company) {
+      return company;
+    }
+  }
+  
+  return '';
+}
+
+/**
+ * Extract phone number using precise selectors
+ * @param {Object} $ - Cheerio instance
+ * @returns {string} - Extracted phone number
+ */
+export function extractPhone($) {
+  // Try primary selector first - check href attribute
+  const primaryHrefSelector = scraperConfig.selectors.primary.phoneHref;
+  const phoneElement = $(primaryHrefSelector).first();
+  const hrefPhone = phoneElement.attr('href');
+  
+  if (hrefPhone && hrefPhone.startsWith('tel:')) {
+    return hrefPhone.replace('tel:', '');
+  }
+  
+  // Try the primary selector for direct text content
+  const primarySelector = scraperConfig.selectors.primary.phone;
+  const phoneFromPrimary = $(primarySelector).text().trim();
+  
+  if (phoneFromPrimary) {
+    return phoneFromPrimary;
+  }
+  
+  // Try fallback selectors if primary fails
+  for (const selector of scraperConfig.selectors.fallback.phone) {
+    const element = $(selector).first();
+    
+    // Check for href attribute first
+    const hrefAttr = element.attr('href');
+    if (hrefAttr && hrefAttr.startsWith('tel:')) {
+      return hrefAttr.replace('tel:', '');
+    }
+    
+    // Otherwise get text content
+    const phone = element.text().trim();
+    if (phone) {
+      return phone;
+    }
+  }
+  
+  return '';
+}
+
+/**
+ * Extract bio/description using precise selectors
+ * @param {Object} $ - Cheerio instance
+ * @returns {string} - Extracted description
+ */
+export function extractDescription($) {
+  // Try primary selector first
+  const primarySelector = scraperConfig.selectors.primary.description;
+  const descFromPrimary = $(primarySelector).text().trim();
+  
+  if (descFromPrimary) {
+    return descFromPrimary;
+  }
+  
+  // Try fallback selectors if primary fails
+  for (const selector of scraperConfig.selectors.fallback.description) {
+    const desc = $(selector).text().trim();
+    if (desc) {
+      return desc;
     }
   }
   
@@ -105,6 +162,19 @@ export function validateContact(contact) {
   return required.every(field => {
     return contact[field] && contact[field].trim().length > 0;
   });
+}
+
+/**
+ * Extract a profile picture URL if available
+ * @param {Object} $ - Cheerio instance
+ * @returns {string} - URL to profile picture
+ */
+export function extractProfilePicture($) {
+  const imgSelector = scraperConfig.selectors.primary.profileImg;
+  const imgElement = $(imgSelector).first();
+  const imgSrc = imgElement.attr('src');
+  
+  return imgSrc || '';
 }
 
 /**
@@ -190,7 +260,11 @@ export function logScrapingAttempt(url, extractedData, error = null) {
 
 export default {
   buildScraperUrl,
-  extractWithSelectors,
+  extractName,
+  extractCompany,
+  extractPhone,
+  extractDescription,
+  extractProfilePicture,
   validateContact,
   cleanContactData,
   standardizePhoneNumber,
