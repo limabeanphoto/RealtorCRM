@@ -1,7 +1,15 @@
-// pages/api/contacts/scrape.js
+// pages/api/contacts/scrape.js - Updated with ScraperAPI
 import axios from 'axios';
 import cheerio from 'cheerio';
 import withAuth from '../../../utils/withAuth';
+import scraperConfig from './scrape.config';
+import {
+  buildScraperUrl,
+  extractWithSelectors,
+  validateContact,
+  cleanContactData,
+  logScrapingAttempt
+} from './scrapeUtils';
 
 /**
  * API endpoint to scrape realtor contact information from Realtor.com
@@ -33,7 +41,7 @@ async function handler(req, res) {
   }
 
   try {
-    // Scrape the contact info
+    // Scrape the contact info using ScraperAPI
     const contactInfo = await scrapeRealtorProfile(url);
     
     if (!contactInfo) {
@@ -43,8 +51,8 @@ async function handler(req, res) {
       });
     }
 
-    // Check if the profile has at least name and phone
-    if (!contactInfo.name || !contactInfo.phone) {
+    // Check if the profile has the required fields
+    if (!validateContact(contactInfo)) {
       return res.status(400).json({ 
         success: false, 
         message: 'Profile missing required information (name and phone)' 
@@ -87,30 +95,26 @@ function isValidRealtorUrl(url) {
 }
 
 /**
- * Scrapes a Realtor.com profile for contact information
+ * Scrapes a Realtor.com profile for contact information using ScraperAPI
  * @param {string} url - URL of the profile to scrape
  * @returns {Object} - Extracted contact information
  */
 async function scrapeRealtorProfile(url) {
   try {
-    // Set headers to mimic a browser request
-    const headers = {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.5',
-      'Referer': 'https://www.realtor.com/',
-      'Cache-Control': 'no-cache',
-      'Pragma': 'no-cache'
-    };
-
-    // Make request to the profile URL
-    const response = await axios.get(url, { 
-      headers,
-      timeout: 15000  // 15-second timeout
+    // Build the ScraperAPI URL with the appropriate options
+    const scraperUrl = buildScraperUrl(url, {
+      render: true,
+      keepHeaders: true,
+      countryCode: 'us'
+    });
+    
+    // Make request to ScraperAPI
+    const response = await axios.get(scraperUrl, { 
+      timeout: scraperConfig.defaultOptions.timeout  // Use timeout from config
     });
     
     if (response.status !== 200) {
-      throw new Error(`Failed to fetch profile: ${response.status}`);
+      throw new Error(`ScraperAPI returned status: ${response.status}`);
     }
 
     const html = response.data;
@@ -125,186 +129,27 @@ async function scrapeRealtorProfile(url) {
       profileLink: url
     };
 
-    // Try multiple selector strategies for each field
-    contactInfo.name = extractName($, html);
-    contactInfo.company = extractCompany($, html);
-    contactInfo.phone = extractPhone($, html);
-    contactInfo.email = extractEmail($, html);
+    // Extract each field using the utility function
+    contactInfo.name = extractWithSelectors($, html, 'name');
+    contactInfo.company = extractWithSelectors($, html, 'company');
+    contactInfo.phone = extractWithSelectors($, html, 'phone');
+    contactInfo.email = extractWithSelectors($, html, 'email');
 
-    // Clean up extracted data
-    Object.keys(contactInfo).forEach(key => {
-      if (typeof contactInfo[key] === 'string') {
-        // Remove extra whitespace
-        contactInfo[key] = contactInfo[key].replace(/\s+/g, ' ').trim();
-      }
-    });
+    // Clean and normalize the contact data
+    const cleanedContactInfo = cleanContactData(contactInfo);
+    
+    // Log the scraping attempt for debugging purposes
+    logScrapingAttempt(url, cleanedContactInfo);
 
-    return contactInfo;
+    return cleanedContactInfo;
   } catch (error) {
-    console.error('Error during scraping:', error);
-    throw error;
-  }
-}
-
-/**
- * Extract the agent's name using multiple selector strategies
- * @param {Object} $ - Cheerio instance
- * @param {string} html - Raw HTML content
- * @returns {string} - Extracted name
- */
-function extractName($, html) {
-  // Try multiple selectors in order of specificity
-  const selectors = [
-    '.agent-name',                  // Specific class
-    'h1[data-testid="agent-name"]', // Data attribute
-    'h1.agent-details-title',       // Heading with class
-    'h1',                           // Any H1
-    '[itemprop="name"]',            // Schema.org markup
-    '.profile-card h1',             // Context-based
-    '.profile-section-header',      // Generic profile section
-  ];
-  
-  // Try each selector
-  for (const selector of selectors) {
-    const name = $(selector).first().text().trim();
-    if (name && name.length > 0) {
-      return name;
-    }
-  }
-  
-  // Fallback: try to find a name pattern in the text
-  const namePattern = /Agent: ([A-Z][a-z]+ [A-Z][a-z]+)/;
-  const nameMatch = html.match(namePattern);
-  if (nameMatch && nameMatch[1]) {
-    return nameMatch[1];
-  }
-  
-  return '';
-}
-
-/**
- * Extract the agent's company using multiple selector strategies
- * @param {Object} $ - Cheerio instance
- * @param {string} html - Raw HTML content
- * @returns {string} - Extracted company
- */
-function extractCompany($, html) {
-  // Try multiple selectors in order of specificity
-  const selectors = [
-    '.agent-company',                // Specific class
-    '[data-testid="agent-company"]', // Data attribute
-    '.agent-details .company-details', // Nested structure
-    '[itemprop="affiliation"]',     // Schema.org markup
-    '.agent-brokerage',             // Alternative class
-    '.profile-card .company',        // Context-based
-    '.office-info',                 // Generic profile section
-  ];
-  
-  // Try each selector
-  for (const selector of selectors) {
-    const company = $(selector).first().text().trim();
-    if (company && company.length > 0) {
-      return company;
-    }
-  }
-  
-  // Fallback: try to find a company pattern in the text
-  const companyPattern = /(?:with|at) ([\w\s]+,\s*(?:LLC|Inc|Realty))/i;
-  const companyMatch = html.match(companyPattern);
-  if (companyMatch && companyMatch[1]) {
-    return companyMatch[1];
-  }
-  
-  return '';
-}
-
-/**
- * Extract the agent's phone number using multiple selector strategies
- * @param {Object} $ - Cheerio instance
- * @param {string} html - Raw HTML content
- * @returns {string} - Extracted phone number
- */
-function extractPhone($, html) {
-  // Try multiple selectors in order of specificity
-  const selectors = [
-    '.agent-phone',                 // Specific class
-    '[data-testid="agent-phone"]',  // Data attribute
-    'a[href^="tel:"]',              // Tel links
-    '.contact-info .phone',         // Nested structure
-    '[itemprop="telephone"]',       // Schema.org markup
-    '.profile-contact-phone',       // Alternative class
-  ];
-  
-  // Try each selector
-  for (const selector of selectors) {
-    const phoneElement = $(selector).first();
+    // Log the error
+    logScrapingAttempt(url, null, error);
     
-    // Check for href attribute first (for tel: links)
-    const hrefPhone = phoneElement.attr('href');
-    if (hrefPhone && hrefPhone.startsWith('tel:')) {
-      return hrefPhone.replace('tel:', '');
-    }
-    
-    // Otherwise get text content
-    const phone = phoneElement.text().trim();
-    if (phone && phone.length > 0) {
-      return phone;
-    }
+    // Rethrow with a more descriptive message
+    throw new Error(`ScraperAPI error: ${error.message}`);
   }
-  
-  // Fallback: try to find a phone number pattern in the page
-  const phoneRegex = /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/;
-  const phoneMatch = html.match(phoneRegex);
-  if (phoneMatch) {
-    return phoneMatch[0];
-  }
-  
-  return '';
 }
 
-/**
- * Extract the agent's email using multiple selector strategies
- * @param {Object} $ - Cheerio instance
- * @param {string} html - Raw HTML content
- * @returns {string} - Extracted email
- */
-function extractEmail($, html) {
-  // Try multiple selectors in order of specificity
-  const selectors = [
-    '.agent-email',                 // Specific class
-    '[data-testid="agent-email"]',  // Data attribute
-    'a[href^="mailto:"]',           // Email links
-    '.contact-info .email',         // Nested structure
-    '[itemprop="email"]',           // Schema.org markup
-    '.profile-contact-email',       // Alternative class
-  ];
-  
-  // Try each selector
-  for (const selector of selectors) {
-    const emailElement = $(selector).first();
-    
-    // Check for href attribute first (for mailto: links)
-    const hrefEmail = emailElement.attr('href');
-    if (hrefEmail && hrefEmail.startsWith('mailto:')) {
-      return hrefEmail.replace('mailto:', '');
-    }
-    
-    // Otherwise get text content
-    const email = emailElement.text().trim();
-    if (email && email.length > 0 && email.includes('@')) {
-      return email;
-    }
-  }
-  
-  // Fallback: try to find email pattern in the page
-  // Note: emails are often obfuscated, so this might not work well
-  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
-  const emailMatch = html.match(emailRegex);
-  if (emailMatch) {
-    return emailMatch[0];
-  }
-  
-  return '';
-}
-
-export default withAuth(handler);
+// Export the functions for testing
+export { handler as default, isValidRealtorUrl, scrapeRealtorProfile };
