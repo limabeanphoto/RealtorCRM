@@ -1,4 +1,4 @@
-// pages/api/contacts/[id]/status.js
+// pages/api/contacts/[id]/status.js - Fixed version
 import { PrismaClient } from '@prisma/client'
 import withAuth from '../../../../utils/withAuth'
 
