@@ -1,4 +1,3 @@
-// components/contacts/ContactRow.js - Fixed version Part 1
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   FaPhone, 
@@ -203,8 +202,6 @@ const ContactRow = ({
       setStatusMenuOpen(false);
     }
   };
-
-  // components/contacts/ContactRow.js - Fixed version Part 2
 
   // Handle volume change - FIXED
   const handleVolumeChange = async (newVolume) => {
@@ -439,8 +436,6 @@ const ContactRow = ({
             </div>
           )}
         </div>
-
-        // components/contacts/ContactRow.js - Fixed version Part 3
 
         {/* Volume */}
         <div style={{ position: 'relative' }}>
@@ -719,8 +714,6 @@ const ContactRow = ({
         </div>
       )}
 
-// components/contacts/ContactRow.js - Fixed version Part 4
-
 {/* Status dropdown - with loading indicators */}
 {statusMenuOpen && (
   <div style={{
@@ -908,8 +901,6 @@ const ContactRow = ({
               </div>
             </div>
           )}
-
-// components/contacts/ContactRow.js - Fixed version Part 5
 
 {/* Added Owner information in expanded view */}
 <div style={{ marginBottom: '0.75rem' }}>
