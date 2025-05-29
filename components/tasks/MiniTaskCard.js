@@ -53,22 +53,33 @@ const MiniTaskCard = ({ task, onEditTask, onStatusChange }) => {
     }
   };
 
-  // Handle edit button click - FIXED to ensure correct task object is passed
+  // FIXED: Simplified edit handler
   const handleEdit = (e) => {
     e.stopPropagation(); // Prevent event from bubbling up
     e.preventDefault(); // Prevent any default behavior
     
-    // Make sure we have a properly formatted task for the edit modal
-    const formattedTask = {
-      ...task,
-      // Ensure dueDate is properly formatted for datetime-local input
-      dueDate: task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : ''
-    };
+    // Debug logging
+    console.log('Edit button clicked for task:', task.id);
+    console.log('onEditTask function:', typeof onEditTask);
     
-    if (onEditTask && typeof onEditTask === 'function') {
-      onEditTask(formattedTask);
-    } else {
-      console.error('onEditTask is not a function or not provided to MiniTaskCard');
+    if (!onEditTask) {
+      console.error('onEditTask prop is not provided to MiniTaskCard');
+      alert('Edit function not available');
+      return;
+    }
+    
+    if (typeof onEditTask !== 'function') {
+      console.error('onEditTask is not a function:', onEditTask);
+      alert('Edit function is not properly configured');
+      return;
+    }
+    
+    // Simply pass the task object as-is - let the parent handle formatting
+    try {
+      onEditTask(task);
+    } catch (error) {
+      console.error('Error calling onEditTask:', error);
+      alert('Error opening task editor: ' + error.message);
     }
   };
 
@@ -194,8 +205,8 @@ const MiniTaskCard = ({ task, onEditTask, onStatusChange }) => {
           </div>
         </div>
         
-        {/* Action Button */}
-        <Button
+        {/* FIXED: Simplified Action Button */}
+        <button
           onClick={handleEdit}
           style={{ 
             width: '28px',
@@ -204,13 +215,24 @@ const MiniTaskCard = ({ task, onEditTask, onStatusChange }) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            minWidth: '28px'
+            minWidth: '28px',
+            backgroundColor: theme.colors.brand.secondary,
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
           }}
-          variant="secondary"
-          tooltip="Edit task details"
+          title="Edit task details"
+          onMouseEnter={(e) => {
+            e.target.style.opacity = '0.8';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.opacity = '1';
+          }}
         >
           <FaEdit size={12} />
-        </Button>
+        </button>
       </div>
       
       {/* Task Description (if available) */}
