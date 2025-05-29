@@ -1,4 +1,4 @@
-// Complete pages/settings.js - Replace your existing file
+// Updated pages/settings.js with daily contact goal
 import { useState, useEffect } from 'react';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import theme from '../styles/theme';
@@ -26,9 +26,10 @@ const SettingsForm = () => {
     newPassword: '',
     confirmPassword: '',
     cellPhone: '',
-    // New goal fields
+    // Goal fields including new daily contact goal
     dailyCallGoal: 30,
     dailyDealGoal: 5,
+    dailyContactGoal: 10, // New daily contact goal
     weeklyContactGoal: 150,
     monthlyRevenueGoal: 10000
   });
@@ -71,6 +72,7 @@ const SettingsForm = () => {
               // Goals from API or fallback to defaults
               dailyCallGoal: data.data.dailyCallGoal || userData.dailyCallGoal || 30,
               dailyDealGoal: data.data.dailyDealGoal || userData.dailyDealGoal || 5,
+              dailyContactGoal: data.data.dailyContactGoal || userData.dailyContactGoal || 10, // New field
               weeklyContactGoal: data.data.weeklyContactGoal || userData.weeklyContactGoal || 150,
               monthlyRevenueGoal: data.data.monthlyRevenueGoal || userData.monthlyRevenueGoal || 10000
             };
@@ -90,6 +92,7 @@ const SettingsForm = () => {
               cellPhone: userData.cellPhone || '',
               dailyCallGoal: userData.dailyCallGoal || 30,
               dailyDealGoal: userData.dailyDealGoal || 5,
+              dailyContactGoal: userData.dailyContactGoal || 10, // New field
               weeklyContactGoal: userData.weeklyContactGoal || 150,
               monthlyRevenueGoal: userData.monthlyRevenueGoal || 10000
             };
@@ -111,6 +114,7 @@ const SettingsForm = () => {
             cellPhone: userData.cellPhone || '',
             dailyCallGoal: userData.dailyCallGoal || 30,
             dailyDealGoal: userData.dailyDealGoal || 5,
+            dailyContactGoal: userData.dailyContactGoal || 10, // New field
             weeklyContactGoal: userData.weeklyContactGoal || 150,
             monthlyRevenueGoal: userData.monthlyRevenueGoal || 10000
           };
@@ -182,6 +186,11 @@ const SettingsForm = () => {
       return false;
     }
     
+    if (formData.dailyContactGoal < 1 || formData.dailyContactGoal > 100) {
+      setMessage({ text: 'Daily contact goal must be between 1 and 100', type: 'error' });
+      return false;
+    }
+    
     return true;
   };
 
@@ -200,6 +209,7 @@ const SettingsForm = () => {
       formData.cellPhone !== originalData.cellPhone ||
       formData.dailyCallGoal !== originalData.dailyCallGoal ||
       formData.dailyDealGoal !== originalData.dailyDealGoal ||
+      formData.dailyContactGoal !== originalData.dailyContactGoal || // Check new field
       formData.weeklyContactGoal !== originalData.weeklyContactGoal ||
       formData.monthlyRevenueGoal !== originalData.monthlyRevenueGoal;
       
@@ -227,6 +237,7 @@ const SettingsForm = () => {
       // Add goal fields
       if (formData.dailyCallGoal !== originalData.dailyCallGoal) updateData.dailyCallGoal = formData.dailyCallGoal;
       if (formData.dailyDealGoal !== originalData.dailyDealGoal) updateData.dailyDealGoal = formData.dailyDealGoal;
+      if (formData.dailyContactGoal !== originalData.dailyContactGoal) updateData.dailyContactGoal = formData.dailyContactGoal; // New field
       if (formData.weeklyContactGoal !== originalData.weeklyContactGoal) updateData.weeklyContactGoal = formData.weeklyContactGoal;
       if (formData.monthlyRevenueGoal !== originalData.monthlyRevenueGoal) updateData.monthlyRevenueGoal = formData.monthlyRevenueGoal;
       
@@ -258,6 +269,7 @@ const SettingsForm = () => {
           // Store goals in localStorage for dashboard access
           dailyCallGoal: formData.dailyCallGoal,
           dailyDealGoal: formData.dailyDealGoal,
+          dailyContactGoal: formData.dailyContactGoal, // New field
           weeklyContactGoal: formData.weeklyContactGoal,
           monthlyRevenueGoal: formData.monthlyRevenueGoal
         };
@@ -274,6 +286,7 @@ const SettingsForm = () => {
           cellPhone: formData.cellPhone,
           dailyCallGoal: formData.dailyCallGoal,
           dailyDealGoal: formData.dailyDealGoal,
+          dailyContactGoal: formData.dailyContactGoal, // New field
           weeklyContactGoal: formData.weeklyContactGoal,
           monthlyRevenueGoal: formData.monthlyRevenueGoal
         });
@@ -336,6 +349,45 @@ const SettingsForm = () => {
           }}>
             {message.text}
           </div>
+          
+          {formData.newPassword && (
+            <div style={{
+              padding: '0.75rem',
+              backgroundColor: '#f8f9fa',
+              borderRadius: theme.borderRadius.sm,
+              marginBottom: '1rem',
+              fontSize: '0.9rem'
+            }}>
+              <p style={{ margin: 0, fontWeight: 'bold' }}>Password Requirements:</p>
+              <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
+                <li style={{ marginBottom: '0.25rem', color: formData.newPassword.length >= 8 ? theme.colors.brand.primary : theme.colors.brand.text }}>
+                  At least 8 characters
+                </li>
+                <li style={{ marginBottom: '0.25rem', color: /[A-Z]/.test(formData.newPassword) ? theme.colors.brand.primary : theme.colors.brand.text }}>
+                  At least one uppercase letter
+                </li>
+                <li style={{ marginBottom: '0.25rem', color: /[0-9]/.test(formData.newPassword) ? theme.colors.brand.primary : theme.colors.brand.text }}>
+                  At least one number
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
+        
+        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #eee' }}>
+          <Button
+            type="submit"
+            disabled={saving}
+            variant="primary"
+            style={{ minWidth: '120px' }}
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </div>
+      </form>
+    </Card>
+  );
+};
         )}
 
         <div style={{ marginBottom: '1.5rem' }}>
@@ -430,7 +482,7 @@ const SettingsForm = () => {
             Set your personal targets to track progress on your dashboard.
           </p>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
             <div>
               <label htmlFor="dailyCallGoal" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                 Daily Call Goal
@@ -476,6 +528,30 @@ const SettingsForm = () => {
               />
               <small style={{ color: theme.colors.brand.text, fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
                 Target number of deals to close per day
+              </small>
+            </div>
+            
+            <div>
+              <label htmlFor="dailyContactGoal" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                Daily Contact Goal
+              </label>
+              <input
+                type="number"
+                id="dailyContactGoal"
+                name="dailyContactGoal"
+                value={formData.dailyContactGoal}
+                onChange={handleChange}
+                min="1"
+                max="100"
+                style={{ 
+                  width: '100%', 
+                  padding: '0.75rem',
+                  borderRadius: theme.borderRadius.sm,
+                  border: '1px solid #ddd'
+                }}
+              />
+              <small style={{ color: theme.colors.brand.text, fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
+                New contacts to add each day
               </small>
             </div>
           </div>
@@ -661,43 +737,3 @@ const SettingsForm = () => {
                 </button>
               </div>
             </div>
-          </div>
-          
-          {formData.newPassword && (
-            <div style={{
-              padding: '0.75rem',
-              backgroundColor: '#f8f9fa',
-              borderRadius: theme.borderRadius.sm,
-              marginBottom: '1rem',
-              fontSize: '0.9rem'
-            }}>
-              <p style={{ margin: 0, fontWeight: 'bold' }}>Password Requirements:</p>
-              <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
-                <li style={{ marginBottom: '0.25rem', color: formData.newPassword.length >= 8 ? theme.colors.brand.primary : theme.colors.brand.text }}>
-                  At least 8 characters
-                </li>
-                <li style={{ marginBottom: '0.25rem', color: /[A-Z]/.test(formData.newPassword) ? theme.colors.brand.primary : theme.colors.brand.text }}>
-                  At least one uppercase letter
-                </li>
-                <li style={{ marginBottom: '0.25rem', color: /[0-9]/.test(formData.newPassword) ? theme.colors.brand.primary : theme.colors.brand.text }}>
-                  At least one number
-                </li>
-              </ul>
-            </div>
-          )}
-        </div>
-        
-        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #eee' }}>
-          <Button
-            type="submit"
-            disabled={saving}
-            variant="primary"
-            style={{ minWidth: '120px' }}
-          >
-            {saving ? 'Saving...' : 'Save Changes'}
-          </Button>
-        </div>
-      </form>
-    </Card>
-  );
-};

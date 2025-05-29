@@ -1,4 +1,4 @@
-// Schema for Neon PostgreSQL - Updated with Goal Fields
+// Updated prisma/schema.prisma with daily contact goal field
 datasource db {
   provider  = "postgresql"
   url       = env("POSTGRES_PRISMA_URL") // Primary connection string for Prisma
@@ -78,9 +78,10 @@ model User {
   tasks                Task[]
   contacts             Contact[] @relation("AssignedContacts")
   
-  // New Goal Fields
+  // Goal Fields - Updated with new daily contact goal
   dailyCallGoal        Int?      @default(30)
   dailyDealGoal        Int?      @default(5)
+  dailyContactGoal     Int?      @default(10)    // New field for daily contact goal
   weeklyContactGoal    Int?      @default(150)
   monthlyRevenueGoal   Int?      @default(10000)
 }

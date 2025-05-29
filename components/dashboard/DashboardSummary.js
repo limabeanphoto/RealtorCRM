@@ -1,4 +1,4 @@
-// Complete components/dashboard/DashboardSummary.js - Replace your existing file
+// Updated components/dashboard/DashboardSummary.js with Contacts Added goal
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import StatCard from './StatCard';
@@ -14,11 +14,13 @@ export default function DashboardSummary() {
     callsThisMonth: 0,
     callsThisYear: 0,
     dealsToday: 0,
+    contactsToday: 0, // Added contacts today metric
     loading: true
   });
   const [goals, setGoals] = useState({
     callGoal: { current: 0, target: 30 }, // Default fallback
     dealGoal: { current: 0, target: 5 },   // Default fallback
+    contactsGoal: { current: 0, target: 10 }, // New contacts goal
     loading: true
   });
   const [tasks, setTasks] = useState([]);
@@ -126,6 +128,7 @@ export default function DashboardSummary() {
           callsThisMonth: monthData.callsMetrics.total || 0,
           callsThisYear: yearData.callsMetrics.total || 0,
           dealsToday: todayData.dealsMetrics.total || 0,
+          contactsToday: todayData.contactsMetrics.total || 0, // Get contacts added today
           loading: false,
           conversionRate: todayData.conversionRates?.rate || 0
         });
@@ -147,6 +150,7 @@ export default function DashboardSummary() {
     // Use user's custom goals or fallback to defaults
     const dailyCallTarget = userData.dailyCallGoal || 30;
     const dailyDealTarget = userData.dailyDealGoal || 5;
+    const dailyContactTarget = userData.dailyContactGoal || 10; // New daily contact goal
     
     setGoals({
       callGoal: { 
@@ -156,6 +160,10 @@ export default function DashboardSummary() {
       dealGoal: { 
         current: metrics.dealsToday || 0, 
         target: dailyDealTarget 
+      },
+      contactsGoal: {
+        current: metrics.contactsToday || 0,
+        target: dailyContactTarget
       },
       loading: false
     });
@@ -235,7 +243,7 @@ export default function DashboardSummary() {
   // Function to render goals section header with personalization indicator
   const renderGoalsHeader = () => {
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
-    const hasCustomGoals = userData.dailyCallGoal || userData.dailyDealGoal;
+    const hasCustomGoals = userData.dailyCallGoal || userData.dailyDealGoal || userData.dailyContactGoal;
     
     return (
       <div className="goals-section-header">
@@ -291,7 +299,7 @@ export default function DashboardSummary() {
         />
       </div>
       
-      {/* Goals Section with Header */}
+      {/* Goals Section with Header - Now includes 3 goals */}
       <div className="dashboard-grid">
         {renderGoalsHeader()}
         <GoalProgress
@@ -305,6 +313,12 @@ export default function DashboardSummary() {
           current={goals.dealGoal.current}
           target={goals.dealGoal.target}
           color={theme.colors.brand.secondary}
+        />
+        <GoalProgress
+          title="Contacts Added Goal"
+          current={goals.contactsGoal.current}
+          target={goals.contactsGoal.target}
+          color={theme.colors.brand.accent}
         />
       </div>
       
