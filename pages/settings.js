@@ -318,7 +318,6 @@ const SettingsForm = () => {
       [field]: !prev[field]
     }));
   };
-
   // Settings.js - Part 3 (JSX Render - Loading and Form Start)
 
   if (loading) {
@@ -461,7 +460,6 @@ const SettingsForm = () => {
             />
           </div>
         </div>
-
         // Settings.js - Part 4 (Goals Section)
 
         {/* Goals Section */}
@@ -608,7 +606,6 @@ const SettingsForm = () => {
             </p>
           </div>
         </div>
-
         // Settings.js - Part 5 (Password Section and Form End)
         
         <div style={{ marginBottom: '1.5rem' }}>
@@ -745,5 +742,3 @@ const SettingsForm = () => {
     </Card>
   );
 };
-
-// End of SettingsForm component - this completes the entire settings.js file

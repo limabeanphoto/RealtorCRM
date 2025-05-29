@@ -1,6 +1,6 @@
-// Updated components/dashboard/GoalProgress.js with enhanced shadows
+// Updated components/dashboard/GoalProgress.js with proper color handling
 import React from 'react';
-import { FaPhone, FaTrophy } from 'react-icons/fa';
+import { FaPhone, FaTrophy, FaUsers } from 'react-icons/fa';
 
 export default function GoalProgress({ title, current, target, color }) {
   const percentage = Math.min(100, Math.round((current / target) * 100));
@@ -16,6 +16,9 @@ export default function GoalProgress({ title, current, target, color }) {
   const getIcon = () => {
     if (title.toLowerCase().includes('call')) {
       return <FaPhone size={18} />;
+    }
+    if (title.toLowerCase().includes('contact')) {
+      return <FaUsers size={18} />;
     }
     return <FaTrophy size={18} />;
   };
