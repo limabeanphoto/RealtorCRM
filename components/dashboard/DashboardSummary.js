@@ -1,4 +1,4 @@
-// Modified components/dashboard/DashboardSummary.js - Part 1
+// Complete components/dashboard/DashboardSummary.js - Replace your existing file
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import StatCard from './StatCard';
@@ -17,8 +17,8 @@ export default function DashboardSummary() {
     loading: true
   });
   const [goals, setGoals] = useState({
-    callGoal: { current: 0, target: 10 },
-    dealGoal: { current: 0, target: 5 },
+    callGoal: { current: 0, target: 30 }, // Default fallback
+    dealGoal: { current: 0, target: 5 },   // Default fallback
     loading: true
   });
   const [tasks, setTasks] = useState([]);
@@ -48,6 +48,35 @@ export default function DashboardSummary() {
     if (!metrics.loading) {
       updateGoalsData();
     }
+  }, [metrics]);
+
+  // Listen for localStorage changes (when user updates settings)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'user') {
+        // User data was updated, refresh goals
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        setUser(userData);
+        updateGoalsData();
+      }
+    };
+    
+    // Listen for storage events from other tabs/windows
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for custom events in the same tab
+    const handleCustomStorageChange = () => {
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      setUser(userData);
+      updateGoalsData();
+    };
+    
+    window.addEventListener('userSettingsUpdated', handleCustomStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('userSettingsUpdated', handleCustomStorageChange);
+    };
   }, [metrics]);
   
   const fetchMetricsData = async () => {
@@ -110,17 +139,23 @@ export default function DashboardSummary() {
     }
   };
   
-  // Update goals based on metrics
+  // Update goals based on metrics and user preferences
   const updateGoalsData = () => {
-    // Update goals with the current metrics
+    // Get user goals from localStorage
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    // Use user's custom goals or fallback to defaults
+    const dailyCallTarget = userData.dailyCallGoal || 30;
+    const dailyDealTarget = userData.dailyDealGoal || 5;
+    
     setGoals({
       callGoal: { 
         current: metrics.callsToday || 0, 
-        target: 10 
+        target: dailyCallTarget 
       },
       dealGoal: { 
         current: metrics.dealsToday || 0, 
-        target: 5 
+        target: dailyDealTarget 
       },
       loading: false
     });
@@ -134,9 +169,6 @@ export default function DashboardSummary() {
         console.error('No authentication token found');
         return;
       }
-      
-      // Get today's date
-      const today = new Date();
       
       // Fetch tasks due today or overdue and not yet completed
       const response = await fetch('/api/tasks', {
@@ -196,9 +228,26 @@ export default function DashboardSummary() {
   };
   
   // Function to manually refresh metrics and goals
-  // This can be called after logging a call or deal
   const refreshMetrics = () => {
     fetchMetricsData();
+  };
+
+  // Function to render goals section header with personalization indicator
+  const renderGoalsHeader = () => {
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    const hasCustomGoals = userData.dailyCallGoal || userData.dailyDealGoal;
+    
+    return (
+      <div className="goals-section-header">
+        <h2>Today's Goals</h2>
+        {hasCustomGoals && (
+          <div className="personalized-goals-badge">
+            <span>✨</span>
+            <span>Personalized goals</span>
+          </div>
+        )}
+      </div>
+    );
   };
   
   if (dataLoading) {
@@ -242,8 +291,9 @@ export default function DashboardSummary() {
         />
       </div>
       
-      {/* Goals Section */}
+      {/* Goals Section with Header */}
       <div className="dashboard-grid">
+        {renderGoalsHeader()}
         <GoalProgress
           title="Daily Call Goal"
           current={goals.callGoal.current}

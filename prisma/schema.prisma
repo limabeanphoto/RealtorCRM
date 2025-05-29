@@ -1,4 +1,4 @@
-// Schema for Neon PostgreSQL
+// Schema for Neon PostgreSQL - Updated with Goal Fields
 datasource db {
   provider  = "postgresql"
   url       = env("POSTGRES_PRISMA_URL") // Primary connection string for Prisma
@@ -64,17 +64,23 @@ model Task {
 }
 
 model User {
-  id                String    @id @default(cuid())
-  email             String    @unique
-  passwordHash      String
-  firstName         String
-  lastName          String
-  cellPhone         String?
-  assignedCallNumber String?
-  role              String    @default("member")
-  createdAt         DateTime  @default(now())
-  lastLoginAt       DateTime?
-  calls             Call[]
-  tasks             Task[]
-  contacts          Contact[] @relation("AssignedContacts")
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  passwordHash         String
+  firstName            String
+  lastName             String
+  cellPhone            String?
+  assignedCallNumber   String?
+  role                 String    @default("member")
+  createdAt            DateTime  @default(now())
+  lastLoginAt          DateTime?
+  calls                Call[]
+  tasks                Task[]
+  contacts             Contact[] @relation("AssignedContacts")
+  
+  // New Goal Fields
+  dailyCallGoal        Int?      @default(30)
+  dailyDealGoal        Int?      @default(5)
+  weeklyContactGoal    Int?      @default(150)
+  monthlyRevenueGoal   Int?      @default(10000)
 }
