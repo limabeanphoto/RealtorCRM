@@ -1,4 +1,4 @@
-// Updated pages/settings.js with daily contact goal
+// Updated pages/settings.js with daily contact goal - Part 1
 import { useState, useEffect } from 'react';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import theme from '../styles/theme';
@@ -145,6 +145,7 @@ const SettingsForm = () => {
       [name]: type === 'number' ? parseInt(value) || 0 : value 
     }));
   };
+  // Settings.js - Part 2 (Validation and Form Handlers)
 
   const validateForm = () => {
     // Reset message
@@ -318,6 +319,8 @@ const SettingsForm = () => {
     }));
   };
 
+  // Settings.js - Part 3 (JSX Render - Loading and Form Start)
+
   if (loading) {
     return (
       <Card>
@@ -349,45 +352,29 @@ const SettingsForm = () => {
           }}>
             {message.text}
           </div>
-          
-          {formData.newPassword && (
-            <div style={{
-              padding: '0.75rem',
-              backgroundColor: '#f8f9fa',
-              borderRadius: theme.borderRadius.sm,
-              marginBottom: '1rem',
-              fontSize: '0.9rem'
-            }}>
-              <p style={{ margin: 0, fontWeight: 'bold' }}>Password Requirements:</p>
-              <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
-                <li style={{ marginBottom: '0.25rem', color: formData.newPassword.length >= 8 ? theme.colors.brand.primary : theme.colors.brand.text }}>
-                  At least 8 characters
-                </li>
-                <li style={{ marginBottom: '0.25rem', color: /[A-Z]/.test(formData.newPassword) ? theme.colors.brand.primary : theme.colors.brand.text }}>
-                  At least one uppercase letter
-                </li>
-                <li style={{ marginBottom: '0.25rem', color: /[0-9]/.test(formData.newPassword) ? theme.colors.brand.primary : theme.colors.brand.text }}>
-                  At least one number
-                </li>
-              </ul>
-            </div>
-          )}
-        </div>
+        )}
         
-        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #eee' }}>
-          <Button
-            type="submit"
-            disabled={saving}
-            variant="primary"
-            style={{ minWidth: '120px' }}
-          >
-            {saving ? 'Saving...' : 'Save Changes'}
-          </Button>
-        </div>
-      </form>
-    </Card>
-  );
-};
+        {formData.newPassword && (
+          <div style={{
+            padding: '0.75rem',
+            backgroundColor: '#f8f9fa',
+            borderRadius: theme.borderRadius.sm,
+            marginBottom: '1rem',
+            fontSize: '0.9rem'
+          }}>
+            <p style={{ margin: 0, fontWeight: 'bold' }}>Password Requirements:</p>
+            <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
+              <li style={{ marginBottom: '0.25rem', color: formData.newPassword.length >= 8 ? theme.colors.brand.primary : theme.colors.brand.text }}>
+                At least 8 characters
+              </li>
+              <li style={{ marginBottom: '0.25rem', color: /[A-Z]/.test(formData.newPassword) ? theme.colors.brand.primary : theme.colors.brand.text }}>
+                At least one uppercase letter
+              </li>
+              <li style={{ marginBottom: '0.25rem', color: /[0-9]/.test(formData.newPassword) ? theme.colors.brand.primary : theme.colors.brand.text }}>
+                At least one number
+              </li>
+            </ul>
+          </div>
         )}
 
         <div style={{ marginBottom: '1.5rem' }}>
@@ -474,6 +461,8 @@ const SettingsForm = () => {
             />
           </div>
         </div>
+
+        // Settings.js - Part 4 (Goals Section)
 
         {/* Goals Section */}
         <div style={{ marginBottom: '1.5rem' }}>
@@ -619,6 +608,8 @@ const SettingsForm = () => {
             </p>
           </div>
         </div>
+
+        // Settings.js - Part 5 (Password Section and Form End)
         
         <div style={{ marginBottom: '1.5rem' }}>
           <h2>Change Password</h2>
@@ -737,3 +728,22 @@ const SettingsForm = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+        
+        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #eee' }}>
+          <Button
+            type="submit"
+            disabled={saving}
+            variant="primary"
+            style={{ minWidth: '120px' }}
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </div>
+      </form>
+    </Card>
+  );
+};
+
+// End of SettingsForm component - this completes the entire settings.js file
