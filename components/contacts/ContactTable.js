@@ -532,6 +532,7 @@ const ContactTable = ({
                   onDeleteContact={onDeleteContact}
                   onContactUpdate={onContactUpdate}
                   onReassignContact={onReassignContact}
+                  onEditTask={onEditTask}
                   onTaskStatusChange={onTaskStatusChange}
                   currentUser={currentUser}
                   volumeOptions={volumeOptions}
