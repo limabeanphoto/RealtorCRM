@@ -1,4 +1,4 @@
-// pages/api/admin/reset-database.js
+// pages/api/admin/reset-database.js - FIXED VERSION
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
     console.log('Dropped existing tables...')
 
-    // Step 2: Create User table with goal fields
+    // Step 2: Create User table with ALL goal fields including dailyContactGoal
     await prisma.$executeRaw`
       CREATE TABLE "User" (
         "id" TEXT NOT NULL PRIMARY KEY,
@@ -39,12 +39,13 @@ export default async function handler(req, res) {
         "lastLoginAt" TIMESTAMP(3),
         "dailyCallGoal" INTEGER DEFAULT 30,
         "dailyDealGoal" INTEGER DEFAULT 5,
+        "dailyContactGoal" INTEGER DEFAULT 10,
         "weeklyContactGoal" INTEGER DEFAULT 150,
         "monthlyRevenueGoal" INTEGER DEFAULT 10000
       );
     `
 
-    // Step 3: Create Contact table
+    // Step 3: Create Contact table with all new fields
     await prisma.$executeRaw`
       CREATE TABLE "Contact" (
         "id" TEXT NOT NULL PRIMARY KEY,
@@ -114,7 +115,7 @@ export default async function handler(req, res) {
 
     console.log('Created all tables with correct schema...')
 
-    // Step 7: Create a default admin user so you can log in
+    // Step 7: Create a default admin user with ALL goal fields
     const bcrypt = require('bcryptjs')
     const { v4: uuidv4 } = require('uuid')
     
@@ -131,12 +132,13 @@ export default async function handler(req, res) {
         role: 'admin',
         dailyCallGoal: 50,
         dailyDealGoal: 8,
+        dailyContactGoal: 15, // Now this field exists!
         weeklyContactGoal: 200,
         monthlyRevenueGoal: 15000
       }
     })
 
-    // Step 8: Create a sample member user
+    // Step 8: Create a sample member user with ALL goal fields
     const memberPassword = await bcrypt.hash('member123', 10)
     const memberId = uuidv4()
     
@@ -150,6 +152,7 @@ export default async function handler(req, res) {
         role: 'member',
         dailyCallGoal: 30,
         dailyDealGoal: 5,
+        dailyContactGoal: 10, // Now this field exists!
         weeklyContactGoal: 150,
         monthlyRevenueGoal: 10000
       }
@@ -168,6 +171,7 @@ export default async function handler(req, res) {
         role: true,
         dailyCallGoal: true,
         dailyDealGoal: true,
+        dailyContactGoal: true, // Include the new field in the response
         weeklyContactGoal: true,
         monthlyRevenueGoal: true
       }
@@ -239,8 +243,9 @@ export default async function handler(req, res) {
               <p><strong>Database has been completely reset and recreated with the correct schema!</strong></p>
               <ul>
                 <li>All tables dropped and recreated</li>
-                <li>Goal fields added to User table</li>
-                <li>Sample users created</li>
+                <li>All goal fields added to User table (including dailyContactGoal)</li>
+                <li>New contact fields added (profileLink, volume, region)</li>
+                <li>Sample users created with all goal fields</li>
                 <li>Database is now ready to use</li>
               </ul>
             </div>
@@ -267,9 +272,10 @@ export default async function handler(req, res) {
               <div class="user-card">
                 <h3>${user.firstName} ${user.lastName} (${user.role})</h3>
                 <p><strong>Email:</strong> ${user.email}</p>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
                   <div><strong>Daily Calls:</strong> ${user.dailyCallGoal}</div>
                   <div><strong>Daily Deals:</strong> ${user.dailyDealGoal}</div>
+                  <div><strong>Daily Contacts:</strong> ${user.dailyContactGoal}</div>
                   <div><strong>Weekly Contacts:</strong> ${user.weeklyContactGoal}</div>
                   <div><strong>Monthly Revenue:</strong> $${user.monthlyRevenueGoal}</div>
                 </div>
@@ -281,15 +287,21 @@ export default async function handler(req, res) {
               <ol>
                 <li><strong>Go to your app login page</strong></li>
                 <li><strong>Log in</strong> with admin@company.com / admin123</li>
-                <li><strong>Test the dashboard</strong> - goal fields should now work</li>
+                <li><strong>Test the dashboard</strong> - all goal fields should now work</li>
+                <li><strong>Test the settings page</strong> - you should be able to set daily contact goals</li>
                 <li><strong>Update passwords</strong> in Settings</li>
                 <li><strong>Create real user accounts</strong> via Admin > Manage Users</li>
               </ol>
             </div>
             
             <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 0.9rem; color: #666;">
-              <strong>Note:</strong> This reset was safe to run because you mentioned the data was just samples. 
-              All tables have been recreated with the proper schema including the new goal fields.
+              <strong>Fixed Issues:</strong>
+              <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Added missing dailyContactGoal column to User table</li>
+                <li>Updated user creation to include all goal fields</li>
+                <li>Ensured schema matches your Prisma model</li>
+                <li>All dashboard goal tracking should now work properly</li>
+              </ul>
             </div>
           </div>
         </body>
@@ -299,7 +311,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
-      message: 'Database reset and recreated successfully',
+      message: 'Database reset and recreated successfully with all fields',
       data: {
         usersCreated: userCount,
         users: users,
