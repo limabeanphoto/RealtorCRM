@@ -9,7 +9,7 @@ export default function GoalProgress({ title, current, target, color }) {
   const getBarColor = () => {
     if (percentage < 30) return '#e74c3c'; // Red for low progress
     if (percentage < 70) return '#f39c12'; // Orange for medium progress
-    return color || '#2ecc71'; // Green or provided color for good progress
+    return color || '#2ecc71'; // Use provided color or green for good progress
   };
   
   // Determine icon based on title
@@ -33,6 +33,7 @@ export default function GoalProgress({ title, current, target, color }) {
           <h3>{title}</h3>
         </div>
         <div className="goal-counts">
+          {/* Fixed: Use the provided color for current value */}
           <span className="goal-current" style={{ color: color || '#4a69bd' }}>{current}</span>
           <span className="goal-separator">/</span>
           <span className="goal-target">{target}</span>

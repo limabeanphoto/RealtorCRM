@@ -82,6 +82,4 @@ model User {
   dailyCallGoal        Int?      @default(30)
   dailyDealGoal        Int?      @default(5)
   dailyContactGoal     Int?      @default(10)    // New field for daily contact goal
-  weeklyContactGoal    Int?      @default(150)
-  monthlyRevenueGoal   Int?      @default(10000)
 }

@@ -1,4 +1,4 @@
-// Updated pages/settings.js with daily contact goal - Part 1
+// Updated pages/settings.js - Removed weeklyContactGoal and monthlyRevenueGoal
 import { useState, useEffect } from 'react';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import theme from '../styles/theme';
@@ -26,12 +26,10 @@ const SettingsForm = () => {
     newPassword: '',
     confirmPassword: '',
     cellPhone: '',
-    // Goal fields including new daily contact goal
+    // Goal fields - REMOVED weeklyContactGoal and monthlyRevenueGoal
     dailyCallGoal: 30,
     dailyDealGoal: 5,
-    dailyContactGoal: 10, // New daily contact goal
-    weeklyContactGoal: 150,
-    monthlyRevenueGoal: 10000
+    dailyContactGoal: 10
   });
 
   const [originalData, setOriginalData] = useState({});
@@ -63,18 +61,16 @@ const SettingsForm = () => {
           const data = await response.json();
           
           if (data.success) {
-            // Format the user data including goals
+            // Format the user data including goals - REMOVED unused fields
             const apiUserData = {
               firstName: data.data.firstName || '',
               lastName: data.data.lastName || '',
               email: data.data.email || '',
               cellPhone: data.data.cellPhone || '',
-              // Goals from API or fallback to defaults
+              // Goals from API or fallback to defaults - REMOVED unused fields
               dailyCallGoal: data.data.dailyCallGoal || userData.dailyCallGoal || 30,
               dailyDealGoal: data.data.dailyDealGoal || userData.dailyDealGoal || 5,
-              dailyContactGoal: data.data.dailyContactGoal || userData.dailyContactGoal || 10, // New field
-              weeklyContactGoal: data.data.weeklyContactGoal || userData.weeklyContactGoal || 150,
-              monthlyRevenueGoal: data.data.monthlyRevenueGoal || userData.monthlyRevenueGoal || 10000
+              dailyContactGoal: data.data.dailyContactGoal || userData.dailyContactGoal || 10
             };
             
             setFormData(prev => ({ 
@@ -84,7 +80,7 @@ const SettingsForm = () => {
             
             setOriginalData(apiUserData);
           } else {
-            // If API fails, use localStorage data as fallback
+            // If API fails, use localStorage data as fallback - REMOVED unused fields
             const fallbackData = {
               firstName: userData.firstName || '',
               lastName: userData.lastName || '',
@@ -92,9 +88,7 @@ const SettingsForm = () => {
               cellPhone: userData.cellPhone || '',
               dailyCallGoal: userData.dailyCallGoal || 30,
               dailyDealGoal: userData.dailyDealGoal || 5,
-              dailyContactGoal: userData.dailyContactGoal || 10, // New field
-              weeklyContactGoal: userData.weeklyContactGoal || 150,
-              monthlyRevenueGoal: userData.monthlyRevenueGoal || 10000
+              dailyContactGoal: userData.dailyContactGoal || 10
             };
             
             setFormData(prev => ({
@@ -106,7 +100,7 @@ const SettingsForm = () => {
           }
         } catch (error) {
           console.error('Error fetching user data from API:', error);
-          // Use localStorage as fallback
+          // Use localStorage as fallback - REMOVED unused fields
           const fallbackData = {
             firstName: userData.firstName || '',
             lastName: userData.lastName || '',
@@ -114,9 +108,7 @@ const SettingsForm = () => {
             cellPhone: userData.cellPhone || '',
             dailyCallGoal: userData.dailyCallGoal || 30,
             dailyDealGoal: userData.dailyDealGoal || 5,
-            dailyContactGoal: userData.dailyContactGoal || 10, // New field
-            weeklyContactGoal: userData.weeklyContactGoal || 150,
-            monthlyRevenueGoal: userData.monthlyRevenueGoal || 10000
+            dailyContactGoal: userData.dailyContactGoal || 10
           };
           
           setFormData(prev => ({
@@ -145,7 +137,6 @@ const SettingsForm = () => {
       [name]: type === 'number' ? parseInt(value) || 0 : value 
     }));
   };
-  // Settings.js - Part 2 (Validation and Form Handlers)
 
   const validateForm = () => {
     // Reset message
@@ -176,7 +167,7 @@ const SettingsForm = () => {
       return false;
     }
     
-    // Validate goals
+    // Validate goals - REMOVED validation for unused fields
     if (formData.dailyCallGoal < 1 || formData.dailyCallGoal > 200) {
       setMessage({ text: 'Daily call goal must be between 1 and 200', type: 'error' });
       return false;
@@ -202,7 +193,7 @@ const SettingsForm = () => {
       return;
     }
     
-    // Check if anything has changed (including goals)
+    // Check if anything has changed - REMOVED unused fields
     const hasProfileChanges = 
       formData.firstName !== originalData.firstName ||
       formData.lastName !== originalData.lastName ||
@@ -210,9 +201,7 @@ const SettingsForm = () => {
       formData.cellPhone !== originalData.cellPhone ||
       formData.dailyCallGoal !== originalData.dailyCallGoal ||
       formData.dailyDealGoal !== originalData.dailyDealGoal ||
-      formData.dailyContactGoal !== originalData.dailyContactGoal || // Check new field
-      formData.weeklyContactGoal !== originalData.weeklyContactGoal ||
-      formData.monthlyRevenueGoal !== originalData.monthlyRevenueGoal;
+      formData.dailyContactGoal !== originalData.dailyContactGoal;
       
     const hasPasswordChange = !!formData.newPassword;
     
@@ -227,7 +216,7 @@ const SettingsForm = () => {
       const userId = JSON.parse(localStorage.getItem('user') || '{}').id;
       const token = localStorage.getItem('token');
       
-      // Include goals in the update data
+      // Include goals in the update data - REMOVED unused fields
       const updateData = {};
       
       if (formData.firstName !== originalData.firstName) updateData.firstName = formData.firstName;
@@ -235,12 +224,10 @@ const SettingsForm = () => {
       if (formData.email !== originalData.email) updateData.email = formData.email;
       if (formData.cellPhone !== originalData.cellPhone) updateData.cellPhone = formData.cellPhone;
       
-      // Add goal fields
+      // Add goal fields - REMOVED unused fields
       if (formData.dailyCallGoal !== originalData.dailyCallGoal) updateData.dailyCallGoal = formData.dailyCallGoal;
       if (formData.dailyDealGoal !== originalData.dailyDealGoal) updateData.dailyDealGoal = formData.dailyDealGoal;
-      if (formData.dailyContactGoal !== originalData.dailyContactGoal) updateData.dailyContactGoal = formData.dailyContactGoal; // New field
-      if (formData.weeklyContactGoal !== originalData.weeklyContactGoal) updateData.weeklyContactGoal = formData.weeklyContactGoal;
-      if (formData.monthlyRevenueGoal !== originalData.monthlyRevenueGoal) updateData.monthlyRevenueGoal = formData.monthlyRevenueGoal;
+      if (formData.dailyContactGoal !== originalData.dailyContactGoal) updateData.dailyContactGoal = formData.dailyContactGoal;
       
       // Add password fields if changing password
       if (hasPasswordChange) {
@@ -260,26 +247,24 @@ const SettingsForm = () => {
       const data = await response.json();
       
       if (data.success) {
-        // Update local storage user data
+        // Update local storage user data - REMOVED unused fields
         const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
         const updatedUser = {
           ...currentUser,
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
-          // Store goals in localStorage for dashboard access
+          // Store goals in localStorage for dashboard access - REMOVED unused fields
           dailyCallGoal: formData.dailyCallGoal,
           dailyDealGoal: formData.dailyDealGoal,
-          dailyContactGoal: formData.dailyContactGoal, // New field
-          weeklyContactGoal: formData.weeklyContactGoal,
-          monthlyRevenueGoal: formData.monthlyRevenueGoal
+          dailyContactGoal: formData.dailyContactGoal
         };
         localStorage.setItem('user', JSON.stringify(updatedUser));
         
         // Trigger custom event to notify dashboard of changes
         window.dispatchEvent(new CustomEvent('userSettingsUpdated'));
         
-        // Update original data to reflect saved changes
+        // Update original data to reflect saved changes - REMOVED unused fields
         setOriginalData({
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -287,9 +272,7 @@ const SettingsForm = () => {
           cellPhone: formData.cellPhone,
           dailyCallGoal: formData.dailyCallGoal,
           dailyDealGoal: formData.dailyDealGoal,
-          dailyContactGoal: formData.dailyContactGoal, // New field
-          weeklyContactGoal: formData.weeklyContactGoal,
-          monthlyRevenueGoal: formData.monthlyRevenueGoal
+          dailyContactGoal: formData.dailyContactGoal
         });
         
         // Clear password fields
@@ -318,7 +301,6 @@ const SettingsForm = () => {
       [field]: !prev[field]
     }));
   };
-  // Settings.js - Part 3 (JSX Render - Loading and Form Start)
 
   if (loading) {
     return (
@@ -460,13 +442,12 @@ const SettingsForm = () => {
             />
           </div>
         </div>
-        // Settings.js - Part 4 (Goals Section)
 
-        {/* Goals Section */}
+        {/* SIMPLIFIED Goals Section - Only 3 daily goals */}
         <div style={{ marginBottom: '1.5rem' }}>
-          <h2>Daily & Weekly Goals</h2>
+          <h2>Daily Goals</h2>
           <p style={{ color: theme.colors.brand.text, fontSize: '0.9rem', marginBottom: '1rem' }}>
-            Set your personal targets to track progress on your dashboard.
+            Set your personal daily targets to track progress on your dashboard.
           </p>
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
@@ -543,56 +524,6 @@ const SettingsForm = () => {
             </div>
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-            <div>
-              <label htmlFor="weeklyContactGoal" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                Weekly New Contacts Goal
-              </label>
-              <input
-                type="number"
-                id="weeklyContactGoal"
-                name="weeklyContactGoal"
-                value={formData.weeklyContactGoal}
-                onChange={handleChange}
-                min="1"
-                max="1000"
-                style={{ 
-                  width: '100%', 
-                  padding: '0.75rem',
-                  borderRadius: theme.borderRadius.sm,
-                  border: '1px solid #ddd'
-                }}
-              />
-              <small style={{ color: theme.colors.brand.text, fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
-                New contacts to add each week
-              </small>
-            </div>
-            
-            <div>
-              <label htmlFor="monthlyRevenueGoal" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                Monthly Revenue Goal ($)
-              </label>
-              <input
-                type="number"
-                id="monthlyRevenueGoal"
-                name="monthlyRevenueGoal"
-                value={formData.monthlyRevenueGoal}
-                onChange={handleChange}
-                min="0"
-                step="1000"
-                style={{ 
-                  width: '100%', 
-                  padding: '0.75rem',
-                  borderRadius: theme.borderRadius.sm,
-                  border: '1px solid #ddd'
-                }}
-              />
-              <small style={{ color: theme.colors.brand.text, fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
-                Target monthly revenue from deals
-              </small>
-            </div>
-          </div>
-          
           <div style={{
             padding: '0.75rem',
             backgroundColor: '#f0f9ff',
@@ -606,7 +537,6 @@ const SettingsForm = () => {
             </p>
           </div>
         </div>
-        // Settings.js - Part 5 (Password Section and Form End)
         
         <div style={{ marginBottom: '1.5rem' }}>
           <h2>Change Password</h2>

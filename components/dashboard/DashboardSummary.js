@@ -1,4 +1,4 @@
-// Updated components/dashboard/DashboardSummary.js with Contacts Added goal
+// Updated components/dashboard/DashboardSummary.js - Removed unused goal fields
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import StatCard from './StatCard';
@@ -142,15 +142,15 @@ export default function DashboardSummary() {
     }
   };
   
-  // Update goals based on metrics and user preferences
+  // Update goals based on metrics and user preferences - REMOVED unused fields
   const updateGoalsData = () => {
     // Get user goals from localStorage
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
     
-    // Use user's custom goals or fallback to defaults
+    // Use user's custom goals or fallback to defaults - REMOVED unused fields
     const dailyCallTarget = userData.dailyCallGoal || 30;
     const dailyDealTarget = userData.dailyDealGoal || 5;
-    const dailyContactTarget = userData.dailyContactGoal || 10; // New daily contact goal
+    const dailyContactTarget = userData.dailyContactGoal || 10;
     
     setGoals({
       callGoal: { 
