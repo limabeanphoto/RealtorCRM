@@ -1,4 +1,4 @@
-// Updated components/dashboard/DashboardSummary.js - Removed unused goal fields
+// Updated components/dashboard/DashboardSummary.js - Fixed color assignment for Contacts Goal
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import StatCard from './StatCard';
@@ -14,13 +14,13 @@ export default function DashboardSummary() {
     callsThisMonth: 0,
     callsThisYear: 0,
     dealsToday: 0,
-    contactsToday: 0, // Added contacts today metric
+    contactsToday: 0,
     loading: true
   });
   const [goals, setGoals] = useState({
-    callGoal: { current: 0, target: 30 }, // Default fallback
-    dealGoal: { current: 0, target: 5 },   // Default fallback
-    contactsGoal: { current: 0, target: 10 }, // New contacts goal
+    callGoal: { current: 0, target: 30 },
+    dealGoal: { current: 0, target: 5 },
+    contactsGoal: { current: 0, target: 10 },
     loading: true
   });
   const [tasks, setTasks] = useState([]);
@@ -56,17 +56,14 @@ export default function DashboardSummary() {
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === 'user') {
-        // User data was updated, refresh goals
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
         setUser(userData);
         updateGoalsData();
       }
     };
     
-    // Listen for storage events from other tabs/windows
     window.addEventListener('storage', handleStorageChange);
     
-    // Also listen for custom events in the same tab
     const handleCustomStorageChange = () => {
       const userData = JSON.parse(localStorage.getItem('user') || '{}');
       setUser(userData);
@@ -128,7 +125,7 @@ export default function DashboardSummary() {
           callsThisMonth: monthData.callsMetrics.total || 0,
           callsThisYear: yearData.callsMetrics.total || 0,
           dealsToday: todayData.dealsMetrics.total || 0,
-          contactsToday: todayData.contactsMetrics.total || 0, // Get contacts added today
+          contactsToday: todayData.contactsMetrics.total || 0,
           loading: false,
           conversionRate: todayData.conversionRates?.rate || 0
         });
@@ -142,12 +139,10 @@ export default function DashboardSummary() {
     }
   };
   
-  // Update goals based on metrics and user preferences - REMOVED unused fields
+  // Update goals based on metrics and user preferences
   const updateGoalsData = () => {
-    // Get user goals from localStorage
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
     
-    // Use user's custom goals or fallback to defaults - REMOVED unused fields
     const dailyCallTarget = userData.dailyCallGoal || 30;
     const dailyDealTarget = userData.dailyDealGoal || 5;
     const dailyContactTarget = userData.dailyContactGoal || 10;
@@ -178,7 +173,6 @@ export default function DashboardSummary() {
         return;
       }
       
-      // Fetch tasks due today or overdue and not yet completed
       const response = await fetch('/api/tasks', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -186,22 +180,16 @@ export default function DashboardSummary() {
       const data = await response.json();
       
       if (data.success) {
-        // Filter for incomplete tasks that are due today or overdue
         const now = new Date();
         
         const filteredTasks = data.data
           .filter(task => {
-            // Check if task is not completed
             if (task.status === 'Completed') return false;
-            
-            // Parse task due date
             const dueDate = new Date(task.dueDate);
-            
-            // Check if due date is today or in the past
             return dueDate <= now;
           })
           .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
-          .slice(0, 3); // Get only top 3 most urgent tasks
+          .slice(0, 3);
         
         setTasks(filteredTasks);
       }
@@ -219,7 +207,6 @@ export default function DashboardSummary() {
         return;
       }
       
-      // Fetch contacts with Follow Up status
       const response = await fetch('/api/contacts?lastCallOutcome=Follow%20Up', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -227,20 +214,13 @@ export default function DashboardSummary() {
       const data = await response.json();
       
       if (data.success) {
-        // Get only top 3 follow-up contacts
         setFollowUps(data.data.slice(0, 3));
       }
     } catch (error) {
       console.error('Error fetching follow-ups:', error);
     }
   };
-  
-  // Function to manually refresh metrics and goals
-  const refreshMetrics = () => {
-    fetchMetricsData();
-  };
 
-  // Function to render goals section header with personalization indicator
   const renderGoalsHeader = () => {
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
     const hasCustomGoals = userData.dailyCallGoal || userData.dailyDealGoal || userData.dailyContactGoal;
@@ -299,7 +279,7 @@ export default function DashboardSummary() {
         />
       </div>
       
-      {/* Goals Section with Header - Now includes 3 goals */}
+      {/* Goals Section - FIXED: All cards use same green color like first two */}
       <div className="dashboard-grid">
         {renderGoalsHeader()}
         <GoalProgress
@@ -312,13 +292,13 @@ export default function DashboardSummary() {
           title="Deal Conversion Goal"
           current={goals.dealGoal.current}
           target={goals.dealGoal.target}
-          color={theme.colors.brand.secondary}
+          color={theme.colors.brand.primary}
         />
         <GoalProgress
           title="Contacts Added Goal"
           current={goals.contactsGoal.current}
           target={goals.contactsGoal.target}
-          color={theme.colors.brand.accent}
+          color={theme.colors.brand.primary}
         />
       </div>
       
