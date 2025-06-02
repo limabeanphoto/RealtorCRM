@@ -1,15 +1,16 @@
-// components/stats/ModernMetricCard.js - Dashboard-style metric card
+// components/stats/ModernMetricCard.js - Clean dashboard-style metric card
 import React from 'react';
+import theme from '../../styles/theme';
 
-export default function ModernMetricCard({ title, value, icon, color, subtitle }) {
+export default function ModernMetricCard({ title, value, icon, subtitle }) {
   return (
     <div className="dashboard-card stat-card">
       <div 
         className="stat-icon" 
         style={{ 
-          background: `linear-gradient(135deg, ${color}, ${adjustColor(color, 20)})`,
+          background: `linear-gradient(135deg, ${theme.colors.brand.primary}, ${theme.colors.brand.secondary})`,
           color: 'white',
-          boxShadow: `0 4px 20px ${color}30`
+          boxShadow: `0 4px 20px ${theme.colors.brand.primary}30`
         }}
       >
         <span style={{ fontSize: '1.5rem' }}>{icon}</span>
@@ -20,7 +21,7 @@ export default function ModernMetricCard({ title, value, icon, color, subtitle }
       <p 
         className="stat-value" 
         style={{ 
-          background: `linear-gradient(135deg, ${color}, ${adjustColor(color, 20)})`,
+          background: `linear-gradient(135deg, ${theme.colors.brand.primary}, ${theme.colors.brand.secondary})`,
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text'
@@ -42,18 +43,4 @@ export default function ModernMetricCard({ title, value, icon, color, subtitle }
       )}
     </div>
   );
-}
-
-// Helper function to adjust color brightness
-function adjustColor(color, percent) {
-  // Simple color adjustment - in production you might want a more robust solution
-  const colors = {
-    '#8F9F3B': '#BCCB5C',
-    '#BCCB5C': '#8F9F3B', 
-    '#6187BC': '#7BA7E1',
-    '#e58e26': '#f5a623',
-    '#b71540': '#d63031'
-  };
-  
-  return colors[color] || color;
 }

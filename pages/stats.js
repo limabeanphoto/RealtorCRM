@@ -1,4 +1,4 @@
-// pages/stats.js - Modernized Analytics Page (Part 1)
+// pages/stats.js - Complete Modernized Analytics Page (Part 1)
 import { useState, useEffect } from 'react'
 import { 
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -96,7 +96,6 @@ export default function Stats() {
       endDate: endDate.toISOString()
     }
   }
-
   // Fetch metrics data
   const fetchMetricsData = async () => {
     try {
@@ -190,7 +189,6 @@ export default function Stats() {
       setRawData(prev => ({ ...prev, loading: false }))
     }
   }
-  
   // Effect to fetch data when date range changes
   useEffect(() => {
     fetchMetricsData()
@@ -227,7 +225,7 @@ export default function Stats() {
   const handleTabChange = (tab) => {
     setRawData(prev => ({ ...prev, activeTab: tab }))
   }
-
+  
   // Format date for display
   const formatDate = (dateString) => {
     const options = { 
@@ -254,15 +252,6 @@ export default function Stats() {
     }
   }
   
-  // Get greeting based on time of day
-  const getGreeting = () => {
-    const hour = new Date().getHours()
-    
-    if (hour < 12) return "Good morning"
-    if (hour < 18) return "Good afternoon"
-    return "Good evening"
-  }
-  
   // COLORS for charts
   const COLORS = [
     theme.colors.brand.primary,
@@ -272,18 +261,9 @@ export default function Stats() {
     '#e74c3c',
     '#3498db'
   ]
- 
   return (
     <ProtectedRoute>
       <div className="dashboard-container">
-        {/* Welcome Message - Matching Dashboard Style */}
-        <div className="dashboard-card welcome-card">
-          <h1>
-            {getGreeting()}! Let's dive into your analytics
-          </h1>
-          <p>Analyze your performance and track your progress with detailed insights for {getRangeText().toLowerCase()}.</p>
-        </div>
-
         {/* Date Range Selector */}
         <div className="dashboard-card" style={{ marginBottom: '2rem' }}>
           <h2 style={{ 
@@ -293,7 +273,7 @@ export default function Stats() {
             fontSize: '1.5rem',
             fontWeight: '600'
           }}>
-            📊 Analytics Dashboard
+            Analytics Dashboard
           </h2>
           
           <DateRangeSelector 
@@ -301,16 +281,6 @@ export default function Stats() {
             onRangeChange={handleDateRangeChange}
             onCustomDateChange={handleCustomDateChange}
           />
-          
-          <h3 style={{ 
-            marginTop: '1.5rem', 
-            marginBottom: '0',
-            color: theme.colors.brand.primary,
-            fontSize: '1.2rem',
-            fontWeight: '600'
-          }}>
-            {getRangeText()} Performance Overview
-          </h3>
         </div>
         
         {metricsData.loading ? (
@@ -328,39 +298,34 @@ export default function Stats() {
                 title="Calls Made" 
                 value={metricsData.callsMetrics.total} 
                 icon="📞"
-                color={theme.colors.brand.primary}
                 subtitle="Total outbound calls"
               />
               <ModernMetricCard 
                 title="Deals Closed" 
                 value={metricsData.dealsMetrics.total} 
                 icon="🤝"
-                color={theme.colors.brand.secondary}
                 subtitle="Successfully closed deals"
               />
               <ModernMetricCard 
                 title="Contacts Added" 
                 value={metricsData.contactsMetrics.total} 
                 icon="👥"
-                color={theme.colors.brand.accent}
                 subtitle="New prospects in pipeline"
               />
               <ModernMetricCard 
                 title="Tasks Created" 
                 value={metricsData.tasksMetrics.total} 
                 icon="✅"
-                color="#e58e26"
                 subtitle="Follow-up actions logged"
               />
               <ModernMetricCard 
                 title="Conversion Rate" 
                 value={`${metricsData.conversionRates.rate}%`} 
                 icon="📈"
-                color="#b71540"
                 subtitle={`${metricsData.conversionRates.deals} deals from ${metricsData.conversionRates.calls} calls`}
               />
             </div>
-
+            
             {/* Activity Charts Section */}
             <div className="dashboard-card" style={{ marginBottom: '2rem' }}>
               <h2 style={{ 
@@ -370,7 +335,7 @@ export default function Stats() {
                 fontSize: '1.5rem',
                 fontWeight: '600'
               }}>
-                📈 Activity Trends
+                Activity Trends
               </h2>
               <p style={{ 
                 color: '#7A7A73', 
@@ -380,7 +345,6 @@ export default function Stats() {
                 Track your team's performance over time with interactive charts
               </p>
             </div>
-
             <div style={{ 
               display: 'flex', 
               flexWrap: 'wrap', 
@@ -528,7 +492,6 @@ export default function Stats() {
                   )}
                 </ResponsiveContainer>
               </ChartContainer>
-
               {/* Contacts Chart */}
               <ChartContainer 
                 title="Contacts Added"
@@ -652,7 +615,6 @@ export default function Stats() {
                 </ResponsiveContainer>
               </ChartContainer>
             </div>
-
             {/* Raw Data Tables Section */}
             <div className="dashboard-card" style={{ marginBottom: '1rem' }}>
               <h2 style={{ 
@@ -662,7 +624,7 @@ export default function Stats() {
                 fontSize: '1.5rem',
                 fontWeight: '600'
               }}>
-                📋 Detailed Data
+                Detailed Data
               </h2>
               <p style={{ 
                 color: '#7A7A73', 
@@ -683,7 +645,7 @@ export default function Stats() {
                     color: rawData.activeTab === 'calls' ? 'white' : theme.colors.brand.primary
                   }}
                 >
-                  📞 Calls
+                  Calls
                 </Button>
                 
                 <Button
@@ -691,12 +653,12 @@ export default function Stats() {
                   variant={rawData.activeTab === 'deals' ? 'primary' : 'outline'}
                   tooltip="View detailed deal data"
                   style={{
-                    backgroundColor: rawData.activeTab === 'deals' ? theme.colors.brand.secondary : 'transparent',
-                    borderColor: theme.colors.brand.secondary,
-                    color: rawData.activeTab === 'deals' ? 'white' : theme.colors.brand.secondary
+                    backgroundColor: rawData.activeTab === 'deals' ? theme.colors.brand.primary : 'transparent',
+                    borderColor: theme.colors.brand.primary,
+                    color: rawData.activeTab === 'deals' ? 'white' : theme.colors.brand.primary
                   }}
                 >
-                  🤝 Deals
+                  Deals
                 </Button>
                 
                 <Button
@@ -704,12 +666,12 @@ export default function Stats() {
                   variant={rawData.activeTab === 'contacts' ? 'primary' : 'outline'}
                   tooltip="View detailed contact data"
                   style={{
-                    backgroundColor: rawData.activeTab === 'contacts' ? theme.colors.brand.accent : 'transparent',
-                    borderColor: theme.colors.brand.accent,
-                    color: rawData.activeTab === 'contacts' ? 'white' : theme.colors.brand.accent
+                    backgroundColor: rawData.activeTab === 'contacts' ? theme.colors.brand.primary : 'transparent',
+                    borderColor: theme.colors.brand.primary,
+                    color: rawData.activeTab === 'contacts' ? 'white' : theme.colors.brand.primary
                   }}
                 >
-                  👥 Contacts
+                  Contacts
                 </Button>
                 
                 <Button
@@ -717,12 +679,12 @@ export default function Stats() {
                   variant={rawData.activeTab === 'tasks' ? 'primary' : 'outline'}
                   tooltip="View detailed task data"
                   style={{
-                    backgroundColor: rawData.activeTab === 'tasks' ? '#e58e26' : 'transparent',
-                    borderColor: '#e58e26',
-                    color: rawData.activeTab === 'tasks' ? 'white' : '#e58e26'
+                    backgroundColor: rawData.activeTab === 'tasks' ? theme.colors.brand.primary : 'transparent',
+                    borderColor: theme.colors.brand.primary,
+                    color: rawData.activeTab === 'tasks' ? 'white' : theme.colors.brand.primary
                   }}
                 >
-                  ✅ Tasks
+                  Tasks
                 </Button>
               </div>
               
