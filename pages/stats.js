@@ -5,7 +5,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts'
 import DateRangeSelector from '../components/stats/DateRangeSelector'
-import ModernMetricCard from '../components/stats/ModernMetricCard'
+import { ModernMetricCard } from '../components/stats/UnifiedMetricCard'
 import ChartContainer from '../components/stats/ChartContainer'
 import DataTable from '../components/stats/DataTable'
 import ProtectedRoute from '../components/auth/ProtectedRoute'

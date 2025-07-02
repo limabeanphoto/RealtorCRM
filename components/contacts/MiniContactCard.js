@@ -10,45 +10,25 @@ import {
 } from 'react-icons/fa';
 import theme from '../../styles/theme';
 import Button from '../common/Button';
+import { getOutcomeStyle, getVolumeStyle, getStatusStyle } from '../../utils/badgeUtils';
 
-// Utility function to get outcome badge style
-const getOutcomeStyle = (outcome) => {
-  const styles = {
-    'Follow Up': { backgroundColor: '#fff3cd', color: '#856404' },
-    'No Answer': { backgroundColor: '#e2e3e5', color: '#383d41' },
-    'Deal Closed': { backgroundColor: '#d4edda', color: '#155724' },
-    'Not Interested': { backgroundColor: '#f8d7da', color: '#721c24' }
-  };
-  
-  return styles[outcome] || { backgroundColor: '#e2e3e5', color: '#383d41' };
-};
-
-// Utility function to get assignment status badge style
+// Using badge utilities from badgeUtils.js for consistency
+// Wrapper functions to handle case differences and maintain compatibility
 const getAssignedStyle = (status) => {
-  switch (status) {
-    case 'Open':
-      return { backgroundColor: '#78e08f', color: 'white' };
-    case 'Active':
-      return { backgroundColor: '#4a69bd', color: 'white' };
-    case 'Closed':
-      return { backgroundColor: '#e74c3c', color: 'white' };
-    default:
-      return { backgroundColor: '#e2e3e5', color: '#383d41' };
-  }
+  const style = getStatusStyle(status);
+  return { backgroundColor: style.bg, color: style.text };
 };
 
-// Utility function to get volume style
-const getVolumeStyle = (volume) => {
-  switch (volume) {
-    case 'high':
-      return { backgroundColor: '#4a69bd', color: 'white' };
-    case 'medium':
-      return { backgroundColor: '#78e08f', color: 'white' };
-    case 'low':
-      return { backgroundColor: '#e74c3c', color: 'white' };
-    default:
-      return { backgroundColor: '#e2e3e5', color: '#383d41' };
-  }
+const getLocalVolumeStyle = (volume) => {
+  // Convert lowercase to uppercase for badgeUtils compatibility
+  const capitalizedVolume = volume ? volume.charAt(0).toUpperCase() + volume.slice(1) : 'Medium';
+  const style = getVolumeStyle(capitalizedVolume);
+  return { backgroundColor: style.bg, color: style.text };
+};
+
+const getLocalOutcomeStyle = (outcome) => {
+  const style = getOutcomeStyle(outcome);
+  return { backgroundColor: style.bg, color: style.text };
 };
 
 // Utility function to format date
@@ -186,7 +166,7 @@ export default function MiniContactCard({
                 padding: '0.15rem 0.3rem',
                 borderRadius: '3px',
                 fontSize: '0.75rem',
-                ...getOutcomeStyle(contact.lastCallOutcome)
+                ...getLocalOutcomeStyle(contact.lastCallOutcome)
               }}>
                 {contact.lastCallOutcome}
               </span>
@@ -244,7 +224,7 @@ export default function MiniContactCard({
                     padding: '0.15rem 0.3rem',
                     borderRadius: '3px',
                     fontSize: '0.7rem',
-                    ...getVolumeStyle(contact.volume)
+                    ...getLocalVolumeStyle(contact.volume)
                   }}>
                     {getVolumeLabel(contact.volume)}
                   </span>

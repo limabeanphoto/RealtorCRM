@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { FaClock, FaPhone, FaAngleDown, FaAngleUp, FaTasks } from 'react-icons/fa';
 import theme from '../../styles/theme';
 import Button from '../common/Button';
+import { getOutcomeStyle } from '../../utils/badgeUtils';
 
 export default function MiniCallCard({ 
   call, 
@@ -27,20 +28,7 @@ export default function MiniCallCard({
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
   
-  // Get color based on outcome
-  const getOutcomeStyle = (outcome) => {
-    const styles = {
-      'Interested': { backgroundColor: '#d4edda', color: '#155724' },
-      'Not Interested': { backgroundColor: '#f8d7da', color: '#721c24' },
-      'Follow Up': { backgroundColor: '#fff3cd', color: '#856404' },
-      'No Answer': { backgroundColor: '#e2e3e5', color: '#383d41' },
-      'Left Message': { backgroundColor: '#cce5ff', color: '#004085' },
-      'Wrong Number': { backgroundColor: '#f8d7da', color: '#721c24' },
-      'Deal Closed': { backgroundColor: '#d4edda', color: '#155724' }
-    };
-    
-    return styles[outcome] || { backgroundColor: '#e2e3e5', color: '#383d41' };
-  };
+  // Using getOutcomeStyle from badgeUtils.js for consistency
   
   return (
     <div style={{ 
@@ -84,7 +72,8 @@ export default function MiniCallCard({
             padding: '0.2rem 0.4rem',
             borderRadius: '4px',
             fontSize: '0.75rem',
-            ...getOutcomeStyle(call.outcome)
+            backgroundColor: getOutcomeStyle(call.outcome).bg,
+            color: getOutcomeStyle(call.outcome).text
           }}>
             {call.outcome}
           </span>
