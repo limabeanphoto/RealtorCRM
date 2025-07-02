@@ -27,6 +27,13 @@ model Contact {
   profileLink     String?
   volume          String?
   region          String?
+
+  @@index([assignedTo])
+  @@index([status])
+  @@index([lastCallOutcome])
+  @@index([createdAt])
+  @@index([phone])
+  @@index([email])
 }
 
 model Call {
@@ -42,6 +49,13 @@ model Call {
   tasks           Task[]
   userId          String?
   user            User?     @relation(fields: [userId], references: [id])
+
+  @@index([contactId])
+  @@index([userId])
+  @@index([isDeal])
+  @@index([date])
+  @@index([outcome])
+  @@index([contactId, date])
 }
 
 model Task {
@@ -61,6 +75,14 @@ model Task {
   updatedAt       DateTime  @updatedAt
   userId          String?
   user            User?     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([contactId])
+  @@index([completed])
+  @@index([userId, status])
 }
 
 model User {
@@ -82,4 +104,7 @@ model User {
   dailyCallGoal        Int?      @default(30)
   dailyDealGoal        Int?      @default(5)
   dailyContactGoal     Int?      @default(10)    // New field for daily contact goal
+
+  @@index([role])
+  @@index([email])
 }

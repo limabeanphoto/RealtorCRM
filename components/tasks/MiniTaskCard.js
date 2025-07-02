@@ -59,8 +59,6 @@ const MiniTaskCard = ({ task, onEditTask, onStatusChange }) => {
     e.preventDefault(); // Prevent any default behavior
     
     // Debug logging
-    console.log('Edit button clicked for task:', task.id);
-    console.log('onEditTask function:', typeof onEditTask);
     
     if (!onEditTask) {
       console.error('onEditTask prop is not provided to MiniTaskCard');

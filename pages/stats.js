@@ -110,7 +110,6 @@ export default function Stats() {
         return
       }
       
-      console.log(`Fetching metrics from ${startDate} to ${endDate}`)
       
       const response = await fetch(`/api/stats/metrics?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`, {
         headers: {
@@ -125,7 +124,6 @@ export default function Stats() {
       const data = await response.json()
       
       if (data.success) {
-        console.log('Metrics data received:', data)
         setMetricsData({
           callsMetrics: data.callsMetrics || { total: 0, data: [] },
           dealsMetrics: data.dealsMetrics || { total: 0, data: [] },
@@ -159,7 +157,6 @@ export default function Stats() {
         return
       }
       
-      console.log(`Fetching ${type} data from ${startDate} to ${endDate}`)
       
       const response = await fetch(`/api/stats/raw-data?type=${type}&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`, {
         headers: {
@@ -174,7 +171,6 @@ export default function Stats() {
       const data = await response.json()
       
       if (data.success) {
-        console.log(`${type} data received:`, data)
         setRawData(prev => ({
           ...prev,
           [type]: data.data || [],
@@ -202,13 +198,11 @@ export default function Stats() {
   
   // Handle date range change
   const handleDateRangeChange = (range) => {
-    console.log('Date range changed to:', range)
     setDateRange(range)
   }
   
   // Handle custom date range change
   const handleCustomDateChange = (startDate, endDate) => {
-    console.log('Custom date range changed:', startDate, endDate)
     setCustomRange({ startDate, endDate })
     setDateRange('custom')
   }

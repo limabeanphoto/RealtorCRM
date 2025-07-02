@@ -3,7 +3,11 @@ import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
 
 /**
  * Authentication and authorization wrapper for API routes
@@ -72,7 +76,7 @@ export default function withAuth(handler, options = {}) {
       // Continue to handler
       return handler(req, res);
     } catch (error) {
-      console.error('Auth error:', error);
+      console.error('Auth error:', error.message);
       return res.status(500).json({ 
         success: false, 
         message: 'Authentication error'

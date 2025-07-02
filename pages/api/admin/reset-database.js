@@ -1,14 +1,23 @@
-// pages/api/admin/reset-database.js - FIXED VERSION
+// pages/api/admin/reset-database.js - SECURED VERSION
 import { PrismaClient } from '@prisma/client'
+import { withAdminAuth } from '../../../utils/withAuth'
 
 const prisma = new PrismaClient()
 
-export default async function handler(req, res) {
-  // Allow both GET and POST for easy browser access
-  if (req.method !== 'GET' && req.method !== 'POST') {
+async function handler(req, res) {
+  // Only allow POST requests for security
+  if (req.method !== 'POST') {
     return res.status(405).json({ 
       success: false, 
-      message: `Method ${req.method} not allowed` 
+      message: `Method ${req.method} not allowed. Use POST for security.` 
+    })
+  }
+
+  // Additional security check - require explicit confirmation
+  if (!req.body.confirm || req.body.confirm !== 'RESET_DATABASE') {
+    return res.status(400).json({
+      success: false,
+      message: 'Database reset requires explicit confirmation. Send { "confirm": "RESET_DATABASE" } in request body.'
     })
   }
 
@@ -177,148 +186,19 @@ export default async function handler(req, res) {
       }
     })
 
-    // Return success page
-    if (req.method === 'GET') {
-      return res.status(200).send(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Database Reset Complete</title>
-          <style>
-            body { 
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-              max-width: 900px; 
-              margin: 50px auto; 
-              padding: 20px; 
-              background-color: #f5f7fa;
-              line-height: 1.6;
-            }
-            .container { 
-              background: white; 
-              padding: 40px; 
-              border-radius: 12px; 
-              box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            }
-            .success { 
-              color: #155724; 
-              background-color: #d4edda; 
-              border: 1px solid #c3e6cb; 
-              padding: 20px; 
-              border-radius: 8px; 
-              margin-bottom: 30px;
-              border-left: 5px solid #28a745;
-            }
-            .user-card {
-              background-color: #f8f9fa;
-              padding: 20px;
-              margin: 15px 0;
-              border-radius: 8px;
-              border-left: 4px solid #8F9F3B;
-            }
-            .credentials {
-              background: #fff3cd;
-              padding: 20px;
-              border-radius: 8px;
-              margin: 20px 0;
-              border-left: 4px solid #ffc107;
-            }
-            .login-info {
-              font-family: monospace;
-              background: #f8f9fa;
-              padding: 10px;
-              border-radius: 4px;
-              margin: 10px 0;
-            }
-            h1 { color: #2c3e50; margin-bottom: 10px; }
-            h2 { color: #34495e; margin-top: 30px; }
-            h3 { color: #2c3e50; margin-bottom: 10px; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h1>🎉 Database Reset Complete!</h1>
-            
-            <div class="success">
-              <h3>✅ Success!</h3>
-              <p><strong>Database has been completely reset and recreated with the correct schema!</strong></p>
-              <ul>
-                <li>All tables dropped and recreated</li>
-                <li>All goal fields added to User table (including dailyContactGoal)</li>
-                <li>New contact fields added (profileLink, volume, region)</li>
-                <li>Sample users created with all goal fields</li>
-                <li>Database is now ready to use</li>
-              </ul>
-            </div>
-            
-            <div class="credentials">
-              <h3>🔑 Login Credentials</h3>
-              <p><strong>You can now log in with these test accounts:</strong></p>
-              
-              <div class="login-info">
-                <strong>Admin Account:</strong><br>
-                Email: admin@company.com<br>
-                Password: admin123
-              </div>
-              
-              <div class="login-info">
-                <strong>Member Account:</strong><br>
-                Email: member@company.com<br>
-                Password: member123
-              </div>
-            </div>
-            
-            <h2>👥 Created Users (${userCount} total):</h2>
-            ${users.map(user => `
-              <div class="user-card">
-                <h3>${user.firstName} ${user.lastName} (${user.role})</h3>
-                <p><strong>Email:</strong> ${user.email}</p>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
-                  <div><strong>Daily Calls:</strong> ${user.dailyCallGoal}</div>
-                  <div><strong>Daily Deals:</strong> ${user.dailyDealGoal}</div>
-                  <div><strong>Daily Contacts:</strong> ${user.dailyContactGoal}</div>
-                  <div><strong>Weekly Contacts:</strong> ${user.weeklyContactGoal}</div>
-                  <div><strong>Monthly Revenue:</strong> $${user.monthlyRevenueGoal}</div>
-                </div>
-              </div>
-            `).join('')}
-            
-            <div style="margin-top: 40px; padding: 20px; background: #e3f2fd; border-radius: 8px;">
-              <h3>🚀 Next Steps:</h3>
-              <ol>
-                <li><strong>Go to your app login page</strong></li>
-                <li><strong>Log in</strong> with admin@company.com / admin123</li>
-                <li><strong>Test the dashboard</strong> - all goal fields should now work</li>
-                <li><strong>Test the settings page</strong> - you should be able to set daily contact goals</li>
-                <li><strong>Update passwords</strong> in Settings</li>
-                <li><strong>Create real user accounts</strong> via Admin > Manage Users</li>
-              </ol>
-            </div>
-            
-            <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 8px; font-size: 0.9rem; color: #666;">
-              <strong>Fixed Issues:</strong>
-              <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Added missing dailyContactGoal column to User table</li>
-                <li>Updated user creation to include all goal fields</li>
-                <li>Ensured schema matches your Prisma model</li>
-                <li>All dashboard goal tracking should now work properly</li>
-              </ul>
-            </div>
-          </div>
-        </body>
-        </html>
-      `)
-    }
-
     return res.status(200).json({
       success: true,
       message: 'Database reset and recreated successfully with all fields',
       data: {
         usersCreated: userCount,
-        users: users,
-        loginCredentials: {
-          admin: { email: 'admin@company.com', password: 'admin123' },
-          member: { email: 'member@company.com', password: 'member123' }
-        }
+        users: users.map(user => ({
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role
+        })),
+        note: 'Default test accounts created. Change passwords immediately.'
       }
     })
 
@@ -327,31 +207,13 @@ export default async function handler(req, res) {
     
     const errorMessage = `Database reset failed: ${error.message}`
     
-    if (req.method === 'GET') {
-      return res.status(500).send(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Database Reset Error</title>
-          <style>
-            body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
-            .error { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 4px; }
-          </style>
-        </head>
-        <body>
-          <h1>❌ Database Reset Error</h1>
-          <div class="error">
-            <strong>Error:</strong> ${errorMessage}
-          </div>
-          <p>Please check the Vercel function logs for more details.</p>
-        </body>
-        </html>
-      `)
-    }
-    
     return res.status(500).json({
       success: false,
-      message: errorMessage
+      message: 'Database reset failed',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     })
   }
 }
+
+// Export with admin authentication wrapper
+export default withAdminAuth(handler)

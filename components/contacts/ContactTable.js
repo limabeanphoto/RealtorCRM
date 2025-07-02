@@ -1,5 +1,5 @@
-// components/contacts/ContactTable.js - Complete with all visual tweaks
-import React, { useState } from 'react';
+// components/contacts/ContactTable.js - Optimized with React.memo and performance improvements
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { 
   FaSearch, 
   FaFilter, 
@@ -14,7 +14,7 @@ import ContactRow from './ContactRow';
 import Button from '../common/Button';
 import BulkReassignModal from './BulkReassignModal';
 
-const ContactTable = ({
+const ContactTable = memo(({
   contacts,
   onEditContact,
   onLogCall,
@@ -75,68 +75,70 @@ const ContactTable = ({
     }
   };
 
-  // Apply filters and search to contacts
-  const filteredContacts = contacts.filter(contact => {
-    const searchMatch = searchTerm === '' || 
-      (contact.name && contact.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (contact.email && contact.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (contact.phone && contact.phone.includes(searchTerm)) ||
-      (contact.company && contact.company.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (contact.region && contact.region.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    // Hide "Not Interested" contacts from "All Contacts" filter
-    if (selectedFilter === 'all' && contact.lastCallOutcome === 'Not Interested') {
-      return false;
-    }
-    
-    const filter = filterOptions.find(f => f.id === selectedFilter);
-    const filterMatch = selectedFilter === 'all' || 
-      (filter.callOutcome && contact.lastCallOutcome === filter.callOutcome);
-    
-    return searchMatch && filterMatch;
-  });
+  // Memoized filtered contacts for performance
+  const filteredContacts = useMemo(() => {
+    return contacts.filter(contact => {
+      const searchMatch = searchTerm === '' || 
+        (contact.name && contact.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (contact.email && contact.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (contact.phone && contact.phone.includes(searchTerm)) ||
+        (contact.company && contact.company.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (contact.region && contact.region.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      // Hide "Not Interested" contacts from "All Contacts" filter
+      if (selectedFilter === 'all' && contact.lastCallOutcome === 'Not Interested') {
+        return false;
+      }
+      
+      const filter = filterOptions.find(f => f.id === selectedFilter);
+      const filterMatch = selectedFilter === 'all' || 
+        (filter.callOutcome && contact.lastCallOutcome === filter.callOutcome);
+      
+      return searchMatch && filterMatch;
+    });
+  }, [contacts, searchTerm, selectedFilter]);
 
-  // Sort contacts
-  const sortedContacts = [...filteredContacts].sort((a, b) => {
-    let aValue = a[sortField] || '';
-    let bValue = b[sortField] || '';
-    
-    // Special handling for assignedTo field
-    if (sortField === 'assignedTo') {
-      aValue = getOwnerDisplay(a);
-      bValue = getOwnerDisplay(b);
-    }
+  // Memoized sorted contacts for performance
+  const sortedContacts = useMemo(() => {
+    return [...filteredContacts].sort((a, b) => {
+      let aValue = a[sortField] || '';
+      let bValue = b[sortField] || '';
+      
+      // Special handling for assignedTo field
+      if (sortField === 'assignedTo') {
+        aValue = getOwnerDisplay(a);
+        bValue = getOwnerDisplay(b);
+      }
 
-    if (sortDirection === 'asc') {
-      return aValue.toString().localeCompare(bValue.toString());
-    } else {
-      return bValue.toString().localeCompare(aValue.toString());
-    }
-  });
+      if (sortDirection === 'asc') {
+        return aValue.toString().localeCompare(bValue.toString());
+      } else {
+        return bValue.toString().localeCompare(aValue.toString());
+      }
+    });
+  }, [filteredContacts, sortField, sortDirection]);
 
-  // Handle sort
-  const handleSort = (field) => {
+  // Memoized callback functions for performance
+  const handleSort = useCallback((field) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setSortField(field);
       setSortDirection('asc');
     }
-  };
+  }, [sortField, sortDirection]);
 
-  // Toggle contact expansion
-  const toggleExpand = (contactId) => {
+  const toggleExpand = useCallback((contactId) => {
     setExpandedContactId(expandedContactId === contactId ? null : contactId);
-  };
+  }, [expandedContactId]);
 
-  // Handle select all
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     if (selectedContacts.size === sortedContacts.length) {
       setSelectedContacts(new Set());
     } else {
       setSelectedContacts(new Set(sortedContacts.map(contact => contact.id)));
     }
-  };
+  }, [selectedContacts.size, sortedContacts]);
 
   // Handle individual contact selection
   const handleSelectContact = (contactId) => {
@@ -572,6 +574,8 @@ const ContactTable = ({
       )}
     </div>
   );
-};
+});
+
+ContactTable.displayName = 'ContactTable';
 
 export default ContactTable;

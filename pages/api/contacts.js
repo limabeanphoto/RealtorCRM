@@ -1,6 +1,8 @@
 // pages/api/contacts.js
 import { PrismaClient } from '@prisma/client'
 import withAuth from '../../utils/withAuth'
+import { withSecurity } from '../../utils/rateLimiter'
+import { withValidation } from '../../utils/validation'
 
 const prisma = new PrismaClient()
 
@@ -8,8 +10,20 @@ async function handler(req, res) {
   // Handle different HTTP methods
   if (req.method === 'GET') {
     try {
-      // Get query parameters for filtering
-      const { status, assignedTo, lastCallOutcome } = req.query
+      // Get query parameters for filtering and pagination
+      const { 
+        status, 
+        assignedTo, 
+        lastCallOutcome, 
+        page = 1, 
+        limit = 50,
+        search = ''
+      } = req.query
+      
+      // Validate pagination parameters
+      const pageNum = Math.max(1, parseInt(page) || 1)
+      const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 50)) // Max 100 items per page
+      const offset = (pageNum - 1) * limitNum
       
       // Build query conditions based on user role
       const where = {}
@@ -70,8 +84,35 @@ async function handler(req, res) {
           where.assignedTo = assignedTo
         }
       }
+
+      // Add search functionality
+      if (search) {
+        const searchConditions = {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } },
+            { phone: { contains: search } },
+            { company: { contains: search, mode: 'insensitive' } },
+            { region: { contains: search, mode: 'insensitive' } }
+          ]
+        }
+        
+        // Combine with existing where conditions
+        if (where.OR) {
+          where.AND = [
+            { OR: where.OR },
+            searchConditions
+          ]
+          delete where.OR
+        } else {
+          Object.assign(where, searchConditions)
+        }
+      }
+
+      // Get total count for pagination
+      const totalCount = await prisma.contact.count({ where })
       
-      // Get contacts with filtering and include tasks
+      // Get contacts with filtering, pagination and include tasks
       const contacts = await prisma.contact.findMany({
         where,
         include: {
@@ -100,10 +141,28 @@ async function handler(req, res) {
         },
         orderBy: {
           createdAt: 'desc'
+        },
+        skip: offset,
+        take: limitNum
+      })
+
+      // Calculate pagination metadata
+      const totalPages = Math.ceil(totalCount / limitNum)
+      const hasNextPage = pageNum < totalPages
+      const hasPreviousPage = pageNum > 1
+      
+      return res.status(200).json({ 
+        success: true, 
+        data: contacts,
+        pagination: {
+          currentPage: pageNum,
+          totalPages,
+          totalCount,
+          hasNextPage,
+          hasPreviousPage,
+          pageSize: limitNum
         }
       })
-      
-      return res.status(200).json({ success: true, data: contacts })
     } catch (error) {
       console.error('Error fetching contacts:', error)
       return res.status(500).json({ success: false, message: 'Error fetching contacts: ' + error.message })
@@ -175,4 +234,12 @@ async function handler(req, res) {
   }
 }
 
-export default withAuth(handler)
+// Combine validation and security middleware
+const secureHandler = withSecurity(handler, {
+  rateLimit: true,
+  rateLimitType: 'api',
+  auth: true,
+  validation: 'contact'
+})
+
+export default secureHandler

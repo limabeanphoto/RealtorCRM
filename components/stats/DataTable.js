@@ -245,27 +245,12 @@ export default function DataTable({ data, type }) {
       document.body.removeChild(link)
     }
   
-    // Export data as Excel
-    const exportExcel = async (data, filename) => {
+    // Export data as Excel - Using CSV format for security
+    const exportExcel = (data, filename) => {
       if (data.length === 0) return
       
-      try {
-        // Dynamically import xlsx
-        const XLSX = await import('xlsx')
-        
-        // Convert data to worksheet
-        const worksheet = XLSX.utils.json_to_sheet(data)
-        
-        // Create workbook and add worksheet
-        const workbook = XLSX.utils.book_new()
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Data')
-        
-        // Generate Excel file and download
-        XLSX.writeFile(workbook, `${filename}.xlsx`)
-      } catch (error) {
-        console.error('Error exporting Excel:', error)
-        alert('Error exporting to Excel. Please try CSV instead.')
-      }
+      // For security, we'll export as CSV instead of Excel
+      exportCSV(data, filename)
     }
   
     const columns = getColumns()
@@ -301,7 +286,7 @@ export default function DataTable({ data, type }) {
               cursor: 'pointer'
             }}
           >
-            Export as Excel
+            Export CSV (Excel Compatible)
           </button>
         </div>
   
