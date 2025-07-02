@@ -1,5 +1,5 @@
 import React from 'react';
-import { useForm } from '../common/useForm';
+import { useForm } from '../../utils/useForm';
 import Button from '../common/Button';
 import theme from '../../styles/theme';
 
