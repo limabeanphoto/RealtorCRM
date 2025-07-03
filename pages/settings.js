@@ -267,7 +267,9 @@ const SettingsForm = () => {
           // Store goals in localStorage for dashboard access - REMOVED unused fields
           dailyCallGoal: formData.dailyCallGoal,
           dailyDealGoal: formData.dailyDealGoal,
-          dailyContactGoal: formData.dailyContactGoal
+          dailyContactGoal: formData.dailyContactGoal,
+          // Store OpenPhone API key for click-to-call functionality
+          openPhoneApiKey: formData.openPhoneApiKey
         };
         localStorage.setItem('user', JSON.stringify(updatedUser));
         
