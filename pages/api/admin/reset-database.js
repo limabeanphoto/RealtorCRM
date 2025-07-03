@@ -49,8 +49,6 @@ async function handler(req, res) {
         "dailyCallGoal" INTEGER DEFAULT 30,
         "dailyDealGoal" INTEGER DEFAULT 5,
         "dailyContactGoal" INTEGER DEFAULT 10,
-        "weeklyContactGoal" INTEGER DEFAULT 150,
-        "monthlyRevenueGoal" INTEGER DEFAULT 10000,
         "openPhoneApiKey" TEXT
       );
     `
@@ -142,9 +140,7 @@ async function handler(req, res) {
         role: 'admin',
         dailyCallGoal: 50,
         dailyDealGoal: 8,
-        dailyContactGoal: 15, // Now this field exists!
-        weeklyContactGoal: 200,
-        monthlyRevenueGoal: 15000
+        dailyContactGoal: 15
       }
     })
 
@@ -162,9 +158,7 @@ async function handler(req, res) {
         role: 'member',
         dailyCallGoal: 30,
         dailyDealGoal: 5,
-        dailyContactGoal: 10, // Now this field exists!
-        weeklyContactGoal: 150,
-        monthlyRevenueGoal: 10000
+        dailyContactGoal: 10
       }
     })
 
@@ -181,9 +175,7 @@ async function handler(req, res) {
         role: true,
         dailyCallGoal: true,
         dailyDealGoal: true,
-        dailyContactGoal: true, // Include the new field in the response
-        weeklyContactGoal: true,
-        monthlyRevenueGoal: true
+        dailyContactGoal: true
       }
     })
 
