@@ -308,8 +308,8 @@ class OpenPhoneClient {
   generateClickToCallUrl(phoneNumber, phoneNumberId = null) {
     const formattedNumber = this.formatPhoneNumber(phoneNumber);
     
-    // Use tel: protocol for better compatibility with Windows OpenPhone app
-    return `tel:${formattedNumber}`;
+    // Use OpenPhone's custom protocol for direct app launching
+    return `openphone://dial?number=${encodeURIComponent(formattedNumber)}&action=call`;
   }
 }
 
