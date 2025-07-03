@@ -11,6 +11,7 @@ import {
 import theme from '../../styles/theme';
 import Button from '../common/Button';
 import { getOutcomeStyle, getVolumeStyle, getStatusStyle } from '../../utils/badgeUtils';
+import ClickToCallButton from '../openphone/ClickToCallButton';
 
 // Using badge utilities from badgeUtils.js for consistency
 // Wrapper functions to handle case differences and maintain compatibility
@@ -195,10 +196,13 @@ export default function MiniContactCard({
               </div>
             )}
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>
-              <FaPhone size={12} />
-              {contact.phone}
-            </div>
+            <ClickToCallButton
+              contactId={contact.id}
+              phoneNumber={contact.phone}
+              size={12}
+              compact={true}
+              style={{ marginBottom: '0.25rem' }}
+            />
             
             {contact.email && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>

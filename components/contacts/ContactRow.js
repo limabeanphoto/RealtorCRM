@@ -15,6 +15,7 @@ import {
 import theme from '../../styles/theme';
 import MiniCallCard from '../calls/MiniCallCard';
 import MiniTaskCard from '../tasks/MiniTaskCard';
+import ClickToCallButton from '../openphone/ClickToCallButton';
 
 // Portal component for rendering dropdowns
 const Portal = ({ children }) => {
@@ -444,19 +445,18 @@ const ContactRow = ({
         
         {/* Contact Info */}
         <div onClick={onToggleExpand}>
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '0.4rem', 
-            marginBottom: '0.2rem',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
-          }} 
-          title={`Phone: ${contact.phone}`}>
-            <FaPhone size={12} color={theme.colors.brand.text} />
-            {contact.phone}
-          </div>
+          <ClickToCallButton
+            contactId={contact.id}
+            phoneNumber={contact.phone}
+            size={12}
+            compact={true}
+            style={{
+              marginBottom: '0.2rem',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          />
           {contact.email && (
             <div style={{ 
               display: 'flex', 
@@ -912,7 +912,12 @@ const ContactRow = ({
                   <div style={{ fontWeight: 'bold', marginBottom: '0.25rem', fontSize: '0.9rem', color: theme.colors.brand.text }}>
                     Phone
                   </div>
-                  <div>{contact.phone}</div>
+                  <ClickToCallButton
+                    contactId={contact.id}
+                    phoneNumber={contact.phone}
+                    size={14}
+                    compact={false}
+                  />
                 </div>
                 
                 {contact.email && (

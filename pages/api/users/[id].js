@@ -36,7 +36,11 @@ async function handler(req, res) {
           assignedCallNumber: true,
           role: true,
           createdAt: true,
-          lastLoginAt: true
+          lastLoginAt: true,
+          dailyCallGoal: true,
+          dailyDealGoal: true,
+          dailyContactGoal: true,
+          openPhoneApiKey: true
         }
       })
       
@@ -58,7 +62,21 @@ async function handler(req, res) {
     }
     
     try {
-      const { email, password, firstName, lastName, cellPhone, assignedCallNumber, role } = req.body
+      const { 
+        email, 
+        password, 
+        currentPassword,
+        newPassword,
+        firstName, 
+        lastName, 
+        cellPhone, 
+        assignedCallNumber, 
+        role,
+        dailyCallGoal,
+        dailyDealGoal,
+        dailyContactGoal,
+        openPhoneApiKey
+      } = req.body
       
       // Prepare data object for update
       const updateData = {}
@@ -67,6 +85,14 @@ async function handler(req, res) {
       if (firstName) updateData.firstName = firstName
       if (lastName) updateData.lastName = lastName
       if (cellPhone !== undefined) updateData.cellPhone = cellPhone
+      
+      // Handle goal fields
+      if (dailyCallGoal !== undefined) updateData.dailyCallGoal = dailyCallGoal
+      if (dailyDealGoal !== undefined) updateData.dailyDealGoal = dailyDealGoal
+      if (dailyContactGoal !== undefined) updateData.dailyContactGoal = dailyContactGoal
+      
+      // Handle OpenPhone API key
+      if (openPhoneApiKey !== undefined) updateData.openPhoneApiKey = openPhoneApiKey
       
       // Only admins can update these fields
       if (canUpdateAssignedNumber && assignedCallNumber !== undefined) {
@@ -77,8 +103,27 @@ async function handler(req, res) {
         updateData.role = role
       }
       
-      // Hash password if it's being updated
-      if (password) {
+      // Handle password changes - support both old and new formats
+      if (newPassword && currentPassword) {
+        // Verify current password
+        const user = await prisma.user.findUnique({
+          where: { id },
+          select: { passwordHash: true }
+        })
+        
+        if (!user) {
+          return res.status(404).json({ success: false, message: 'User not found' })
+        }
+        
+        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash)
+        if (!isCurrentPasswordValid) {
+          return res.status(400).json({ success: false, message: 'Current password is incorrect' })
+        }
+        
+        const salt = await bcrypt.genSalt(10)
+        updateData.passwordHash = await bcrypt.hash(newPassword, salt)
+      } else if (password) {
+        // Legacy password update (for admin use)
         const salt = await bcrypt.genSalt(10)
         updateData.passwordHash = await bcrypt.hash(password, salt)
       }
@@ -96,7 +141,11 @@ async function handler(req, res) {
           assignedCallNumber: true,
           role: true,
           createdAt: true,
-          lastLoginAt: true
+          lastLoginAt: true,
+          dailyCallGoal: true,
+          dailyDealGoal: true,
+          dailyContactGoal: true,
+          openPhoneApiKey: true
         }
       })
       

@@ -1,8 +1,7 @@
 // Updated prisma/schema.prisma with daily contact goal field
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL") // Primary connection string for Prisma
-  directUrl = env("POSTGRES_URL_NON_POOLING") // Direct connection for migrations
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -104,6 +103,9 @@ model User {
   dailyCallGoal        Int?      @default(30)
   dailyDealGoal        Int?      @default(5)
   dailyContactGoal     Int?      @default(10)    // New field for daily contact goal
+  
+  // OpenPhone Integration
+  openPhoneApiKey      String?   // OpenPhone API key for VOIP integration
 
   @@index([role])
   @@index([email])

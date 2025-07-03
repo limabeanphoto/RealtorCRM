@@ -11,7 +11,11 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(npm run build:*)",
-      "Bash(timeout 30s npm run build)"
+      "Bash(timeout 30s npm run build)",
+      "WebFetch(domain:docs.openphone.com)",
+      "WebFetch(domain:www.openphone.com)",
+      "WebFetch(domain:www.openphone.com)",
+      "Bash(npx prisma:*)"
     ],
     "deny": []
   }

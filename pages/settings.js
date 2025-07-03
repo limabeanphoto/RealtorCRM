@@ -29,7 +29,9 @@ const SettingsForm = () => {
     // Goal fields - REMOVED weeklyContactGoal and monthlyRevenueGoal
     dailyCallGoal: 30,
     dailyDealGoal: 5,
-    dailyContactGoal: 10
+    dailyContactGoal: 10,
+    // OpenPhone Integration
+    openPhoneApiKey: ''
   });
 
   const [originalData, setOriginalData] = useState({});
@@ -70,7 +72,9 @@ const SettingsForm = () => {
               // Goals from API or fallback to defaults - REMOVED unused fields
               dailyCallGoal: data.data.dailyCallGoal || userData.dailyCallGoal || 30,
               dailyDealGoal: data.data.dailyDealGoal || userData.dailyDealGoal || 5,
-              dailyContactGoal: data.data.dailyContactGoal || userData.dailyContactGoal || 10
+              dailyContactGoal: data.data.dailyContactGoal || userData.dailyContactGoal || 10,
+              // OpenPhone Integration
+              openPhoneApiKey: data.data.openPhoneApiKey || ''
             };
             
             setFormData(prev => ({ 
@@ -88,7 +92,8 @@ const SettingsForm = () => {
               cellPhone: userData.cellPhone || '',
               dailyCallGoal: userData.dailyCallGoal || 30,
               dailyDealGoal: userData.dailyDealGoal || 5,
-              dailyContactGoal: userData.dailyContactGoal || 10
+              dailyContactGoal: userData.dailyContactGoal || 10,
+              openPhoneApiKey: userData.openPhoneApiKey || ''
             };
             
             setFormData(prev => ({
@@ -108,7 +113,8 @@ const SettingsForm = () => {
             cellPhone: userData.cellPhone || '',
             dailyCallGoal: userData.dailyCallGoal || 30,
             dailyDealGoal: userData.dailyDealGoal || 5,
-            dailyContactGoal: userData.dailyContactGoal || 10
+            dailyContactGoal: userData.dailyContactGoal || 10,
+            openPhoneApiKey: userData.openPhoneApiKey || ''
           };
           
           setFormData(prev => ({
@@ -201,7 +207,8 @@ const SettingsForm = () => {
       formData.cellPhone !== originalData.cellPhone ||
       formData.dailyCallGoal !== originalData.dailyCallGoal ||
       formData.dailyDealGoal !== originalData.dailyDealGoal ||
-      formData.dailyContactGoal !== originalData.dailyContactGoal;
+      formData.dailyContactGoal !== originalData.dailyContactGoal ||
+      formData.openPhoneApiKey !== originalData.openPhoneApiKey;
       
     const hasPasswordChange = !!formData.newPassword;
     
@@ -228,6 +235,9 @@ const SettingsForm = () => {
       if (formData.dailyCallGoal !== originalData.dailyCallGoal) updateData.dailyCallGoal = formData.dailyCallGoal;
       if (formData.dailyDealGoal !== originalData.dailyDealGoal) updateData.dailyDealGoal = formData.dailyDealGoal;
       if (formData.dailyContactGoal !== originalData.dailyContactGoal) updateData.dailyContactGoal = formData.dailyContactGoal;
+      
+      // Add OpenPhone API key
+      if (formData.openPhoneApiKey !== originalData.openPhoneApiKey) updateData.openPhoneApiKey = formData.openPhoneApiKey;
       
       // Add password fields if changing password
       if (hasPasswordChange) {
@@ -272,7 +282,8 @@ const SettingsForm = () => {
           cellPhone: formData.cellPhone,
           dailyCallGoal: formData.dailyCallGoal,
           dailyDealGoal: formData.dailyDealGoal,
-          dailyContactGoal: formData.dailyContactGoal
+          dailyContactGoal: formData.dailyContactGoal,
+          openPhoneApiKey: formData.openPhoneApiKey
         });
         
         // Clear password fields
@@ -536,6 +547,56 @@ const SettingsForm = () => {
               Set realistic but challenging goals. These targets will show up on your dashboard to help track your daily progress.
             </p>
           </div>
+        </div>
+
+        {/* OpenPhone Integration Section */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h2>OpenPhone Integration</h2>
+          <p style={{ color: theme.colors.brand.text, fontSize: '0.9rem', marginBottom: '1rem' }}>
+            Connect your OpenPhone account to enable click-to-call, automated call logging, and SMS features.
+          </p>
+          
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="openPhoneApiKey" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+              OpenPhone API Key
+            </label>
+            <input
+              type="password"
+              id="openPhoneApiKey"
+              name="openPhoneApiKey"
+              value={formData.openPhoneApiKey}
+              onChange={handleChange}
+              placeholder="Enter your OpenPhone API key..."
+              style={{ 
+                width: '100%', 
+                padding: '0.75rem',
+                borderRadius: theme.borderRadius.sm,
+                border: '1px solid #ddd',
+                fontFamily: 'monospace'
+              }}
+            />
+            <small style={{ color: theme.colors.brand.text, fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
+              Get your API key from your OpenPhone dashboard under Settings → API
+            </small>
+          </div>
+          
+          {formData.openPhoneApiKey && (
+            <div style={{
+              padding: '0.75rem',
+              backgroundColor: '#f0f9ff',
+              borderRadius: theme.borderRadius.sm,
+              marginTop: '1rem',
+              fontSize: '0.9rem'
+            }}>
+              <p style={{ margin: '0', fontWeight: 'bold', color: '#0c5460' }}>🔗 OpenPhone Features Enabled:</p>
+              <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.5rem', color: '#0c5460' }}>
+                <li>Click-to-call from contact records</li>
+                <li>Automatic call logging to CRM</li>
+                <li>Post-call notes and follow-up</li>
+                <li>SMS integration</li>
+              </ul>
+            </div>
+          )}
         </div>
         
         <div style={{ marginBottom: '1.5rem' }}>
