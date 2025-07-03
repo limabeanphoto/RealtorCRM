@@ -1,8 +1,6 @@
 // pages/api/contacts.js
 import { PrismaClient } from '@prisma/client'
 import withAuth from '../../utils/withAuth'
-import { withSecurity } from '../../utils/rateLimiter'
-import { withValidation } from '../../utils/validation'
 
 const prisma = new PrismaClient()
 
@@ -165,7 +163,16 @@ async function handler(req, res) {
       })
     } catch (error) {
       console.error('Error fetching contacts:', error)
-      return res.status(500).json({ success: false, message: 'Error fetching contacts: ' + error.message })
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      })
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error fetching contacts: ' + error.message,
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      })
     }
   } 
   
@@ -224,7 +231,16 @@ async function handler(req, res) {
       return res.status(201).json({ success: true, data: newContact })
     } catch (error) {
       console.error('Error creating contact:', error)
-      return res.status(500).json({ success: false, message: error.message })
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      })
+      return res.status(500).json({ 
+        success: false, 
+        message: error.message,
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      })
     }
   } 
   
@@ -234,12 +250,5 @@ async function handler(req, res) {
   }
 }
 
-// Combine validation and security middleware - TEMPORARILY SIMPLIFIED
-const secureHandler = withSecurity(handler, {
-  rateLimit: false, // Disable rate limiting temporarily
-  rateLimitType: 'api',
-  auth: true,
-  validation: null // Disable validation temporarily
-})
-
-export default secureHandler
+// Use simple auth wrapper
+export default withAuth(handler)
