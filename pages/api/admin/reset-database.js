@@ -50,7 +50,8 @@ async function handler(req, res) {
         "dailyDealGoal" INTEGER DEFAULT 5,
         "dailyContactGoal" INTEGER DEFAULT 10,
         "weeklyContactGoal" INTEGER DEFAULT 150,
-        "monthlyRevenueGoal" INTEGER DEFAULT 10000
+        "monthlyRevenueGoal" INTEGER DEFAULT 10000,
+        "openPhoneApiKey" TEXT
       );
     `
 
@@ -210,7 +211,8 @@ async function handler(req, res) {
     return res.status(500).json({
       success: false,
       message: 'Database reset failed',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+      error: error.message, // Always show error for debugging
+      stack: error.stack
     })
   }
 }
