@@ -227,65 +227,89 @@ class OpenPhoneService {
       
       const callData = data;
       
-      // Find contact by phone number
+      // Only process outbound calls (system-initiated)
+      if (callData.direction !== 'outbound') {
+        return { success: true, message: 'Not an outbound call, skipping' };
+      }
+      
+      // Find matching pending call using phone number and timestamp
+      const callStartTime = new Date(callData.startedAt || callData.createdAt);
       const phoneNumber = callData.to || callData.from;
-      let contact = await prisma.contact.findFirst({
-        where: { 
-          phone: phoneNumber,
-          assignedTo: this.userId
+      
+      // Look for pending calls within ±60 seconds of call start time
+      const matchingPendingCall = await prisma.pendingCall.findFirst({
+        where: {
+          phoneNumber: phoneNumber,
+          status: 'initiated',
+          initiatedAt: {
+            gte: new Date(callStartTime.getTime() - 60000), // 60 seconds before
+            lte: new Date(callStartTime.getTime() + 60000)  // 60 seconds after
+          }
+        },
+        include: {
+          contact: true,
+          user: true
+        },
+        orderBy: {
+          initiatedAt: 'desc' // Get the most recent matching call
         }
       });
       
-      // Create contact if not found
-      if (!contact && phoneNumber) {
-        contact = await prisma.contact.create({
-          data: {
-            name: `Contact ${phoneNumber}`,
-            phone: phoneNumber,
-            assignedTo: this.userId,
-            notes: 'Auto-created from OpenPhone call'
-          }
+      if (!matchingPendingCall) {
+        logWarning('No matching pending call found for webhook', { 
+          phoneNumber, 
+          callStartTime: callStartTime.toISOString(),
+          openPhoneCallId: callData.id 
         });
+        return { success: false, error: 'No matching pending call found' };
       }
       
-      if (!contact) {
-        logWarning('Could not find or create contact for call', { phoneNumber });
-        return { success: false, error: 'Could not find or create contact' };
-      }
+      // Update pending call with OpenPhone call ID and completion status
+      await prisma.pendingCall.update({
+        where: { id: matchingPendingCall.id },
+        data: {
+          openPhoneCallId: callData.id,
+          status: 'completed',
+          completedAt: new Date(callData.endedAt || callData.completedAt || new Date())
+        }
+      });
       
       // Create call record
       const call = await prisma.call.create({
         data: {
-          contactId: contact.id,
-          userId: this.userId,
+          contactId: matchingPendingCall.contactId,
+          userId: matchingPendingCall.userId,
           date: new Date(callData.startedAt || callData.createdAt),
           duration: Math.round((callData.duration || 0) / 60), // Convert seconds to minutes
-          notes: `OpenPhone Call ID: ${callData.id}\nDirection: ${callData.direction || 'unknown'}`,
-          outcome: callData.direction === 'inbound' ? 'Received Call' : 'Made Call',
+          notes: `OpenPhone Call ID: ${callData.id}\nPending Call ID: ${matchingPendingCall.id}`,
+          outcome: this.determineCallOutcome(callData),
           isDeal: false
         }
       });
       
       // Update contact's last call info
       await prisma.contact.update({
-        where: { id: contact.id },
+        where: { id: matchingPendingCall.contactId },
         data: {
           lastCallDate: new Date(callData.startedAt || callData.createdAt),
           lastCallOutcome: call.outcome
         }
       });
       
-      logInfo('Call logged from OpenPhone webhook', {
+      logInfo('System-initiated call logged from OpenPhone webhook', {
         callId: call.id,
-        contactId: contact.id,
-        openPhoneCallId: callData.id
+        contactId: matchingPendingCall.contactId,
+        openPhoneCallId: callData.id,
+        pendingCallId: matchingPendingCall.id,
+        duration: callData.duration
       });
       
       return { 
         success: true, 
         data: { 
           call,
-          contact,
+          contact: matchingPendingCall.contact,
+          pendingCall: matchingPendingCall,
           shouldShowPopup: true // Indicate to show post-call popup
         }
       };
@@ -294,6 +318,24 @@ class OpenPhoneService {
       logError('Error logging call from webhook', error);
       return { success: false, error: error.message };
     }
+  }
+  
+  // Helper method to determine call outcome based on OpenPhone data
+  determineCallOutcome(callData) {
+    const duration = callData.duration || 0;
+    
+    // Very short calls (< 10 seconds) likely went to voicemail or weren't answered
+    if (duration < 10) {
+      return 'No Answer / Voicemail';
+    }
+    
+    // Short calls (10-30 seconds) might be brief pickups or quick voicemails
+    if (duration < 30) {
+      return 'Brief Contact';
+    }
+    
+    // Longer calls indicate actual conversation
+    return 'Connected';
   }
   
   async updateCallWithNotes(callId, notes, outcome, isDeal = false) {
@@ -379,20 +421,24 @@ class OpenPhoneService {
         
         const url = this.client.generateClickToCallUrl(contact.phone);
         
-        // Log the call attempt
-        await prisma.call.create({
+        // Create pending call record for webhook matching
+        const pendingCall = await prisma.pendingCall.create({
           data: {
             contactId: contactId,
             userId: this.userId,
-            date: new Date(),
-            duration: 0,
-            notes: 'Click-to-call initiated',
-            outcome: 'Call Attempted',
-            isDeal: false
+            phoneNumber: contact.phone,
+            initiatedAt: new Date(),
+            status: 'initiated'
           }
         });
         
-        resolve({ success: true, url });
+        logInfo('Pending call created', {
+          pendingCallId: pendingCall.id,
+          contactId,
+          phoneNumber: contact.phone
+        });
+        
+        resolve({ success: true, url, pendingCallId: pendingCall.id });
       } catch (error) {
         logError('Error generating click-to-call URL', error);
         reject({ success: false, error: error.message });

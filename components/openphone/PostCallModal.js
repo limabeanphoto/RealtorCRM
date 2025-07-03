@@ -114,10 +114,11 @@ const PostCallModal = ({
     }
   };
 
-  const formatDuration = (seconds) => {
-    if (!seconds) return '0:00';
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
+  const formatDuration = (durationInMinutes) => {
+    if (!durationInMinutes) return '0:00';
+    const totalSeconds = durationInMinutes * 60;
+    const minutes = Math.floor(totalSeconds / 60);
+    const remainingSeconds = totalSeconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
@@ -171,6 +172,17 @@ const PostCallModal = ({
               <span>{contactData?.name || 'Unknown Contact'}</span>
               <span>•</span>
               <span>{formatDuration(callData?.duration)}</span>
+              {callData?.outcome && (
+                <>
+                  <span>•</span>
+                  <span style={{ 
+                    color: callData.outcome === 'No Answer / Voicemail' ? '#d97706' : 
+                           callData.outcome === 'Connected' ? '#059669' : '#6b7280'
+                  }}>
+                    {callData.outcome}
+                  </span>
+                </>
+              )}
             </div>
           </div>
           <button

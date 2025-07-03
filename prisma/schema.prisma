@@ -20,6 +20,7 @@ model Contact {
   lastCallDate    DateTime? // Track when the last call was made
   calls           Call[]
   tasks           Task[]
+  pendingCalls    PendingCall[]
   assignedTo      String?
   assignedToUser  User?     @relation("AssignedContacts", fields: [assignedTo], references: [id])
   status          String?   @default("Open")
@@ -84,6 +85,36 @@ model Task {
   @@index([userId, status])
 }
 
+model PendingCall {
+  id              String    @id @default(cuid())
+  contactId       String
+  contact         Contact   @relation(fields: [contactId], references: [id])
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  phoneNumber     String    // Phone number for matching with webhook
+  initiatedAt     DateTime  // When click-to-call was initiated
+  scheduledFor    DateTime? // When the call is scheduled (optional)
+  priority        String    @default("Medium") // Low, Medium, High
+  notes           String?   // Notes about what to discuss
+  status          String    @default("Pending") // Pending, initiated, completed, cancelled
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  completedAt     DateTime? // When the call was completed/cancelled
+  openPhoneCallId String?   // OpenPhone call ID when matched
+  notificationShown Boolean @default(false) // Whether popup was shown
+  
+  @@index([userId])
+  @@index([contactId])
+  @@index([status])
+  @@index([phoneNumber])
+  @@index([initiatedAt])
+  @@index([scheduledFor])
+  @@index([priority])
+  @@index([userId, status])
+  @@index([phoneNumber, initiatedAt])
+  @@index([openPhoneCallId])
+}
+
 model User {
   id                   String    @id @default(cuid())
   email                String    @unique
@@ -98,6 +129,7 @@ model User {
   calls                Call[]
   tasks                Task[]
   contacts             Contact[] @relation("AssignedContacts")
+  pendingCalls         PendingCall[]
   
   // Goal Fields - Updated with new daily contact goal
   dailyCallGoal        Int?      @default(30)
