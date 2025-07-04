@@ -16,7 +16,9 @@
       "WebFetch(domain:www.openphone.com)",
       "WebFetch(domain:www.openphone.com)",
       "Bash(npx prisma:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(ls:*)",
+      "Bash(npm install:*)"
     ],
     "deny": []
   }

@@ -1,4 +1,13 @@
-/* Enhanced Dashboard Styles - Fixed Version */
+/* Enhanced Dashboard Styles - Modern Animations Version */
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
 /* Dashboard Layout Styles */
 .dashboard-container {
@@ -6,6 +15,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 0;
+  animation: fadeInUp 0.6s ease-out;
 }
 
 .dashboard-grid {
@@ -16,7 +26,54 @@
   width: 100%;
 }
 
-/* Enhanced Card Styles with Better Shadows */
+/* Stagger animation for grid items */
+.dashboard-grid > * {
+  animation: fadeInUp 0.6s ease-out;
+  animation-fill-mode: both;
+}
+
+.dashboard-grid > *:nth-child(1) { animation-delay: 0.1s; }
+.dashboard-grid > *:nth-child(2) { animation-delay: 0.2s; }
+.dashboard-grid > *:nth-child(3) { animation-delay: 0.3s; }
+.dashboard-grid > *:nth-child(4) { animation-delay: 0.4s; }
+.dashboard-grid > *:nth-child(5) { animation-delay: 0.5s; }
+.dashboard-grid > *:nth-child(6) { animation-delay: 0.6s; }
+
+/* Page transition animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Enhanced Card Styles with Better Shadows and Animations */
 .dashboard-card {
   background-color: white;
   border-radius: 16px;
@@ -25,12 +82,15 @@
   width: 100%;
   min-width: 0;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   border: 1px solid rgba(143, 159, 59, 0.1);
   position: relative;
+  transform-origin: center;
+  backface-visibility: hidden;
+  will-change: transform, box-shadow;
 }
 
-/* Gradient top border for all cards */
+/* Gradient top border for all cards with animation */
 .dashboard-card::before {
   content: '';
   position: absolute;
@@ -39,12 +99,56 @@
   right: 0;
   height: 4px;
   background: linear-gradient(90deg, #8F9F3B, #BCCB5C);
+  transition: all 0.3s ease;
 }
 
+/* Enhanced hover effects with micro-interactions */
 .dashboard-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  border-color: rgba(143, 159, 59, 0.4);
+}
+
+.dashboard-card:hover::before {
+  height: 6px;
+  background: linear-gradient(90deg, #8F9F3B, #BCCB5C, #8F9F3B);
+}
+
+/* Focus states for accessibility */
+.dashboard-card:focus-within {
   transform: translateY(-4px);
   box-shadow: 0 16px 50px rgba(0,0,0,0.15);
-  border-color: rgba(143, 159, 59, 0.3);
+  border-color: rgba(143, 159, 59, 0.5);
+  outline: 2px solid rgba(143, 159, 59, 0.3);
+  outline-offset: 2px;
+}
+
+/* Active/pressed state */
+.dashboard-card:active {
+  transform: translateY(-2px) scale(0.98);
+  transition-duration: 0.1s;
+}
+
+/* Loading shimmer effect for cards */
+.dashboard-card.loading {
+  overflow: hidden;
+  position: relative;
+}
+
+.dashboard-card.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: cardShimmer 2s infinite;
+}
+
+@keyframes cardShimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
 }
 
 .welcome-card {
@@ -76,13 +180,18 @@
   font-size: 1.1rem;
 }
 
-/* Enhanced Stat Card Styles */
+/* Enhanced Stat Card Styles with Micro-interactions */
 .stat-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
 }
 
 .stat-icon {
@@ -97,6 +206,34 @@
   background: linear-gradient(135deg, #8F9F3B, #BCCB5C);
   color: white;
   box-shadow: 0 4px 20px rgba(143, 159, 59, 0.3);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.stat-card:hover .stat-icon {
+  transform: rotateY(10deg) scale(1.1);
+  box-shadow: 0 8px 30px rgba(143, 159, 59, 0.4);
+}
+
+.stat-card:hover .stat-icon::before {
+  left: 100%;
+}
+
+.stat-card:active .stat-icon {
+  transform: scale(0.95);
+  transition-duration: 0.1s;
 }
 
 .stat-title {
@@ -116,6 +253,24 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  transition: all 0.3s ease;
+  animation: countUp 1s ease-out;
+}
+
+.stat-card:hover .stat-value {
+  transform: scale(1.1);
+  text-shadow: 0 2px 10px rgba(143, 159, 59, 0.2);
+}
+
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Enhanced Goal Card Styles */
@@ -314,13 +469,43 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   box-shadow: 0 2px 10px rgba(143, 159, 59, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.item-action::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  transform: translate(-50%, -50%);
 }
 
 .item-action:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 20px rgba(143, 159, 59, 0.4);
+  transform: scale(1.15) rotateZ(5deg);
+  box-shadow: 0 6px 25px rgba(143, 159, 59, 0.5);
+}
+
+.item-action:hover::before {
+  width: 100%;
+  height: 100%;
+}
+
+.item-action:active {
+  transform: scale(0.95);
+  transition-duration: 0.1s;
+}
+
+.item-action:focus {
+  outline: 2px solid rgba(143, 159, 59, 0.5);
+  outline-offset: 2px;
 }
 
 .no-items {
@@ -348,22 +533,51 @@
   gap: 0.3rem;
   padding: 0.5rem 1rem;
   border-radius: 8px;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   font-weight: 500;
+  position: relative;
+  overflow: hidden;
+}
+
+.view-all-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(143, 159, 59, 0.1), transparent);
+  transition: left 0.5s ease;
 }
 
 .view-all-button:hover {
   background-color: rgba(143, 159, 59, 0.1);
-  transform: translateX(2px);
+  transform: translateX(4px) scale(1.05);
+  box-shadow: 0 2px 10px rgba(143, 159, 59, 0.2);
 }
 
-/* Loading Styles */
+.view-all-button:hover::before {
+  left: 100%;
+}
+
+.view-all-button:active {
+  transform: scale(0.95);
+  transition-duration: 0.1s;
+}
+
+.view-all-button:focus {
+  outline: 2px solid rgba(143, 159, 59, 0.5);
+  outline-offset: 2px;
+}
+
+/* Enhanced Loading Styles */
 .loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 200px;
+  animation: fadeIn 0.5s ease-out;
 }
 
 .spinner {
@@ -374,11 +588,71 @@
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
+  position: relative;
+}
+
+.spinner::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border: 2px solid transparent;
+  border-top: 2px solid #BCCB5C;
+  border-radius: 50%;
+  animation: spin 1.5s linear infinite reverse;
 }
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modern pulse loading animation */
+.pulse-loader {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #8F9F3B;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.pulse-loader:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.pulse-loader:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes pulse {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Skeleton loading animation */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton 1.5s infinite;
+}
+
+@keyframes skeleton {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* Goals Section Header */
