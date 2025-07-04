@@ -75,13 +75,12 @@ export default function Layout({ children, customHeader }) {
   
   return (
     <div style={{ 
-      display: 'grid',
-      gridTemplateColumns: isMobile ? '1fr' : (isSidebarCollapsed ? '70px 1fr' : '240px 1fr'),
-      gridTemplateRows: isMobile ? 'auto 1fr' : '1fr',
-      gridTemplateAreas: isMobile ? '"header" "main"' : '"sidebar main"',
+      display: isMobile ? 'grid' : 'block',
+      gridTemplateColumns: isMobile ? '1fr' : undefined,
+      gridTemplateRows: isMobile ? 'auto 1fr' : undefined,
+      gridTemplateAreas: isMobile ? '"header" "main"' : undefined,
       minHeight: '100vh',
       backgroundColor: theme.colors.brand.background,
-      transition: 'grid-template-columns 0.3s ease',
       position: 'relative',
     }}>
       {/* Mobile Header */}
@@ -132,21 +131,21 @@ export default function Layout({ children, customHeader }) {
         </header>
       )}
       
-      {/* Sidebar - Enhanced with overlay support */}
+      {/* Sidebar - Fixed position for desktop, overlay for mobile */}
       <div 
         data-sidebar
         style={{
-          gridArea: 'sidebar',
-          position: isMobile ? 'fixed' : 'relative',
-          top: isMobile ? 0 : 'auto',
-          left: isMobile ? (sidebarOverlay ? 0 : '-240px') : 'auto',
-          bottom: isMobile ? 0 : 'auto',
-          width: isMobile ? '240px' : '100%',
-          height: isMobile ? '100vh' : 'auto',
-          zIndex: isMobile ? theme.zIndex.overlay : 'auto',
+          gridArea: isMobile ? 'sidebar' : undefined,
+          position: 'fixed',
+          top: 0,
+          left: isMobile ? (sidebarOverlay ? 0 : '-240px') : 0,
+          bottom: 0,
+          width: isMobile ? '240px' : (isSidebarCollapsed ? '70px' : '240px'),
+          height: '100vh',
+          zIndex: isMobile ? theme.zIndex.overlay : theme.zIndex.sidebar,
           transition: isMobile ? 
             `left ${theme.animation.duration.normal} ${theme.animation.easing.inOut}` : 
-            'none',
+            `width ${theme.animation.duration.normal} ${theme.animation.easing.inOut}`,
           backgroundColor: theme.colors.brand.primary,
           ...(isMobile && sidebarOverlay && {
             boxShadow: theme.shadows.xl,
@@ -181,11 +180,14 @@ export default function Layout({ children, customHeader }) {
       
       {/* Main Content Area */}
       <main style={{ 
-        gridArea: 'main',
+        gridArea: isMobile ? 'main' : undefined,
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
         position: 'relative',
+        marginLeft: isMobile ? 0 : (isSidebarCollapsed ? '70px' : '240px'),
+        transition: isMobile ? 'none' : `margin-left ${theme.animation.duration.normal} ${theme.animation.easing.inOut}`,
+        minHeight: '100vh',
       }}>
         {/* Content Container with improved spacing */}
         <div style={{

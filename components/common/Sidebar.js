@@ -149,14 +149,14 @@ export default function Sidebar({ isCollapsed, toggleSidebar, isMobile = false, 
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      height: '100%',
+      height: '100vh',
       backgroundColor: theme.colors.brand.primary,
       color: 'white',
       width: '100%',
       overflow: 'hidden',
       position: 'relative',
     }}>
-      {/* Top section with branding, toggle and search */}
+      {/* Top section with branding and toggle */}
       <div style={{
         padding: theme.spacing[4],
         display: 'flex',
@@ -193,244 +193,29 @@ export default function Sidebar({ isCollapsed, toggleSidebar, isMobile = false, 
           </div>
         )}
         
-        {/* Action Buttons */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: theme.spacing[2],
-        }}>
-          {!isCollapsed ? (
-            <>
-              <button 
-                onClick={() => setIsSearchOpen(true)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: theme.spacing[2],
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: theme.borderRadius.md,
-                  padding: `${theme.spacing[2]} ${theme.spacing[3]}`,
-                  cursor: 'pointer',
-                  fontSize: theme.typography.fontSize.sm,
-                  transition: `all ${theme.animation.duration.fast} ${theme.animation.easing.inOut}`,
-                  minHeight: '40px',
-                  flex: 1,
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
-              >
-                <FaSearch size={16} />
-                <span>Search...</span>
-              </button>
-              
-              {!isMobile && (
-                <button 
-                  onClick={toggleSidebar}
-                  style={{
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    color: 'white',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: theme.spacing[2],
-                    borderRadius: theme.borderRadius.md,
-                    transition: `background-color ${theme.animation.duration.fast} ${theme.animation.easing.inOut}`,
-                    minHeight: '40px',
-                    minWidth: '40px',
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                  <FaAngleLeft size={18} />
-                </button>
-              )}
-            </>
-          ) : (
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              gap: theme.spacing[2],
-              width: '100%',
-            }}>
-              <button 
-                onClick={() => setIsSearchOpen(true)}
-                style={{
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  color: 'white',
-                  cursor: 'pointer',
-                  padding: theme.spacing[2],
-                  borderRadius: theme.borderRadius.md,
-                  transition: `background-color ${theme.animation.duration.fast} ${theme.animation.easing.inOut}`,
-                  minHeight: '40px',
-                  minWidth: '40px',
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-              >
-                <FaSearch size={20} />
-              </button>
-              
-              <button 
-                onClick={toggleSidebar}
-                style={{
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  color: 'white',
-                  cursor: 'pointer',
-                  padding: theme.spacing[2],
-                  borderRadius: theme.borderRadius.md,
-                  transition: `background-color ${theme.animation.duration.fast} ${theme.animation.easing.inOut}`,
-                  minHeight: '40px',
-                  minWidth: '40px',
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-              >
-                <FaAngleRight size={18} />
-              </button>
-            </div>
-          )}
-        </div>
-        
-        {/* Enhanced Search Modal */}
-        {isSearchOpen && (
-          <div 
-            ref={searchRef}
+        {/* Toggle Button */}
+        {!isMobile && (
+          <button 
+            onClick={toggleSidebar}
             style={{
-              position: 'fixed',
-              top: 0,
-              left: isMobile ? 0 : (isCollapsed ? 70 : 240),
-              right: 0,
-              backgroundColor: 'white',
-              zIndex: theme.zIndex.modal,
+              backgroundColor: 'transparent',
+              border: 'none',
+              color: 'white',
+              cursor: 'pointer',
               display: 'flex',
-              flexDirection: 'column',
-              height: '100vh',
-              overflowY: 'auto',
-              boxShadow: theme.shadows.xl,
-              // Modern backdrop blur
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: theme.spacing[2],
+              borderRadius: theme.borderRadius.md,
+              transition: `background-color ${theme.animation.duration.fast} ${theme.animation.easing.inOut}`,
+              minHeight: '40px',
+              minWidth: '40px',
             }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
           >
-            {/* Search Header */}
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              padding: theme.spacing[6],
-              borderBottom: `1px solid ${theme.colors.neutral[200]}`,
-              backgroundColor: 'white',
-              position: 'sticky',
-              top: 0,
-              zIndex: 1,
-            }}>
-              <h2 style={{ 
-                margin: 0,
-                fontSize: theme.typography.fontSize['2xl'],
-                fontWeight: theme.typography.fontWeight.semibold,
-                color: theme.colors.brand.primary,
-              }}>
-                Search
-              </h2>
-              <button
-                onClick={clearSearch}
-                style={{
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  fontSize: theme.typography.fontSize['2xl'],
-                  cursor: 'pointer',
-                  color: theme.colors.neutral[500],
-                  padding: theme.spacing[2],
-                  borderRadius: theme.borderRadius.md,
-                  transition: `all ${theme.animation.duration.fast} ${theme.animation.easing.inOut}`,
-                  minHeight: '44px',
-                  minWidth: '44px',
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = theme.colors.neutral[100];
-                  e.target.style.color = theme.colors.neutral[700];
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.color = theme.colors.neutral[500];
-                }}
-              >
-                &times;
-              </button>
-            </div>
-            
-            {/* Search Form */}
-            <div style={{ padding: theme.spacing[6] }}>
-              <form onSubmit={handleSearch} style={{ marginBottom: theme.spacing[6] }}>
-                <div style={{ 
-                  display: 'flex', 
-                  gap: theme.spacing[3],
-                  flexDirection: isMobile ? 'column' : 'row',
-                }}>
-                  <input
-                    type="text"
-                    placeholder="Search contacts, calls, tasks..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{
-                      padding: theme.spacing[3],
-                      borderRadius: theme.borderRadius.lg,
-                      border: `2px solid ${theme.colors.neutral[200]}`,
-                      flex: 1,
-                      fontSize: theme.typography.fontSize.base,
-                      fontFamily: theme.typography.fontFamily.primary,
-                      transition: `border-color ${theme.animation.duration.fast} ${theme.animation.easing.inOut}`,
-                      outline: 'none',
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = theme.colors.brand.primary}
-                    onBlur={(e) => e.target.style.borderColor = theme.colors.neutral[200]}
-                    autoFocus
-                  />
-                  
-                  <button
-                    type="submit"
-                    style={{
-                      backgroundColor: theme.colors.brand.primary,
-                      color: 'white',
-                      padding: `${theme.spacing[3]} ${theme.spacing[6]}`,
-                      border: 'none',
-                      borderRadius: theme.borderRadius.lg,
-                      cursor: 'pointer',
-                      fontSize: theme.typography.fontSize.base,
-                      fontWeight: theme.typography.fontWeight.medium,
-                      transition: `all ${theme.animation.duration.fast} ${theme.animation.easing.inOut}`,
-                      minHeight: '44px',
-                      whiteSpace: 'nowrap',
-                    }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = theme.colors.primary[600]}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = theme.colors.brand.primary}
-                    disabled={searching}
-                  >
-                    {searching ? (
-                      <span>Searching...</span>
-                    ) : (
-                      <span>Search</span>
-                    )}
-                  </button>
-                </div>
-              </form>
-              
-              {/* Search Results */}
-              {searchResults && (
-                <SearchResults 
-                  results={searchResults} 
-                  onClose={clearSearch} 
-                />
-              )}
-            </div>
-          </div>
+            {isCollapsed ? <FaAngleRight size={18} /> : <FaAngleLeft size={18} />}
+          </button>
         )}
       </div>
       
@@ -442,6 +227,8 @@ export default function Sidebar({ isCollapsed, toggleSidebar, isMobile = false, 
         // Custom scrollbar
         scrollbarWidth: 'thin',
         scrollbarColor: 'rgba(255, 255, 255, 0.3) transparent',
+        // Ensure proper scrolling within fixed sidebar
+        maxHeight: 'calc(100vh - 144px)', // Account for header and footer
       }}>
         <ul style={{ 
           listStyle: 'none', 
@@ -537,11 +324,69 @@ export default function Sidebar({ isCollapsed, toggleSidebar, isMobile = false, 
         </ul>
       </nav>
       
-      {/* Enhanced User Menu at Bottom */}
+      {/* Search Section at Bottom */}
       <div style={{
         padding: theme.spacing[4],
         borderTop: '1px solid rgba(255, 255, 255, 0.1)',
         marginTop: 'auto',
+      }}>
+        {!isCollapsed ? (
+          <button 
+            onClick={() => setIsSearchOpen(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: theme.spacing[2],
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              color: 'white',
+              border: 'none',
+              borderRadius: theme.borderRadius.md,
+              padding: `${theme.spacing[3]} ${theme.spacing[4]}`,
+              cursor: 'pointer',
+              fontSize: theme.typography.fontSize.sm,
+              transition: `all ${theme.animation.duration.fast} ${theme.animation.easing.inOut}`,
+              minHeight: '44px',
+              width: '100%',
+              justifyContent: 'flex-start',
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+          >
+            <FaSearch size={16} />
+            <span>Search...</span>
+          </button>
+        ) : (
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center',
+            width: '100%',
+          }}>
+            <button 
+              onClick={() => setIsSearchOpen(true)}
+              style={{
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: 'white',
+                cursor: 'pointer',
+                padding: theme.spacing[2],
+                borderRadius: theme.borderRadius.md,
+                transition: `background-color ${theme.animation.duration.fast} ${theme.animation.easing.inOut}`,
+                minHeight: '40px',
+                minWidth: '40px',
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+            >
+              <FaSearch size={20} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Enhanced User Menu at Bottom */}
+      <div style={{
+        padding: theme.spacing[4],
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
         position: 'relative',
       }}>
         <div 
@@ -655,12 +500,12 @@ export default function Sidebar({ isCollapsed, toggleSidebar, isMobile = false, 
             position: 'fixed',
             bottom: isMobile ? 
               theme.spacing[4] :
-              window.innerHeight - (userMenuTriggerRef.current?.getBoundingClientRect().top || 0) - 8,
+              theme.spacing[4],
             left: isMobile ? 
               theme.spacing[4] :
               isCollapsed ? 
-                (userMenuTriggerRef.current?.getBoundingClientRect().left || 0) + 70 :
-                (userMenuTriggerRef.current?.getBoundingClientRect().left || 0) + 20,
+                80 : // Fixed position for collapsed sidebar
+                250, // Fixed position for expanded sidebar
             right: isMobile ? theme.spacing[4] : 'auto',
             backgroundColor: 'white',
             borderRadius: theme.borderRadius.xl,
@@ -838,6 +683,141 @@ export default function Sidebar({ isCollapsed, toggleSidebar, isMobile = false, 
               <FaSignOutAlt size={16} />
               <span>Logout</span>
             </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Enhanced Search Modal */}
+      {isSearchOpen && (
+        <div 
+          ref={searchRef}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: isMobile ? 0 : (isCollapsed ? 70 : 240),
+            right: 0,
+            backgroundColor: 'white',
+            zIndex: theme.zIndex.modal,
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100vh',
+            overflowY: 'auto',
+            boxShadow: theme.shadows.xl,
+            // Modern backdrop blur
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+          }}
+        >
+          {/* Search Header */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            padding: theme.spacing[6],
+            borderBottom: `1px solid ${theme.colors.neutral[200]}`,
+            backgroundColor: 'white',
+            position: 'sticky',
+            top: 0,
+            zIndex: 1,
+          }}>
+            <h2 style={{ 
+              margin: 0,
+              fontSize: theme.typography.fontSize['2xl'],
+              fontWeight: theme.typography.fontWeight.semibold,
+              color: theme.colors.brand.primary,
+            }}>
+              Search
+            </h2>
+            <button
+              onClick={clearSearch}
+              style={{
+                backgroundColor: 'transparent',
+                border: 'none',
+                fontSize: theme.typography.fontSize['2xl'],
+                cursor: 'pointer',
+                color: theme.colors.neutral[500],
+                padding: theme.spacing[2],
+                borderRadius: theme.borderRadius.md,
+                transition: `all ${theme.animation.duration.fast} ${theme.animation.easing.inOut}`,
+                minHeight: '44px',
+                minWidth: '44px',
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = theme.colors.neutral[100];
+                e.target.style.color = theme.colors.neutral[700];
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.color = theme.colors.neutral[500];
+              }}
+            >
+              &times;
+            </button>
+          </div>
+          
+          {/* Search Form */}
+          <div style={{ padding: theme.spacing[6] }}>
+            <form onSubmit={handleSearch} style={{ marginBottom: theme.spacing[6] }}>
+              <div style={{ 
+                display: 'flex', 
+                gap: theme.spacing[3],
+                flexDirection: isMobile ? 'column' : 'row',
+              }}>
+                <input
+                  type="text"
+                  placeholder="Search contacts, calls, tasks..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    padding: theme.spacing[3],
+                    borderRadius: theme.borderRadius.lg,
+                    border: `2px solid ${theme.colors.neutral[200]}`,
+                    flex: 1,
+                    fontSize: theme.typography.fontSize.base,
+                    fontFamily: theme.typography.fontFamily.primary,
+                    transition: `border-color ${theme.animation.duration.fast} ${theme.animation.easing.inOut}`,
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = theme.colors.brand.primary}
+                  onBlur={(e) => e.target.style.borderColor = theme.colors.neutral[200]}
+                  autoFocus
+                />
+                
+                <button
+                  type="submit"
+                  style={{
+                    backgroundColor: theme.colors.brand.primary,
+                    color: 'white',
+                    padding: `${theme.spacing[3]} ${theme.spacing[6]}`,
+                    border: 'none',
+                    borderRadius: theme.borderRadius.lg,
+                    cursor: 'pointer',
+                    fontSize: theme.typography.fontSize.base,
+                    fontWeight: theme.typography.fontWeight.medium,
+                    transition: `all ${theme.animation.duration.fast} ${theme.animation.easing.inOut}`,
+                    minHeight: '44px',
+                    whiteSpace: 'nowrap',
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = theme.colors.primary[600]}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = theme.colors.brand.primary}
+                  disabled={searching}
+                >
+                  {searching ? (
+                    <span>Searching...</span>
+                  ) : (
+                    <span>Search</span>
+                  )}
+                </button>
+              </div>
+            </form>
+            
+            {/* Search Results */}
+            {searchResults && (
+              <SearchResults 
+                results={searchResults} 
+                onClose={clearSearch} 
+              />
+            )}
           </div>
         </div>
       )}
