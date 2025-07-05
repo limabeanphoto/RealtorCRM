@@ -2,9 +2,11 @@
 import { useState, useEffect } from 'react'
 import TaskModal from '../components/tasks/TaskModal'
 import TaskCard from '../components/tasks/TaskCard'
+import TaskBoard from '../components/tasks/TaskBoard'
+import TaskViewToggle from '../components/tasks/TaskViewToggle'
 import ProtectedRoute from '../components/auth/ProtectedRoute'
-import Button from '../components/common/Button' // Import Button
-import { FaTrash, FaSearch } from 'react-icons/fa'
+import Button from '../components/common/Button'
+import { FaTrash, FaSearch, FaPlus } from 'react-icons/fa'
 import theme from '../styles/theme'
 
 export default function Tasks() {
@@ -15,7 +17,8 @@ export default function Tasks() {
   const [editingTask, setEditingTask] = useState(null)
   const [filter, setFilter] = useState('todo') // Changed default from 'all' to 'todo'
   const [purging, setPurging] = useState(false) // State for purge operation
-  const [searchTerm, setSearchTerm] = useState('') // New state for search functionality
+  const [searchTerm, setSearchTerm] = useState('') // Search functionality
+  const [viewMode, setViewMode] = useState('list') // New: list or board view
   
   // Fetch tasks and contacts
   useEffect(() => {
@@ -32,7 +35,12 @@ export default function Tasks() {
         const tasksData = await tasksResponse.json()
         
         if (tasksData.success) {
-          setTasks(tasksData.data)
+          // Ensure tasks have priority (default to medium if missing)
+          const tasksWithPriority = tasksData.data.map(task => ({
+            ...task,
+            priority: task.priority || 'medium'
+          }))
+          setTasks(tasksWithPriority)
         } else {
           console.error('Error fetching tasks:', tasksData.message)
         }
@@ -71,15 +79,22 @@ export default function Tasks() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          priority: formData.priority || 'medium' // Ensure priority is set
+        })
       })
       
       const data = await response.json()
       
       if (data.success) {
         // Add the new task to the list
-        setTasks([data.data, ...tasks])
-        return { success: true, data: data.data }
+        const newTaskWithPriority = {
+          ...data.data,
+          priority: data.data.priority || 'medium'
+        }
+        setTasks([newTaskWithPriority, ...tasks])
+        return { success: true, data: newTaskWithPriority }
       } else {
         alert('Error creating task: ' + data.message)
         return { success: false, message: data.message }
@@ -101,17 +116,24 @@ export default function Tasks() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          priority: formData.priority || 'medium' // Ensure priority is set
+        })
       })
       
       const data = await response.json()
       
       if (data.success) {
         // Update the task in the list
+        const updatedTaskWithPriority = {
+          ...data.data,
+          priority: data.data.priority || 'medium'
+        }
         setTasks(tasks.map(task => 
-          task.id === data.data.id ? data.data : task
+          task.id === data.data.id ? updatedTaskWithPriority : task
         ))
-        return { success: true, data: data.data }
+        return { success: true, data: updatedTaskWithPriority }
       } else {
         alert('Error updating task: ' + data.message)
         return { success: false, message: data.message }
@@ -143,8 +165,12 @@ export default function Tasks() {
       
       if (data.success) {
         // Update the task in the list
+        const updatedTask = {
+          ...data.data,
+          priority: data.data.priority || 'medium'
+        }
         setTasks(tasks.map(task => 
-          task.id === data.data.id ? data.data : task
+          task.id === data.data.id ? updatedTask : task
         ))
       } else {
         alert('Error updating task status: ' + data.message)
@@ -177,6 +203,25 @@ export default function Tasks() {
     } catch (error) {
       console.error('Error deleting task:', error)
       alert('Error deleting task')
+    }
+  }
+
+  // Handle task duplication
+  const handleDuplicateTask = async (task) => {
+    const duplicatedTask = {
+      title: `${task.title} (Copy)`,
+      description: task.description,
+      priority: task.priority || 'medium',
+      contactId: task.contactId,
+      dueDate: task.dueDate,
+      status: 'Active'
+    }
+    
+    const result = await handleCreateTask(duplicatedTask)
+    if (result.success) {
+      // Optionally open the edit modal for the duplicated task
+      // setEditingTask(result.data)
+      // setIsTaskModalOpen(true)
     }
   }
 
@@ -223,11 +268,9 @@ export default function Tasks() {
   
   // Handle opening the edit modal
   const handleOpenEditModal = (task) => {
-    // Make a copy of the task for editing
-    // Note: We don't need to modify the dueDate here anymore
-    // The TaskModal component will handle the conversion
     setEditingTask({
-      ...task
+      ...task,
+      priority: task.priority || 'medium' // Ensure priority is set
     })
     setIsTaskModalOpen(true)
   }
@@ -274,48 +317,89 @@ export default function Tasks() {
   
   return (
     <ProtectedRoute>
-      <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <h1>Tasks</h1>
-          <Button
-            onClick={() => {
-              setEditingTask(null)
-              setIsTaskModalOpen(true)
-            }}
-            tooltip="Open the form to create a new task"
-          >
-            New Task
-          </Button>
+      <div className="modern-page-container">
+        {/* Header Section */}
+        <div className="page-header" style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          marginBottom: '2rem',
+          flexWrap: 'wrap',
+          gap: '1rem'
+        }}>
+          <h1 className="responsive-heading" style={{ 
+            margin: 0,
+            background: `linear-gradient(135deg, ${theme.colors.brand.primary}, ${theme.colors.brand.secondary})`,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}>
+            Tasks
+          </h1>
+          
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            {/* View Toggle */}
+            <TaskViewToggle 
+              currentView={viewMode}
+              onViewChange={setViewMode}
+              size="medium"
+              variant="modern"
+            />
+            
+            {/* New Task Button */}
+            <Button
+              onClick={() => {
+                setEditingTask(null)
+                setIsTaskModalOpen(true)
+              }}
+              variant="gradient"
+              className="hover-lift"
+              tooltip="Create a new task"
+            >
+              <FaPlus size={14} style={{ marginRight: '0.5rem' }} />
+              New Task
+            </Button>
+          </div>
         </div>
         
-        {/* Task Filters and Search - Updated layout with search box */}
-        <div style={{ 
-          marginBottom: '1.5rem', 
+        {/* Controls Section */}
+        <div className="controls-section" style={{ 
+          marginBottom: '2rem', 
           display: 'flex', 
           flexWrap: 'wrap',
           justifyContent: 'space-between', 
           alignItems: 'center',
-          gap: '1rem'
+          gap: '1rem',
+          padding: '1.5rem',
+          backgroundColor: 'white',
+          borderRadius: theme.borderRadius.lg,
+          boxShadow: theme.shadows.sm,
+          border: '1px solid #f0f0f0'
         }}>
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          {/* Filter Buttons */}
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
             <Button
               onClick={() => setFilter('todo')}
-              variant={filter === 'todo' ? 'primary' : 'outline'}
-              tooltip={`Show tasks that are not completed (${counts.todo})`}
+              variant={filter === 'todo' ? 'modern' : 'outline'}
+              size="medium"
+              className="transition-all"
+              tooltip={`Show active tasks (${counts.todo})`}
             >
               To-Do ({counts.todo})
             </Button>
             
             <Button
               onClick={() => setFilter('completed')}
-              variant={filter === 'completed' ? 'primary' : 'outline'}
-              tooltip={`Show tasks that have been completed (${counts.completed})`}
+              variant={filter === 'completed' ? 'modern' : 'outline'}
+              size="medium"
+              className="transition-all"
+              tooltip={`Show completed tasks (${counts.completed})`}
             >
               Completed ({counts.completed})
             </Button>
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
             {/* Search Box */}
             <div style={{ 
               position: 'relative',
@@ -327,19 +411,22 @@ export default function Tasks() {
                 placeholder="Search tasks..."
                 value={searchTerm}
                 onChange={handleSearchChange}
+                className="modern-input"
                 style={{
-                  padding: '0.5rem 0.5rem 0.5rem 2rem', // Space for the icon
-                  borderRadius: '4px',
-                  border: '1px solid #ddd',
-                  width: '250px'
+                  padding: '0.75rem 0.75rem 0.75rem 2.5rem',
+                  borderRadius: theme.borderRadius.md,
+                  border: '2px solid #e5e7eb',
+                  width: '280px',
+                  fontSize: '0.875rem',
+                  transition: 'all 0.2s ease'
                 }}
               />
               <FaSearch 
-                size={14} 
+                size={16} 
                 style={{ 
                   position: 'absolute', 
-                  left: '0.75rem',
-                  color: '#a0aec0'
+                  left: '1rem',
+                  color: theme.colors.gray[400]
                 }} 
               />
             </div>
@@ -350,53 +437,124 @@ export default function Tasks() {
                 onClick={handlePurgeCompleted}
                 disabled={purging}
                 variant="outline"
-                style={{ color: '#e74c3c', borderColor: '#e74c3c' }} // Danger color
+                size="medium"
+                className="hover-lift-gentle"
+                style={{ 
+                  color: theme.colors.error[500], 
+                  borderColor: theme.colors.error[300],
+                  ':hover': {
+                    backgroundColor: theme.colors.error[50]
+                  }
+                }}
                 tooltip="Permanently delete all completed tasks"
               >
                 <FaTrash size={14} style={{ marginRight: '0.5rem' }} />
-                {purging ? 'Purging...' : 'Purge All Completed'}
+                {purging ? 'Purging...' : 'Purge All'}
               </Button>
             )}
           </div>
         </div>
         
-        {/* Task List */}
-        {loading ? (
-          <p>Loading tasks...</p>
-        ) : filteredTasks.length > 0 ? (
-          <div>
-            {filteredTasks.map(task => (
-              <TaskCard 
-                key={task.id} 
-                task={task} 
-                onStatusChange={handleStatusChange}
-                onDelete={handleDeleteTask}
-                onEdit={() => handleOpenEditModal(task)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '2rem', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-            <p style={{ marginBottom: '1rem' }}>
-              {searchTerm 
-                ? 'No tasks matching your search.' 
-                : filter === 'todo' 
-                  ? 'No tasks to do. Create your first task to get started!' 
-                  : 'No completed tasks.'}
-            </p>
-            {filter === 'todo' && !searchTerm && (
-              <Button
-                onClick={() => {
-                  setEditingTask(null)
-                  setIsTaskModalOpen(true)
-                }}
-                tooltip="Create your very first task"
-              >
-                Create Your First Task
-              </Button>
-            )}
-          </div>
-        )}
+        {/* Content Section */}
+        <div className="content-section">
+          {loading ? (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '4rem 2rem',
+              backgroundColor: 'white',
+              borderRadius: theme.borderRadius.lg,
+              boxShadow: theme.shadows.sm
+            }}>
+              <div className="loader-spin" style={{ margin: '0 auto 1rem' }}></div>
+              <p style={{ color: theme.colors.gray[600], fontSize: '1.1rem' }}>Loading tasks...</p>
+            </div>
+          ) : filteredTasks.length > 0 ? (
+            <div>
+              {viewMode === 'board' ? (
+                <TaskBoard
+                  tasks={filteredTasks}
+                  onStatusChange={handleStatusChange}
+                  onEdit={handleOpenEditModal}
+                  onDelete={handleDeleteTask}
+                  onDuplicate={handleDuplicateTask}
+                  loading={loading}
+                />
+              ) : (
+                <div className="task-list stagger-list" style={{
+                  display: 'grid',
+                  gap: '1rem'
+                }}>
+                  {filteredTasks.map((task, index) => (
+                    <div key={task.id} className={`fade-in-up stagger-${Math.min(index + 1, 8)}`}>
+                      <TaskCard 
+                        task={task} 
+                        onStatusChange={handleStatusChange}
+                        onDelete={handleDeleteTask}
+                        onEdit={() => handleOpenEditModal(task)}
+                        onDuplicate={() => handleDuplicateTask(task)}
+                        className="hover-lift-gentle"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="empty-state" style={{ 
+              textAlign: 'center', 
+              padding: '4rem 2rem', 
+              backgroundColor: 'white',
+              borderRadius: theme.borderRadius.lg,
+              boxShadow: theme.shadows.sm,
+              border: '1px solid #f0f0f0'
+            }}>
+              <div style={{ 
+                fontSize: '4rem', 
+                marginBottom: '1rem',
+                opacity: 0.3
+              }}>
+                📋
+              </div>
+              <h3 style={{ 
+                marginBottom: '1rem',
+                color: theme.colors.gray[700],
+                fontSize: '1.25rem'
+              }}>
+                {searchTerm 
+                  ? 'No tasks matching your search' 
+                  : filter === 'todo' 
+                    ? 'No tasks to do' 
+                    : 'No completed tasks'}
+              </h3>
+              <p style={{ 
+                marginBottom: '2rem',
+                color: theme.colors.gray[500],
+                fontSize: '1rem'
+              }}>
+                {searchTerm 
+                  ? 'Try adjusting your search terms' 
+                  : filter === 'todo' 
+                    ? 'Create your first task to get started!' 
+                    : 'Complete some tasks to see them here'}
+              </p>
+              {filter === 'todo' && !searchTerm && (
+                <Button
+                  onClick={() => {
+                    setEditingTask(null)
+                    setIsTaskModalOpen(true)
+                  }}
+                  variant="gradient"
+                  size="large"
+                  className="hover-lift scale-in"
+                  tooltip="Create your very first task"
+                >
+                  <FaPlus size={16} style={{ marginRight: '0.5rem' }} />
+                  Create Your First Task
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Task Modal */}
         <TaskModal

@@ -16,7 +16,9 @@ export default function TaskModal({
       ...formData,
       // Ensure API compatibility with Active/Completed mapping
       status: formData.status === 'Active' ? 'Active' : 'Completed',
-      completed: formData.status === 'Completed'
+      completed: formData.status === 'Completed',
+      // Ensure priority is included (default to medium if not set)
+      priority: formData.priority || 'medium'
     };
     
     const result = await onSubmit(updatedFormData);

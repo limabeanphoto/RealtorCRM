@@ -10,6 +10,7 @@ export default function TaskForm({ onSubmit, initialData = {}, onCancel, contact
     title: '',
     description: '',
     status: 'Active',
+    priority: 'medium', // Default priority
     dueDate: getTomorrowNoonPacific(), // Tomorrow at 12 PM Pacific Time
     contactId: '',
     callId: '',
@@ -53,6 +54,24 @@ export default function TaskForm({ onSubmit, initialData = {}, onCancel, contact
           </select>
         </div>
       )}
+      
+      {/* Priority */}
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+          Priority*
+        </label>
+        <select
+          name="priority"
+          value={values.priority}
+          onChange={handleChange}
+          required
+          style={{ width: '100%', padding: '0.5rem' }}
+        >
+          <option value="high">High Priority</option>
+          <option value="medium">Medium Priority</option>
+          <option value="low">Low Priority</option>
+        </select>
+      </div>
       
       {/* Title */}
       <div style={{ marginBottom: '1rem' }}>
