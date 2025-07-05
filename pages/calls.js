@@ -2,11 +2,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import CallModal from '../components/calls/CallModal';
-import CallCard from '../components/calls/CallCard';
+import CallTimeline from '../components/calls/CallTimeline';
 import TaskModal from '../components/tasks/TaskModal';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import Button from '../components/common/Button';
-import { FaSearch, FaFilter } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaListUl, FaStream } from 'react-icons/fa';
 import theme from '../styles/theme';
 
 export default function Calls() {
@@ -23,6 +23,7 @@ export default function Calls() {
   // Added for filtering calls
   const [filter, setFilter] = useState('all'); // all, deals, recent
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState('timeline'); // timeline, list (for potential future card view toggle)
   
   // Fetch calls and contacts
   useEffect(() => {
@@ -182,6 +183,52 @@ export default function Calls() {
     }
   };
 
+  // Handle status change from timeline
+  const handleStatusChange = async (callId, newStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      const callToUpdate = calls.find(call => call.id === callId);
+      
+      if (!callToUpdate) return;
+      
+      const updatedCall = {
+        ...callToUpdate,
+        outcome: newStatus,
+        isDeal: newStatus === 'Deal Closed'
+      };
+      
+      const response = await fetch(`/api/calls/${callId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(updatedCall)
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Update the call in the list
+        setCalls(calls.map(call => 
+          call.id === callId ? data.data : call
+        ));
+        
+        // Refresh dashboard metrics after updating a call
+        refreshDashboardMetrics();
+        
+        return { success: true, data: data.data };
+      } else {
+        alert('Error updating call status: ' + data.message);
+        return { success: false, message: data.message };
+      }
+    } catch (error) {
+      console.error('Error updating call status:', error);
+      alert('Error updating call status');
+      return { success: false, message: error.message };
+    }
+  };
+
   // Handle deleting a call
   const handleDeleteCall = async (callId) => {
     try {
@@ -329,11 +376,12 @@ export default function Calls() {
           gap: '1rem', 
           marginBottom: '1.5rem' 
         }}>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <Button
               onClick={() => setFilter('all')}
               variant={filter === 'all' ? 'primary' : 'outline'}
               tooltip={`Show all recorded calls (${counts.all})`}
+              size="small"
             >
               All Calls ({counts.all})
             </Button>
@@ -342,6 +390,7 @@ export default function Calls() {
               onClick={() => setFilter('deals')}
               variant={filter === 'deals' ? 'primary' : 'outline'}
               tooltip={`Show only calls marked as deals (${counts.deals})`}
+              size="small"
             >
               Deals ({counts.deals})
             </Button>
@@ -350,6 +399,7 @@ export default function Calls() {
               onClick={() => setFilter('recent')}
               variant={filter === 'recent' ? 'primary' : 'outline'}
               tooltip={`Show calls from the last 7 days (${counts.recent})`}
+              size="small"
             >
               Recent ({counts.recent})
             </Button>
@@ -358,7 +408,9 @@ export default function Calls() {
           <div style={{ 
             position: 'relative',
             display: 'flex',
-            alignItems: 'center'
+            alignItems: 'center',
+            minWidth: '250px',
+            maxWidth: '100%'
           }}>
             <input
               type="text"
@@ -367,9 +419,16 @@ export default function Calls() {
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{
                 padding: '0.5rem 0.5rem 0.5rem 2rem', // Space for the icon
-                borderRadius: '4px',
-                border: '1px solid #ddd',
-                width: '250px' // Fixed width matching other pages
+                borderRadius: theme.borderRadius.md,
+                border: `1px solid ${theme.colors.neutral[300]}`,
+                width: '100%',
+                fontSize: theme.typography.fontSize.sm,
+                transition: 'all 0.2s ease',
+                outline: 'none',
+                ':focus': {
+                  borderColor: theme.colors.primary[500],
+                  boxShadow: `0 0 0 3px ${theme.colors.primary[500]}20`
+                }
               }}
             />
             <FaSearch 
@@ -377,41 +436,94 @@ export default function Calls() {
               style={{ 
                 position: 'absolute', 
                 left: '0.75rem',
-                color: '#a0aec0'
+                color: theme.colors.neutral[400]
               }} 
             />
           </div>
         </div>
         
-        {/* Call Cards List */}
-        {loading ? (
-          <p>Loading calls...</p>
-        ) : filteredCalls.length > 0 ? (
-          <div>
-            {filteredCalls.map(call => (
-              <CallCard
-                key={call.id}
-                call={call}
-                onEditClick={handleOpenEditModal}
-                onDeleteClick={handleDeleteCall}
-                onAddTaskClick={handleAddTask}
-              />
-            ))}
-          </div>
-        ) : (
-          <div style={{ 
-            textAlign: 'center', 
-            padding: '2rem', 
-            backgroundColor: '#f8f9fa', 
-            borderRadius: '8px' 
+        {/* View Mode Toggle */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1rem',
+          padding: '1rem',
+          backgroundColor: 'white',
+          borderRadius: theme.borderRadius.lg,
+          border: `1px solid ${theme.colors.neutral[200]}`,
+          boxShadow: theme.shadows.sm,
+          flexWrap: 'wrap',
+          gap: '0.5rem'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            minWidth: '0',
+            flex: 1
           }}>
-            <p style={{ marginBottom: '1rem' }}>
-              {searchTerm 
-                ? 'No calls found matching your search.' 
-                : 'No calls recorded yet. Log your first call to get started.'}
-            </p>
+            <FaStream 
+              size={20} 
+              color={theme.colors.primary[600]} 
+            />
+            <div style={{ minWidth: '0', flex: 1 }}>
+              <h3 style={{
+                margin: 0,
+                fontSize: theme.typography.fontSize.lg,
+                fontWeight: theme.typography.fontWeight.semibold,
+                color: theme.colors.neutral[900],
+              }}>
+                Call Timeline
+              </h3>
+              <p style={{
+                margin: 0,
+                fontSize: theme.typography.fontSize.sm,
+                color: theme.colors.neutral[500],
+                wordBreak: 'break-word'
+              }}>
+                {filteredCalls.length} {filteredCalls.length === 1 ? 'call' : 'calls'} {searchTerm && 'matching your search'}
+              </p>
+            </div>
+          </div>
+          
+          {filteredCalls.length > 0 && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontSize: theme.typography.fontSize.sm,
+              color: theme.colors.neutral[600],
+              flexShrink: 0
+            }}>
+              <FaListUl size={14} />
+              <span style={{ whiteSpace: 'nowrap' }}>Timeline View</span>
+            </div>
+          )}
+        </div>
+
+        {/* Call Timeline */}
+        <CallTimeline
+          calls={filteredCalls}
+          onEditClick={handleOpenEditModal}
+          onDeleteClick={handleDeleteCall}
+          onAddTaskClick={handleAddTask}
+          onStatusChange={handleStatusChange}
+          loading={loading}
+          emptyMessage={searchTerm 
+            ? 'No calls found matching your search.' 
+            : 'No calls recorded yet. Log your first call to get started.'}
+        />
+        
+        {/* Empty state call-to-action */}
+        {!loading && filteredCalls.length === 0 && (
+          <div style={{
+            textAlign: 'center',
+            marginTop: '2rem',
+          }}>
             <Button
               onClick={handleNewCall}
+              variant="primary"
               tooltip="Open the form to log your first call"
             >
               Log New Call
