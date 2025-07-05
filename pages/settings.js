@@ -1,37 +1,146 @@
-// Updated pages/settings.js - Removed weeklyContactGoal and monthlyRevenueGoal
 import { useState, useEffect } from 'react';
+import { 
+  FaUser, FaCog, FaUsers, FaPlug, FaPhone, FaSync, FaCheck, FaTimes, 
+  FaExclamationTriangle, FaSms, FaEye, FaEyeSlash, FaEdit, FaTrash, FaPlus 
+} from 'react-icons/fa';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import theme from '../styles/theme';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import Spinner from '../components/common/Spinner';
 
-export default function AccountSettings() {
+export default function Settings() {
   return (
     <ProtectedRoute>
       <div className="page-transition">
-        <h1>Account Settings</h1>
-        <SettingsForm />
+        <h1 style={{ marginBottom: '2rem' }}>Settings</h1>
+        <ModernSettingsInterface />
       </div>
     </ProtectedRoute>
   );
 }
 
-const SettingsForm = () => {
+const ModernSettingsInterface = () => {
+  const [activeTab, setActiveTab] = useState('account');
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        setUser(userData);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        setLoading(false);
+      }
+    };
+    
+    fetchUserData();
+  }, []);
+
+  const tabs = [
+    { id: 'account', label: 'Account', icon: FaUser },
+    { id: 'preferences', label: 'Preferences', icon: FaCog },
+    { id: 'integrations', label: 'Integrations', icon: FaPlug },
+    ...(user?.role === 'admin' ? [{ id: 'team', label: 'Team', icon: FaUsers }] : [])
+  ];
+
+  const tabContainerStyle = {
+    backgroundColor: '#ffffff',
+    borderRadius: theme.borderRadius.lg,
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+    overflow: 'hidden'
+  };
+
+  const tabHeaderStyle = {
+    display: 'flex',
+    borderBottom: '1px solid #e5e7eb',
+    backgroundColor: '#f9fafb'
+  };
+
+  const tabButtonStyle = (isActive) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '1rem 1.5rem',
+    border: 'none',
+    backgroundColor: isActive ? '#ffffff' : 'transparent',
+    color: isActive ? theme.colors.brand.primary : '#6b7280',
+    cursor: 'pointer',
+    fontSize: '0.9rem',
+    fontWeight: isActive ? '600' : '400',
+    transition: 'all 0.2s ease',
+    borderBottom: isActive ? `2px solid ${theme.colors.brand.primary}` : '2px solid transparent',
+    ':hover': {
+      backgroundColor: isActive ? '#ffffff' : '#f3f4f6'
+    }
+  });
+
+  const tabContentStyle = {
+    padding: '2rem',
+    minHeight: '600px'
+  };
+
+  if (loading) {
+    return (
+      <Card>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <Spinner />
+          <p>Loading settings...</p>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <div style={tabContainerStyle}>
+      {/* Tab Navigation */}
+      <div style={tabHeaderStyle}>
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={tabButtonStyle(activeTab === tab.id)}
+            onMouseEnter={(e) => {
+              if (activeTab !== tab.id) {
+                e.target.style.backgroundColor = '#f3f4f6';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== tab.id) {
+                e.target.style.backgroundColor = 'transparent';
+              }
+            }}
+          >
+            <tab.icon size={16} />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
+      <div style={tabContentStyle}>
+        {activeTab === 'account' && <AccountTab />}
+        {activeTab === 'preferences' && <PreferencesTab />}
+        {activeTab === 'integrations' && <IntegrationsTab />}
+        {activeTab === 'team' && user?.role === 'admin' && <TeamTab />}
+      </div>
+    </div>
+  );
+};
+
+// Account Tab Component
+const AccountTab = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
+    cellPhone: '',
     currentPassword: '',
     newPassword: '',
-    confirmPassword: '',
-    cellPhone: '',
-    // Goal fields - REMOVED weeklyContactGoal and monthlyRevenueGoal
-    dailyCallGoal: 30,
-    dailyDealGoal: 5,
-    dailyContactGoal: 10,
-    // OpenPhone Integration
-    openPhoneApiKey: ''
+    confirmPassword: ''
   });
 
   const [originalData, setOriginalData] = useState({});
@@ -47,88 +156,32 @@ const SettingsForm = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        setLoading(true);
-        // Get user from localStorage as a fallback
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
-        
-        // Attempt to fetch from API
         const token = localStorage.getItem('token');
+        
         try {
           const response = await fetch(`/api/users/${userData.id}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
+            headers: { 'Authorization': `Bearer ${token}` }
           });
-          
           const data = await response.json();
           
           if (data.success) {
-            // Format the user data including goals - REMOVED unused fields
             const apiUserData = {
               firstName: data.data.firstName || '',
               lastName: data.data.lastName || '',
               email: data.data.email || '',
-              cellPhone: data.data.cellPhone || '',
-              // Goals from API or fallback to defaults - REMOVED unused fields
-              dailyCallGoal: data.data.dailyCallGoal || userData.dailyCallGoal || 30,
-              dailyDealGoal: data.data.dailyDealGoal || userData.dailyDealGoal || 5,
-              dailyContactGoal: data.data.dailyContactGoal || userData.dailyContactGoal || 10,
-              // OpenPhone Integration
-              openPhoneApiKey: data.data.openPhoneApiKey || ''
+              cellPhone: data.data.cellPhone || ''
             };
-            
-            setFormData(prev => ({ 
-              ...prev,
-              ...apiUserData
-            }));
-            
+            setFormData(prev => ({ ...prev, ...apiUserData }));
             setOriginalData(apiUserData);
-          } else {
-            // If API fails, use localStorage data as fallback - REMOVED unused fields
-            const fallbackData = {
-              firstName: userData.firstName || '',
-              lastName: userData.lastName || '',
-              email: userData.email || '',
-              cellPhone: userData.cellPhone || '',
-              dailyCallGoal: userData.dailyCallGoal || 30,
-              dailyDealGoal: userData.dailyDealGoal || 5,
-              dailyContactGoal: userData.dailyContactGoal || 10,
-              openPhoneApiKey: userData.openPhoneApiKey || ''
-            };
-            
-            setFormData(prev => ({
-              ...prev,
-              ...fallbackData
-            }));
-            
-            setOriginalData(fallbackData);
           }
         } catch (error) {
-          console.error('Error fetching user data from API:', error);
-          // Use localStorage as fallback - REMOVED unused fields
-          const fallbackData = {
-            firstName: userData.firstName || '',
-            lastName: userData.lastName || '',
-            email: userData.email || '',
-            cellPhone: userData.cellPhone || '',
-            dailyCallGoal: userData.dailyCallGoal || 30,
-            dailyDealGoal: userData.dailyDealGoal || 5,
-            dailyContactGoal: userData.dailyContactGoal || 10,
-            openPhoneApiKey: userData.openPhoneApiKey || ''
-          };
-          
-          setFormData(prev => ({
-            ...prev,
-            ...fallbackData
-          }));
-          
-          setOriginalData(fallbackData);
+          console.error('Error fetching user data:', error);
         }
         
         setLoading(false);
       } catch (error) {
         console.error('Error loading user data:', error);
-        setMessage({ text: 'Error loading user data', type: 'error' });
         setLoading(false);
       }
     };
@@ -137,43 +190,460 @@ const SettingsForm = () => {
   }, []);
 
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({ 
-      ...prev, 
-      [name]: type === 'number' ? parseInt(value) || 0 : value 
-    }));
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const validateForm = () => {
-    // Reset message
     setMessage({ text: '', type: '' });
     
-    // Check if email is valid
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
       setMessage({ text: 'Please enter a valid email address', type: 'error' });
       return false;
     }
     
-    // Check if passwords match when changing password
     if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
       setMessage({ text: 'New passwords do not match', type: 'error' });
       return false;
     }
     
-    // Check if current password is provided when setting new password
     if (formData.newPassword && !formData.currentPassword) {
       setMessage({ text: 'Current password is required to set a new password', type: 'error' });
       return false;
     }
     
-    // Check if new password meets requirements
     if (formData.newPassword && formData.newPassword.length < 8) {
       setMessage({ text: 'New password must be at least 8 characters long', type: 'error' });
       return false;
     }
     
-    // Validate goals - REMOVED validation for unused fields
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+    
+    const hasProfileChanges = 
+      formData.firstName !== originalData.firstName ||
+      formData.lastName !== originalData.lastName ||
+      formData.email !== originalData.email ||
+      formData.cellPhone !== originalData.cellPhone;
+      
+    const hasPasswordChange = !!formData.newPassword;
+    
+    if (!hasProfileChanges && !hasPasswordChange) {
+      setMessage({ text: 'No changes to save', type: 'info' });
+      return;
+    }
+    
+    setSaving(true);
+    
+    try {
+      const userId = JSON.parse(localStorage.getItem('user') || '{}').id;
+      const token = localStorage.getItem('token');
+      
+      const updateData = {};
+      
+      if (formData.firstName !== originalData.firstName) updateData.firstName = formData.firstName;
+      if (formData.lastName !== originalData.lastName) updateData.lastName = formData.lastName;
+      if (formData.email !== originalData.email) updateData.email = formData.email;
+      if (formData.cellPhone !== originalData.cellPhone) updateData.cellPhone = formData.cellPhone;
+      
+      if (hasPasswordChange) {
+        updateData.currentPassword = formData.currentPassword;
+        updateData.newPassword = formData.newPassword;
+      }
+      
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(updateData)
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const updatedUser = {
+          ...currentUser,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          cellPhone: formData.cellPhone
+        };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        
+        setOriginalData({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          cellPhone: formData.cellPhone
+        });
+        
+        setFormData(prev => ({
+          ...prev,
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        }));
+        
+        setMessage({ text: 'Account updated successfully!', type: 'success' });
+      } else {
+        setMessage({ text: `Error updating account: ${data.message}`, type: 'error' });
+      }
+    } catch (error) {
+      console.error('Error updating account:', error);
+      setMessage({ text: 'Error updating account. Please try again.', type: 'error' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const togglePasswordVisibility = (field) => {
+    setPasswordVisible(prev => ({ ...prev, [field]: !prev[field] }));
+  };
+
+  if (loading) {
+    return <div style={{ textAlign: 'center', padding: '2rem' }}><Spinner /></div>;
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: '2rem' }}>
+        <h2 style={{ color: theme.colors.brand.primary, marginBottom: '0.5rem' }}>Account Information</h2>
+        <p style={{ color: '#6b7280', margin: 0 }}>Manage your profile and security settings</p>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        {message.text && (
+          <div style={{ 
+            padding: '1rem',
+            marginBottom: '1.5rem',
+            borderRadius: theme.borderRadius.md,
+            backgroundColor: message.type === 'error' ? '#fef2f2' : 
+                             message.type === 'success' ? '#f0fdf4' :
+                             message.type === 'info' ? '#eff6ff' : '#f9fafb',
+            color: message.type === 'error' ? '#dc2626' : 
+                   message.type === 'success' ? '#16a34a' :
+                   message.type === 'info' ? '#2563eb' : '#374151',
+            border: `1px solid ${message.type === 'error' ? '#fecaca' : 
+                                 message.type === 'success' ? '#bbf7d0' :
+                                 message.type === 'info' ? '#bfdbfe' : '#e5e7eb'}`
+          }}>
+            {message.text}
+          </div>
+        )}
+
+        {/* Profile Section */}
+        <div style={{ marginBottom: '2rem' }}>
+          <h3 style={{ marginBottom: '1rem', color: '#374151' }}>Profile Information</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
+                First Name
+              </label>
+              <input
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                style={{ 
+                  width: '100%', 
+                  padding: '0.75rem',
+                  borderRadius: theme.borderRadius.md,
+                  border: '1px solid #d1d5db',
+                  fontSize: '0.9rem',
+                  transition: 'border-color 0.2s ease',
+                  ':focus': {
+                    borderColor: theme.colors.brand.primary,
+                    outline: 'none'
+                  }
+                }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
+                Last Name
+              </label>
+              <input
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                style={{ 
+                  width: '100%', 
+                  padding: '0.75rem',
+                  borderRadius: theme.borderRadius.md,
+                  border: '1px solid #d1d5db',
+                  fontSize: '0.9rem'
+                }}
+              />
+            </div>
+          </div>
+          
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
+              Email Address
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              style={{ 
+                width: '100%', 
+                padding: '0.75rem',
+                borderRadius: theme.borderRadius.md,
+                border: '1px solid #d1d5db',
+                fontSize: '0.9rem'
+              }}
+            />
+          </div>
+          
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
+              Cell Phone
+            </label>
+            <input
+              type="tel"
+              name="cellPhone"
+              value={formData.cellPhone}
+              onChange={handleChange}
+              style={{ 
+                width: '100%', 
+                padding: '0.75rem',
+                borderRadius: theme.borderRadius.md,
+                border: '1px solid #d1d5db',
+                fontSize: '0.9rem'
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Security Section */}
+        <div style={{ marginBottom: '2rem' }}>
+          <h3 style={{ marginBottom: '1rem', color: '#374151' }}>Security</h3>
+          <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem' }}>
+            Leave password fields blank if you don't want to change your password.
+          </p>
+          
+          {formData.newPassword && (
+            <div style={{
+              padding: '1rem',
+              backgroundColor: '#f9fafb',
+              borderRadius: theme.borderRadius.md,
+              marginBottom: '1rem',
+              fontSize: '0.9rem'
+            }}>
+              <p style={{ margin: 0, fontWeight: '500' }}>Password Requirements:</p>
+              <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.5rem' }}>
+                <li style={{ color: formData.newPassword.length >= 8 ? '#16a34a' : '#6b7280' }}>
+                  At least 8 characters
+                </li>
+                <li style={{ color: /[A-Z]/.test(formData.newPassword) ? '#16a34a' : '#6b7280' }}>
+                  At least one uppercase letter
+                </li>
+                <li style={{ color: /[0-9]/.test(formData.newPassword) ? '#16a34a' : '#6b7280' }}>
+                  At least one number
+                </li>
+              </ul>
+            </div>
+          )}
+          
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
+              Current Password
+            </label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type={passwordVisible.current ? 'text' : 'password'}
+                name="currentPassword"
+                value={formData.currentPassword}
+                onChange={handleChange}
+                style={{ 
+                  width: '100%', 
+                  padding: '0.75rem',
+                  paddingRight: '3rem',
+                  borderRadius: theme.borderRadius.md,
+                  border: '1px solid #d1d5db',
+                  fontSize: '0.9rem'
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => togglePasswordVisibility('current')}
+                style={{
+                  position: 'absolute',
+                  right: '0.75rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#6b7280'
+                }}
+              >
+                {passwordVisible.current ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
+                New Password
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={passwordVisible.new ? 'text' : 'password'}
+                  name="newPassword"
+                  value={formData.newPassword}
+                  onChange={handleChange}
+                  style={{ 
+                    width: '100%', 
+                    padding: '0.75rem',
+                    paddingRight: '3rem',
+                    borderRadius: theme.borderRadius.md,
+                    border: '1px solid #d1d5db',
+                    fontSize: '0.9rem'
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility('new')}
+                  style={{
+                    position: 'absolute',
+                    right: '0.75rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#6b7280'
+                  }}
+                >
+                  {passwordVisible.new ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+            </div>
+            
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
+                Confirm New Password
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={passwordVisible.confirm ? 'text' : 'password'}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  style={{ 
+                    width: '100%', 
+                    padding: '0.75rem',
+                    paddingRight: '3rem',
+                    borderRadius: theme.borderRadius.md,
+                    border: '1px solid #d1d5db',
+                    fontSize: '0.9rem'
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility('confirm')}
+                  style={{
+                    position: 'absolute',
+                    right: '0.75rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#6b7280'
+                  }}
+                >
+                  {passwordVisible.confirm ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+          <Button
+            type="submit"
+            disabled={saving}
+            variant="primary"
+            style={{ minWidth: '120px' }}
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+// Preferences Tab Component
+const PreferencesTab = () => {
+  const [formData, setFormData] = useState({
+    dailyCallGoal: 30,
+    dailyDealGoal: 5,
+    dailyContactGoal: 10
+  });
+
+  const [originalData, setOriginalData] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState({ text: '', type: '' });
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        const token = localStorage.getItem('token');
+        
+        try {
+          const response = await fetch(`/api/users/${userData.id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await response.json();
+          
+          if (data.success) {
+            const apiUserData = {
+              dailyCallGoal: data.data.dailyCallGoal || 30,
+              dailyDealGoal: data.data.dailyDealGoal || 5,
+              dailyContactGoal: data.data.dailyContactGoal || 10
+            };
+            setFormData(apiUserData);
+            setOriginalData(apiUserData);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        setLoading(false);
+      }
+    };
+    
+    fetchUserData();
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: parseInt(value) || 0 }));
+  };
+
+  const validateForm = () => {
+    setMessage({ text: '', type: '' });
+    
     if (formData.dailyCallGoal < 1 || formData.dailyCallGoal > 200) {
       setMessage({ text: 'Daily call goal must be between 1 and 200', type: 'error' });
       return false;
@@ -195,24 +665,14 @@ const SettingsForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
     
-    // Check if anything has changed - REMOVED unused fields
-    const hasProfileChanges = 
-      formData.firstName !== originalData.firstName ||
-      formData.lastName !== originalData.lastName ||
-      formData.email !== originalData.email ||
-      formData.cellPhone !== originalData.cellPhone ||
+    const hasChanges = 
       formData.dailyCallGoal !== originalData.dailyCallGoal ||
       formData.dailyDealGoal !== originalData.dailyDealGoal ||
-      formData.dailyContactGoal !== originalData.dailyContactGoal ||
-      formData.openPhoneApiKey !== originalData.openPhoneApiKey;
-      
-    const hasPasswordChange = !!formData.newPassword;
+      formData.dailyContactGoal !== originalData.dailyContactGoal;
     
-    if (!hasProfileChanges && !hasPasswordChange) {
+    if (!hasChanges) {
       setMessage({ text: 'No changes to save', type: 'info' });
       return;
     }
@@ -223,27 +683,10 @@ const SettingsForm = () => {
       const userId = JSON.parse(localStorage.getItem('user') || '{}').id;
       const token = localStorage.getItem('token');
       
-      // Include goals in the update data - REMOVED unused fields
       const updateData = {};
-      
-      if (formData.firstName !== originalData.firstName) updateData.firstName = formData.firstName;
-      if (formData.lastName !== originalData.lastName) updateData.lastName = formData.lastName;
-      if (formData.email !== originalData.email) updateData.email = formData.email;
-      if (formData.cellPhone !== originalData.cellPhone) updateData.cellPhone = formData.cellPhone;
-      
-      // Add goal fields - REMOVED unused fields
       if (formData.dailyCallGoal !== originalData.dailyCallGoal) updateData.dailyCallGoal = formData.dailyCallGoal;
       if (formData.dailyDealGoal !== originalData.dailyDealGoal) updateData.dailyDealGoal = formData.dailyDealGoal;
       if (formData.dailyContactGoal !== originalData.dailyContactGoal) updateData.dailyContactGoal = formData.dailyContactGoal;
-      
-      // Add OpenPhone API key
-      if (formData.openPhoneApiKey !== originalData.openPhoneApiKey) updateData.openPhoneApiKey = formData.openPhoneApiKey;
-      
-      // Add password fields if changing password
-      if (hasPasswordChange) {
-        updateData.currentPassword = formData.currentPassword;
-        updateData.newPassword = formData.newPassword;
-      }
       
       const response = await fetch(`/api/users/${userId}`, {
         method: 'PUT',
@@ -257,220 +700,79 @@ const SettingsForm = () => {
       const data = await response.json();
       
       if (data.success) {
-        // Update local storage user data - REMOVED unused fields
         const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
         const updatedUser = {
           ...currentUser,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          // Store goals in localStorage for dashboard access - REMOVED unused fields
           dailyCallGoal: formData.dailyCallGoal,
           dailyDealGoal: formData.dailyDealGoal,
-          dailyContactGoal: formData.dailyContactGoal,
-          // Store OpenPhone API key for click-to-call functionality
-          openPhoneApiKey: formData.openPhoneApiKey
+          dailyContactGoal: formData.dailyContactGoal
         };
         localStorage.setItem('user', JSON.stringify(updatedUser));
         
-        // Trigger custom event to notify dashboard of changes
         window.dispatchEvent(new CustomEvent('userSettingsUpdated'));
         
-        // Update original data to reflect saved changes - REMOVED unused fields
         setOriginalData({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          cellPhone: formData.cellPhone,
           dailyCallGoal: formData.dailyCallGoal,
           dailyDealGoal: formData.dailyDealGoal,
-          dailyContactGoal: formData.dailyContactGoal,
-          openPhoneApiKey: formData.openPhoneApiKey
+          dailyContactGoal: formData.dailyContactGoal
         });
         
-        // Clear password fields
-        setFormData(prev => ({
-          ...prev,
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: ''
-        }));
-        
-        setMessage({ text: 'Settings updated successfully!', type: 'success' });
+        setMessage({ text: 'Preferences updated successfully!', type: 'success' });
       } else {
-        setMessage({ text: `Error updating settings: ${data.message}`, type: 'error' });
+        setMessage({ text: `Error updating preferences: ${data.message}`, type: 'error' });
       }
     } catch (error) {
-      console.error('Error updating settings:', error);
-      setMessage({ text: 'Error updating settings. Please try again.', type: 'error' });
+      console.error('Error updating preferences:', error);
+      setMessage({ text: 'Error updating preferences. Please try again.', type: 'error' });
     } finally {
       setSaving(false);
     }
   };
 
-  const togglePasswordVisibility = (field) => {
-    setPasswordVisible(prev => ({
-      ...prev,
-      [field]: !prev[field]
-    }));
-  };
-
   if (loading) {
-    return (
-      <Card>
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <Spinner />
-          <p>Loading account information...</p>
-        </div>
-      </Card>
-    );
+    return <div style={{ textAlign: 'center', padding: '2rem' }}><Spinner /></div>;
   }
 
   return (
-    <Card>
+    <div>
+      <div style={{ marginBottom: '2rem' }}>
+        <h2 style={{ color: theme.colors.brand.primary, marginBottom: '0.5rem' }}>Preferences</h2>
+        <p style={{ color: '#6b7280', margin: 0 }}>Configure your daily goals and application preferences</p>
+      </div>
+
       <form onSubmit={handleSubmit}>
         {message.text && (
           <div style={{ 
-            padding: '0.75rem',
+            padding: '1rem',
             marginBottom: '1.5rem',
             borderRadius: theme.borderRadius.md,
-            backgroundColor: message.type === 'error' ? '#f8d7da' : 
-                             message.type === 'success' ? '#d4edda' :
-                             message.type === 'info' ? '#cce5ff' : '#f8f9fa',
-            color: message.type === 'error' ? '#721c24' : 
-                   message.type === 'success' ? '#155724' :
-                   message.type === 'info' ? '#004085' : '#383d41',
-            border: `1px solid ${message.type === 'error' ? '#f5c6cb' : 
-                                 message.type === 'success' ? '#c3e6cb' :
-                                 message.type === 'info' ? '#b8daff' : '#d6d8db'}`
+            backgroundColor: message.type === 'error' ? '#fef2f2' : 
+                             message.type === 'success' ? '#f0fdf4' :
+                             message.type === 'info' ? '#eff6ff' : '#f9fafb',
+            color: message.type === 'error' ? '#dc2626' : 
+                   message.type === 'success' ? '#16a34a' :
+                   message.type === 'info' ? '#2563eb' : '#374151',
+            border: `1px solid ${message.type === 'error' ? '#fecaca' : 
+                                 message.type === 'success' ? '#bbf7d0' :
+                                 message.type === 'info' ? '#bfdbfe' : '#e5e7eb'}`
           }}>
             {message.text}
           </div>
         )}
-        
-        {formData.newPassword && (
-          <div style={{
-            padding: '0.75rem',
-            backgroundColor: '#f8f9fa',
-            borderRadius: theme.borderRadius.sm,
-            marginBottom: '1rem',
-            fontSize: '0.9rem'
-          }}>
-            <p style={{ margin: 0, fontWeight: 'bold' }}>Password Requirements:</p>
-            <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
-              <li style={{ marginBottom: '0.25rem', color: formData.newPassword.length >= 8 ? theme.colors.brand.primary : theme.colors.brand.text }}>
-                At least 8 characters
-              </li>
-              <li style={{ marginBottom: '0.25rem', color: /[A-Z]/.test(formData.newPassword) ? theme.colors.brand.primary : theme.colors.brand.text }}>
-                At least one uppercase letter
-              </li>
-              <li style={{ marginBottom: '0.25rem', color: /[0-9]/.test(formData.newPassword) ? theme.colors.brand.primary : theme.colors.brand.text }}>
-                At least one number
-              </li>
-            </ul>
-          </div>
-        )}
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h2>Profile Information</h2>
-          <p style={{ color: theme.colors.brand.text, fontSize: '0.9rem', marginBottom: '1rem' }}>
-            Update your account information and how we contact you.
-          </p>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-            <div>
-              <label htmlFor="firstName" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                First Name
-              </label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                style={{ 
-                  width: '100%', 
-                  padding: '0.75rem',
-                  borderRadius: theme.borderRadius.sm,
-                  border: '1px solid #ddd'
-                }}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="lastName" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                Last Name
-              </label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                style={{ 
-                  width: '100%', 
-                  padding: '0.75rem',
-                  borderRadius: theme.borderRadius.sm,
-                  border: '1px solid #ddd'
-                }}
-              />
-            </div>
-          </div>
-          
-          <div style={{ marginBottom: '1rem' }}>
-            <label htmlFor="email" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              style={{ 
-                width: '100%', 
-                padding: '0.75rem',
-                borderRadius: theme.borderRadius.sm,
-                border: '1px solid #ddd'
-              }}
-            />
-          </div>
-          
-          <div style={{ marginBottom: '1rem' }}>
-            <label htmlFor="cellPhone" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-              Cell Phone
-            </label>
-            <input
-              type="tel"
-              id="cellPhone"
-              name="cellPhone"
-              value={formData.cellPhone}
-              onChange={handleChange}
-              style={{ 
-                width: '100%', 
-                padding: '0.75rem',
-                borderRadius: theme.borderRadius.sm,
-                border: '1px solid #ddd'
-              }}
-            />
-          </div>
-        </div>
-
-        {/* SIMPLIFIED Goals Section - Only 3 daily goals */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h2>Daily Goals</h2>
-          <p style={{ color: theme.colors.brand.text, fontSize: '0.9rem', marginBottom: '1rem' }}>
+        <div style={{ marginBottom: '2rem' }}>
+          <h3 style={{ marginBottom: '1rem', color: '#374151' }}>Daily Goals</h3>
+          <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
             Set your personal daily targets to track progress on your dashboard.
           </p>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem' }}>
             <div>
-              <label htmlFor="dailyCallGoal" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
                 Daily Call Goal
               </label>
               <input
                 type="number"
-                id="dailyCallGoal"
                 name="dailyCallGoal"
                 value={formData.dailyCallGoal}
                 onChange={handleChange}
@@ -479,22 +781,22 @@ const SettingsForm = () => {
                 style={{ 
                   width: '100%', 
                   padding: '0.75rem',
-                  borderRadius: theme.borderRadius.sm,
-                  border: '1px solid #ddd'
+                  borderRadius: theme.borderRadius.md,
+                  border: '1px solid #d1d5db',
+                  fontSize: '0.9rem'
                 }}
               />
-              <small style={{ color: theme.colors.brand.text, fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
+              <small style={{ color: '#6b7280', fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
                 How many calls do you want to make per day?
               </small>
             </div>
             
             <div>
-              <label htmlFor="dailyDealGoal" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
                 Daily Deal Goal
               </label>
               <input
                 type="number"
-                id="dailyDealGoal"
                 name="dailyDealGoal"
                 value={formData.dailyDealGoal}
                 onChange={handleChange}
@@ -503,22 +805,22 @@ const SettingsForm = () => {
                 style={{ 
                   width: '100%', 
                   padding: '0.75rem',
-                  borderRadius: theme.borderRadius.sm,
-                  border: '1px solid #ddd'
+                  borderRadius: theme.borderRadius.md,
+                  border: '1px solid #d1d5db',
+                  fontSize: '0.9rem'
                 }}
               />
-              <small style={{ color: theme.colors.brand.text, fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
+              <small style={{ color: '#6b7280', fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
                 Target number of deals to close per day
               </small>
             </div>
             
             <div>
-              <label htmlFor="dailyContactGoal" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
                 Daily Contact Goal
               </label>
               <input
                 type="number"
-                id="dailyContactGoal"
                 name="dailyContactGoal"
                 value={formData.dailyContactGoal}
                 onChange={handleChange}
@@ -527,201 +829,32 @@ const SettingsForm = () => {
                 style={{ 
                   width: '100%', 
                   padding: '0.75rem',
-                  borderRadius: theme.borderRadius.sm,
-                  border: '1px solid #ddd'
+                  borderRadius: theme.borderRadius.md,
+                  border: '1px solid #d1d5db',
+                  fontSize: '0.9rem'
                 }}
               />
-              <small style={{ color: theme.colors.brand.text, fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
+              <small style={{ color: '#6b7280', fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
                 New contacts to add each day
               </small>
             </div>
           </div>
           
           <div style={{
-            padding: '0.75rem',
-            backgroundColor: '#f0f9ff',
-            borderRadius: theme.borderRadius.sm,
-            marginTop: '1rem',
+            padding: '1rem',
+            backgroundColor: '#eff6ff',
+            borderRadius: theme.borderRadius.md,
+            marginTop: '1.5rem',
             fontSize: '0.9rem'
           }}>
-            <p style={{ margin: '0', fontWeight: 'bold', color: '#0c5460' }}>💡 Pro Tip:</p>
-            <p style={{ margin: '0.5rem 0 0 0', color: '#0c5460' }}>
+            <p style={{ margin: '0', fontWeight: '500', color: '#1e40af' }}>💡 Pro Tip:</p>
+            <p style={{ margin: '0.5rem 0 0 0', color: '#1e40af' }}>
               Set realistic but challenging goals. These targets will show up on your dashboard to help track your daily progress.
             </p>
           </div>
         </div>
-
-        {/* OpenPhone Integration Section */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h2>OpenPhone Integration</h2>
-          <p style={{ color: theme.colors.brand.text, fontSize: '0.9rem', marginBottom: '1rem' }}>
-            Connect your OpenPhone account to enable click-to-call, automated call logging, and SMS features.
-          </p>
-          
-          <div style={{ marginBottom: '1rem' }}>
-            <label htmlFor="openPhoneApiKey" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-              OpenPhone API Key
-            </label>
-            <input
-              type="password"
-              id="openPhoneApiKey"
-              name="openPhoneApiKey"
-              value={formData.openPhoneApiKey}
-              onChange={handleChange}
-              placeholder="Enter your OpenPhone API key..."
-              style={{ 
-                width: '100%', 
-                padding: '0.75rem',
-                borderRadius: theme.borderRadius.sm,
-                border: '1px solid #ddd',
-                fontFamily: 'monospace'
-              }}
-            />
-            <small style={{ color: theme.colors.brand.text, fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
-              Get your API key from your OpenPhone dashboard under Settings → API
-            </small>
-          </div>
-          
-          {formData.openPhoneApiKey && (
-            <div style={{
-              padding: '0.75rem',
-              backgroundColor: '#f0f9ff',
-              borderRadius: theme.borderRadius.sm,
-              marginTop: '1rem',
-              fontSize: '0.9rem'
-            }}>
-              <p style={{ margin: '0', fontWeight: 'bold', color: '#0c5460' }}>🔗 OpenPhone Features Enabled:</p>
-              <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.5rem', color: '#0c5460' }}>
-                <li>Click-to-call from contact records</li>
-                <li>Automatic call logging to CRM</li>
-                <li>Post-call notes and follow-up</li>
-                <li>SMS integration</li>
-              </ul>
-            </div>
-          )}
-        </div>
         
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h2>Change Password</h2>
-          <p style={{ color: theme.colors.brand.text, fontSize: '0.9rem', marginBottom: '1rem' }}>
-            Leave these fields blank if you don't want to change your password.
-          </p>
-          
-          <div style={{ marginBottom: '1rem' }}>
-            <label htmlFor="currentPassword" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-              Current Password
-            </label>
-            <div style={{ position: 'relative' }}>
-              <input
-                type={passwordVisible.current ? 'text' : 'password'}
-                id="currentPassword"
-                name="currentPassword"
-                value={formData.currentPassword}
-                onChange={handleChange}
-                style={{ 
-                  width: '100%', 
-                  padding: '0.75rem',
-                  borderRadius: theme.borderRadius.sm,
-                  border: '1px solid #ddd'
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => togglePasswordVisibility('current')}
-                style={{
-                  position: 'absolute',
-                  right: '0.75rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: theme.colors.brand.primary
-                }}
-              >
-                {passwordVisible.current ? 'Hide' : 'Show'}
-              </button>
-            </div>
-          </div>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-            <div>
-              <label htmlFor="newPassword" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                New Password
-              </label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type={passwordVisible.new ? 'text' : 'password'}
-                  id="newPassword"
-                  name="newPassword"
-                  value={formData.newPassword}
-                  onChange={handleChange}
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.75rem',
-                    borderRadius: theme.borderRadius.sm,
-                    border: '1px solid #ddd'
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => togglePasswordVisibility('new')}
-                  style={{
-                    position: 'absolute',
-                    right: '0.75rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: theme.colors.brand.primary
-                  }}
-                >
-                  {passwordVisible.new ? 'Hide' : 'Show'}
-                </button>
-              </div>
-            </div>
-            
-            <div>
-              <label htmlFor="confirmPassword" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                Confirm New Password
-              </label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type={passwordVisible.confirm ? 'text' : 'password'}
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.75rem',
-                    borderRadius: theme.borderRadius.sm,
-                    border: '1px solid #ddd'
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => togglePasswordVisibility('confirm')}
-                  style={{
-                    position: 'absolute',
-                    right: '0.75rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: theme.colors.brand.primary
-                  }}
-                >
-                  {passwordVisible.confirm ? 'Hide' : 'Show'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #eee' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
           <Button
             type="submit"
             disabled={saving}
@@ -732,6 +865,659 @@ const SettingsForm = () => {
           </Button>
         </div>
       </form>
-    </Card>
+    </div>
+  );
+};
+
+// Integrations Tab Component  
+const IntegrationsTab = () => {
+  const [user, setUser] = useState(null);
+  const [connectionStatus, setConnectionStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [syncingTo, setSyncingTo] = useState(false);
+  const [syncingFrom, setSyncingFrom] = useState(false);
+  const [setupingWebhooks, setSetupingWebhooks] = useState(false);
+  const [message, setMessage] = useState({ text: '', type: '' });
+  const [apiKey, setApiKey] = useState('');
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        setUser(userData);
+        setApiKey(userData.openPhoneApiKey || '');
+        
+        if (userData.openPhoneApiKey) {
+          await testConnection();
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        setLoading(false);
+      }
+    };
+    
+    fetchUserData();
+  }, []);
+
+  const testConnection = async () => {
+    setTesting(true);
+    try {
+      const response = await fetch('/api/openphone?action=test-connection', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      const result = await response.json();
+      setConnectionStatus(result);
+      
+      if (result.success) {
+        setMessage({ text: 'OpenPhone connection successful!', type: 'success' });
+      } else {
+        setMessage({ text: `Connection failed: ${result.error}`, type: 'error' });
+      }
+    } catch (error) {
+      setConnectionStatus({ success: false, error: 'Network error' });
+      setMessage({ text: 'Failed to test connection', type: 'error' });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const handleApiKeySubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    
+    try {
+      const userId = JSON.parse(localStorage.getItem('user') || '{}').id;
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ openPhoneApiKey: apiKey })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const updatedUser = { ...currentUser, openPhoneApiKey: apiKey };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+        
+        setMessage({ text: 'API key saved successfully!', type: 'success' });
+        
+        if (apiKey) {
+          await testConnection();
+        }
+      } else {
+        setMessage({ text: `Error saving API key: ${data.message}`, type: 'error' });
+      }
+    } catch (error) {
+      console.error('Error saving API key:', error);
+      setMessage({ text: 'Error saving API key. Please try again.', type: 'error' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const syncContactsToOpenPhone = async () => {
+    setSyncingTo(true);
+    setMessage({ text: '', type: '' });
+
+    try {
+      const response = await fetch('/api/openphone?action=sync-contacts-to-openphone', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        const { total, synced, failed } = result.results;
+        setMessage({
+          text: `Sync completed: ${synced}/${total} contacts synced to OpenPhone${failed > 0 ? `, ${failed} failed` : ''}`,
+          type: failed > 0 ? 'warning' : 'success'
+        });
+      } else {
+        setMessage({ text: `Sync failed: ${result.error}`, type: 'error' });
+      }
+    } catch (error) {
+      setMessage({ text: 'Failed to sync contacts', type: 'error' });
+    } finally {
+      setSyncingTo(false);
+    }
+  };
+
+  const syncContactsFromOpenPhone = async () => {
+    setSyncingFrom(true);
+    setMessage({ text: '', type: '' });
+
+    try {
+      const response = await fetch('/api/openphone?action=sync-contacts-from-openphone', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        const { total, created, updated } = result.results;
+        setMessage({
+          text: `Sync completed: ${created} new contacts created, ${updated} contacts updated from ${total} OpenPhone contacts`,
+          type: 'success'
+        });
+      } else {
+        setMessage({ text: `Sync failed: ${result.error}`, type: 'error' });
+      }
+    } catch (error) {
+      setMessage({ text: 'Failed to sync contacts', type: 'error' });
+    } finally {
+      setSyncingFrom(false);
+    }
+  };
+
+  const setupWebhooks = async () => {
+    setSetupingWebhooks(true);
+    setMessage({ text: '', type: '' });
+
+    try {
+      const response = await fetch('/api/openphone?action=setup-webhooks', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setMessage({
+          text: 'Webhooks configured successfully! Call logging will now work automatically.',
+          type: 'success'
+        });
+      } else {
+        setMessage({ text: `Webhook setup failed: ${result.error}`, type: 'error' });
+      }
+    } catch (error) {
+      setMessage({ text: 'Failed to setup webhooks', type: 'error' });
+    } finally {
+      setSetupingWebhooks(false);
+    }
+  };
+
+  if (loading) {
+    return <div style={{ textAlign: 'center', padding: '2rem' }}><Spinner /></div>;
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: '2rem' }}>
+        <h2 style={{ color: theme.colors.brand.primary, marginBottom: '0.5rem' }}>Integrations</h2>
+        <p style={{ color: '#6b7280', margin: 0 }}>Connect and manage your third-party integrations</p>
+      </div>
+
+      {message.text && (
+        <div style={{
+          padding: '1rem',
+          marginBottom: '1.5rem',
+          borderRadius: theme.borderRadius.md,
+          backgroundColor: message.type === 'error' ? '#fef2f2' : 
+                           message.type === 'success' ? '#f0fdf4' :
+                           message.type === 'warning' ? '#fffbeb' : '#eff6ff',
+          color: message.type === 'error' ? '#dc2626' : 
+                 message.type === 'success' ? '#16a34a' :
+                 message.type === 'warning' ? '#d97706' : '#2563eb',
+          border: `1px solid ${message.type === 'error' ? '#fecaca' : 
+                               message.type === 'success' ? '#bbf7d0' :
+                               message.type === 'warning' ? '#fed7aa' : '#bfdbfe'}`
+        }}>
+          {message.text}
+        </div>
+      )}
+
+      {/* OpenPhone Integration */}
+      <div style={{ marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+          <FaPhone color={theme.colors.brand.primary} size={20} />
+          <h3 style={{ margin: 0, color: '#374151' }}>OpenPhone</h3>
+          {connectionStatus?.success && (
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.25rem',
+              padding: '0.25rem 0.5rem',
+              backgroundColor: '#f0fdf4',
+              borderRadius: theme.borderRadius.sm,
+              fontSize: '0.8rem',
+              color: '#16a34a'
+            }}>
+              <FaCheck size={12} />
+              Connected
+            </div>
+          )}
+        </div>
+        
+        {/* API Key Configuration */}
+        <div style={{ 
+          padding: '1.5rem',
+          backgroundColor: '#f9fafb',
+          borderRadius: theme.borderRadius.md,
+          border: '1px solid #e5e7eb',
+          marginBottom: '1.5rem'
+        }}>
+          <h4 style={{ marginBottom: '0.5rem', color: '#374151' }}>API Configuration</h4>
+          <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem' }}>
+            Enter your OpenPhone API key to enable click-to-call, automated call logging, and SMS features.
+          </p>
+          
+          <form onSubmit={handleApiKeySubmit}>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'end' }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
+                  OpenPhone API Key
+                </label>
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="Enter your OpenPhone API key..."
+                  style={{ 
+                    width: '100%', 
+                    padding: '0.75rem',
+                    borderRadius: theme.borderRadius.md,
+                    border: '1px solid #d1d5db',
+                    fontSize: '0.9rem',
+                    fontFamily: 'monospace'
+                  }}
+                />
+                <small style={{ color: '#6b7280', fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
+                  Get your API key from your OpenPhone dashboard under Settings → API
+                </small>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <Button
+                  type="submit"
+                  disabled={saving}
+                  variant="primary"
+                  size="sm"
+                >
+                  {saving ? 'Saving...' : 'Save'}
+                </Button>
+                {apiKey && (
+                  <Button
+                    type="button"
+                    onClick={testConnection}
+                    disabled={testing}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    {testing ? 'Testing...' : 'Test'}
+                  </Button>
+                )}
+              </div>
+            </div>
+          </form>
+        </div>
+
+        {/* Integration Features */}
+        {apiKey && (
+          <div>
+            {/* Connection Status */}
+            <div style={{
+              padding: '1rem',
+              backgroundColor: connectionStatus?.success ? '#f0fdf4' : '#fef2f2',
+              borderRadius: theme.borderRadius.md,
+              border: `1px solid ${connectionStatus?.success ? '#bbf7d0' : '#fecaca'}`,
+              marginBottom: '1.5rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {connectionStatus?.success ? (
+                  <FaCheck color="#16a34a" />
+                ) : (
+                  <FaTimes color="#dc2626" />
+                )}
+                <span style={{
+                  color: connectionStatus?.success ? '#16a34a' : '#dc2626',
+                  fontWeight: '500'
+                }}>
+                  {connectionStatus?.success ? 'Connected to OpenPhone' : 'Connection Failed'}
+                </span>
+              </div>
+              {connectionStatus?.error && (
+                <p style={{ color: '#dc2626', fontSize: '0.9rem', margin: '0.5rem 0 0 0' }}>
+                  Error: {connectionStatus.error}
+                </p>
+              )}
+            </div>
+
+            {/* Sync Controls */}
+            <div style={{
+              padding: '1.5rem',
+              backgroundColor: '#f9fafb',
+              borderRadius: theme.borderRadius.md,
+              border: '1px solid #e5e7eb',
+              marginBottom: '1.5rem'
+            }}>
+              <h4 style={{ marginBottom: '0.5rem', color: '#374151' }}>Contact Synchronization</h4>
+              <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                Keep your CRM and OpenPhone contacts in sync. You can sync contacts in both directions.
+              </p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <h5 style={{ marginBottom: '0.5rem', color: '#374151' }}>Sync to OpenPhone</h5>
+                  <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                    Upload your CRM contacts to OpenPhone
+                  </p>
+                  <Button
+                    onClick={syncContactsToOpenPhone}
+                    disabled={syncingTo || !connectionStatus?.success}
+                    variant="primary"
+                    size="sm"
+                    style={{ width: '100%' }}
+                  >
+                    {syncingTo ? (
+                      <><Spinner size="sm" style={{ marginRight: '0.5rem' }} /> Syncing...</>
+                    ) : (
+                      <><FaSync style={{ marginRight: '0.5rem' }} /> Sync to OpenPhone</>
+                    )}
+                  </Button>
+                </div>
+
+                <div>
+                  <h5 style={{ marginBottom: '0.5rem', color: '#374151' }}>Sync from OpenPhone</h5>
+                  <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                    Import contacts from OpenPhone to CRM
+                  </p>
+                  <Button
+                    onClick={syncContactsFromOpenPhone}
+                    disabled={syncingFrom || !connectionStatus?.success}
+                    variant="secondary"
+                    size="sm"
+                    style={{ width: '100%' }}
+                  >
+                    {syncingFrom ? (
+                      <><Spinner size="sm" style={{ marginRight: '0.5rem' }} /> Syncing...</>
+                    ) : (
+                      <><FaSync style={{ marginRight: '0.5rem' }} /> Sync from OpenPhone</>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Webhook Setup */}
+            <div style={{
+              padding: '1.5rem',
+              backgroundColor: '#f9fafb',
+              borderRadius: theme.borderRadius.md,
+              border: '1px solid #e5e7eb',
+              marginBottom: '1.5rem'
+            }}>
+              <h4 style={{ marginBottom: '0.5rem', color: '#374151' }}>Automatic Call Logging</h4>
+              <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                Set up webhooks to automatically log calls from OpenPhone to your CRM. This enables real-time call tracking and post-call popups.
+              </p>
+
+              <Button
+                onClick={setupWebhooks}
+                disabled={setupingWebhooks || !connectionStatus?.success}
+                variant="primary"
+                size="sm"
+              >
+                {setupingWebhooks ? (
+                  <><Spinner size="sm" style={{ marginRight: '0.5rem' }} /> Setting up...</>
+                ) : (
+                  <><FaCog style={{ marginRight: '0.5rem' }} /> Setup Webhooks</>
+                )}
+              </Button>
+            </div>
+
+            {/* Available Features */}
+            <div style={{
+              padding: '1.5rem',
+              backgroundColor: '#f9fafb',
+              borderRadius: theme.borderRadius.md,
+              border: '1px solid #e5e7eb'
+            }}>
+              <h4 style={{ marginBottom: '1rem', color: '#374151' }}>Available Features</h4>
+              <div style={{ display: 'grid', gap: '0.75rem' }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem',
+                  backgroundColor: '#ffffff',
+                  borderRadius: theme.borderRadius.sm,
+                  border: '1px solid #e5e7eb'
+                }}>
+                  <FaPhone color={theme.colors.brand.primary} />
+                  <span><strong>Click-to-Call:</strong> Call contacts directly from CRM contact records</span>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem',
+                  backgroundColor: '#ffffff',
+                  borderRadius: theme.borderRadius.sm,
+                  border: '1px solid #e5e7eb'
+                }}>
+                  <FaSync color={theme.colors.brand.primary} />
+                  <span><strong>Automatic Call Logging:</strong> Calls are automatically logged to CRM with webhooks</span>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem',
+                  backgroundColor: '#ffffff',
+                  borderRadius: theme.borderRadius.sm,
+                  border: '1px solid #e5e7eb'
+                }}>
+                  <FaSms color={theme.colors.brand.primary} />
+                  <span><strong>SMS Integration:</strong> Send follow-up messages directly from call notes</span>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem',
+                  backgroundColor: '#ffffff',
+                  borderRadius: theme.borderRadius.sm,
+                  border: '1px solid #e5e7eb'
+                }}>
+                  <FaCheck color={theme.colors.brand.primary} />
+                  <span><strong>Post-Call Popups:</strong> Capture notes and update contact status after calls</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Future Integrations Placeholder */}
+      <div style={{
+        padding: '1.5rem',
+        backgroundColor: '#f9fafb',
+        borderRadius: theme.borderRadius.md,
+        border: '1px solid #e5e7eb',
+        textAlign: 'center',
+        color: '#6b7280'
+      }}>
+        <h4 style={{ marginBottom: '0.5rem', color: '#374151' }}>More Integrations Coming Soon</h4>
+        <p style={{ fontSize: '0.9rem', margin: 0 }}>
+          We're working on integrations with Gmail, Outlook, Salesforce, and more. Stay tuned!
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// Team Tab Component
+const TeamTab = () => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState({ text: '', type: '' });
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('/api/users', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        setUsers(data.data);
+      } else {
+        setMessage({ text: 'Failed to load users', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setMessage({ text: 'Error loading users', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
+
+    try {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setUsers(prev => prev.filter(user => user.id !== userId));
+        setMessage({ text: 'User deleted successfully', type: 'success' });
+      } else {
+        setMessage({ text: 'Failed to delete user', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      setMessage({ text: 'Error deleting user', type: 'error' });
+    }
+  };
+
+  if (loading) {
+    return <div style={{ textAlign: 'center', padding: '2rem' }}><Spinner /></div>;
+  }
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div>
+          <h2 style={{ color: theme.colors.brand.primary, marginBottom: '0.5rem' }}>Team Management</h2>
+          <p style={{ color: '#6b7280', margin: 0 }}>Manage your team members and their permissions</p>
+        </div>
+        <Button
+          variant="primary"
+          onClick={() => window.location.href = '/admin/users/new'}
+        >
+          <FaPlus style={{ marginRight: '0.5rem' }} />
+          Add New User
+        </Button>
+      </div>
+
+      {message.text && (
+        <div style={{ 
+          padding: '1rem',
+          marginBottom: '1.5rem',
+          borderRadius: theme.borderRadius.md,
+          backgroundColor: message.type === 'error' ? '#fef2f2' : '#f0fdf4',
+          color: message.type === 'error' ? '#dc2626' : '#16a34a',
+          border: `1px solid ${message.type === 'error' ? '#fecaca' : '#bbf7d0'}`
+        }}>
+          {message.text}
+        </div>
+      )}
+
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: theme.borderRadius.md,
+        border: '1px solid #e5e7eb',
+        overflow: 'hidden'
+      }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+              <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Name</th>
+              <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Email</th>
+              <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Role</th>
+              <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#374151' }}>Phone</th>
+              <th style={{ padding: '1rem', textAlign: 'center', fontWeight: '600', color: '#374151' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map(user => (
+              <tr key={user.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                <td style={{ padding: '1rem', color: '#374151' }}>
+                  {user.firstName} {user.lastName}
+                </td>
+                <td style={{ padding: '1rem', color: '#6b7280' }}>
+                  {user.email}
+                </td>
+                <td style={{ padding: '1rem' }}>
+                  <span style={{
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: theme.borderRadius.sm,
+                    fontSize: '0.8rem',
+                    fontWeight: '500',
+                    backgroundColor: user.role === 'admin' ? '#fef3c7' : '#e0e7ff',
+                    color: user.role === 'admin' ? '#92400e' : '#3730a3'
+                  }}>
+                    {user.role === 'admin' ? 'Admin' : 'Member'}
+                  </span>
+                </td>
+                <td style={{ padding: '1rem', color: '#6b7280' }}>
+                  {user.assignedCallNumber || 'Not assigned'}
+                </td>
+                <td style={{ padding: '1rem', textAlign: 'center' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => window.location.href = `/admin/users/${user.id}`}
+                    >
+                      <FaEdit />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleDeleteUser(user.id)}
+                      style={{ color: '#dc2626' }}
+                    >
+                      <FaTrash />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        
+        {users.length === 0 && (
+          <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+            No users found. Add your first team member to get started.
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
