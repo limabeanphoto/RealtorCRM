@@ -881,6 +881,7 @@ const IntegrationsTab = () => {
   const [setupingWebhooks, setSetupingWebhooks] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
   const [apiKey, setApiKey] = useState('');
+  const [apiKeyVisible, setApiKeyVisible] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -1063,8 +1064,8 @@ const IntegrationsTab = () => {
 
       {message.text && (
         <div style={{
-          padding: '1rem',
-          marginBottom: '1.5rem',
+          padding: '0.75rem',
+          marginBottom: '1rem',
           borderRadius: theme.borderRadius.md,
           backgroundColor: message.type === 'error' ? '#fef2f2' : 
                            message.type === 'success' ? '#f0fdf4' :
@@ -1074,69 +1075,100 @@ const IntegrationsTab = () => {
                  message.type === 'warning' ? '#d97706' : '#2563eb',
           border: `1px solid ${message.type === 'error' ? '#fecaca' : 
                                message.type === 'success' ? '#bbf7d0' :
-                               message.type === 'warning' ? '#fed7aa' : '#bfdbfe'}`
+                               message.type === 'warning' ? '#fed7aa' : '#bfdbfe'}`,
+          fontSize: '0.9rem'
         }}>
           {message.text}
         </div>
       )}
 
       {/* OpenPhone Integration */}
-      <div style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-          <FaPhone color={theme.colors.brand.primary} size={20} />
-          <h3 style={{ margin: 0, color: '#374151' }}>OpenPhone</h3>
-          {connectionStatus?.success && (
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.25rem',
-              padding: '0.25rem 0.5rem',
-              backgroundColor: '#f0fdf4',
-              borderRadius: theme.borderRadius.sm,
-              fontSize: '0.8rem',
-              color: '#16a34a'
-            }}>
-              <FaCheck size={12} />
-              Connected
-            </div>
-          )}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FaPhone color={theme.colors.brand.primary} size={18} />
+            <h3 style={{ margin: 0, color: '#374151' }}>OpenPhone</h3>
+            {connectionStatus?.success ? (
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.25rem',
+                padding: '0.125rem 0.5rem',
+                backgroundColor: '#f0fdf4',
+                borderRadius: theme.borderRadius.sm,
+                fontSize: '0.75rem',
+                color: '#16a34a'
+              }}>
+                <FaCheck size={10} />
+                Connected
+              </div>
+            ) : connectionStatus?.success === false ? (
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.25rem',
+                padding: '0.125rem 0.5rem',
+                backgroundColor: '#fef2f2',
+                borderRadius: theme.borderRadius.sm,
+                fontSize: '0.75rem',
+                color: '#dc2626'
+              }}>
+                <FaTimes size={10} />
+                Failed
+              </div>
+            ) : null}
+          </div>
         </div>
         
         {/* API Key Configuration */}
         <div style={{ 
-          padding: '1.5rem',
+          padding: '1rem',
           backgroundColor: '#f9fafb',
           borderRadius: theme.borderRadius.md,
           border: '1px solid #e5e7eb',
-          marginBottom: '1.5rem'
+          marginBottom: '1rem'
         }}>
-          <h4 style={{ marginBottom: '0.5rem', color: '#374151' }}>API Configuration</h4>
-          <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem' }}>
-            Enter your OpenPhone API key to enable click-to-call, automated call logging, and SMS features.
-          </p>
-          
           <form onSubmit={handleApiKeySubmit}>
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'end' }}>
               <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' }}>
-                  OpenPhone API Key
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151', fontSize: '0.9rem' }}>
+                  API Key
                 </label>
-                <input
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="Enter your OpenPhone API key..."
-                  style={{ 
-                    width: '100%', 
-                    padding: '0.75rem',
-                    borderRadius: theme.borderRadius.md,
-                    border: '1px solid #d1d5db',
-                    fontSize: '0.9rem',
-                    fontFamily: 'monospace'
-                  }}
-                />
-                <small style={{ color: '#6b7280', fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
-                  Get your API key from your OpenPhone dashboard under Settings → API
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={apiKeyVisible ? 'text' : 'password'}
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="Enter your OpenPhone API key..."
+                    style={{ 
+                      width: '100%', 
+                      padding: '0.75rem',
+                      paddingRight: '3rem',
+                      borderRadius: theme.borderRadius.md,
+                      border: '1px solid #d1d5db',
+                      fontSize: '0.9rem',
+                      fontFamily: 'monospace'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setApiKeyVisible(!apiKeyVisible)}
+                    style={{
+                      position: 'absolute',
+                      right: '0.75rem',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#6b7280'
+                    }}
+                  >
+                    {apiKeyVisible ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+                <small style={{ color: '#6b7280', fontSize: '0.75rem', display: 'block', marginTop: '0.25rem' }}>
+                  Get your API key from OpenPhone Settings → API
                 </small>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -1144,7 +1176,6 @@ const IntegrationsTab = () => {
                   type="submit"
                   disabled={saving}
                   variant="primary"
-                  size="sm"
                 >
                   {saving ? 'Saving...' : 'Save'}
                 </Button>
@@ -1154,7 +1185,6 @@ const IntegrationsTab = () => {
                     onClick={testConnection}
                     disabled={testing}
                     variant="secondary"
-                    size="sm"
                   >
                     {testing ? 'Testing...' : 'Test'}
                   </Button>
@@ -1164,180 +1194,85 @@ const IntegrationsTab = () => {
           </form>
         </div>
 
-        {/* Integration Features */}
-        {apiKey && (
-          <div>
-            {/* Connection Status */}
+        {/* Integration Actions - Compact Layout */}
+        {apiKey && connectionStatus?.success && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+            {/* Contact Sync */}
             <div style={{
               padding: '1rem',
-              backgroundColor: connectionStatus?.success ? '#f0fdf4' : '#fef2f2',
-              borderRadius: theme.borderRadius.md,
-              border: `1px solid ${connectionStatus?.success ? '#bbf7d0' : '#fecaca'}`,
-              marginBottom: '1.5rem'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                {connectionStatus?.success ? (
-                  <FaCheck color="#16a34a" />
-                ) : (
-                  <FaTimes color="#dc2626" />
-                )}
-                <span style={{
-                  color: connectionStatus?.success ? '#16a34a' : '#dc2626',
-                  fontWeight: '500'
-                }}>
-                  {connectionStatus?.success ? 'Connected to OpenPhone' : 'Connection Failed'}
-                </span>
-              </div>
-              {connectionStatus?.error && (
-                <p style={{ color: '#dc2626', fontSize: '0.9rem', margin: '0.5rem 0 0 0' }}>
-                  Error: {connectionStatus.error}
-                </p>
-              )}
-            </div>
-
-            {/* Sync Controls */}
-            <div style={{
-              padding: '1.5rem',
-              backgroundColor: '#f9fafb',
-              borderRadius: theme.borderRadius.md,
-              border: '1px solid #e5e7eb',
-              marginBottom: '1.5rem'
-            }}>
-              <h4 style={{ marginBottom: '0.5rem', color: '#374151' }}>Contact Synchronization</h4>
-              <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                Keep your CRM and OpenPhone contacts in sync. You can sync contacts in both directions.
-              </p>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <h5 style={{ marginBottom: '0.5rem', color: '#374151' }}>Sync to OpenPhone</h5>
-                  <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                    Upload your CRM contacts to OpenPhone
-                  </p>
-                  <Button
-                    onClick={syncContactsToOpenPhone}
-                    disabled={syncingTo || !connectionStatus?.success}
-                    variant="primary"
-                    size="sm"
-                    style={{ width: '100%' }}
-                  >
-                    {syncingTo ? (
-                      <><Spinner size="sm" style={{ marginRight: '0.5rem' }} /> Syncing...</>
-                    ) : (
-                      <><FaSync style={{ marginRight: '0.5rem' }} /> Sync to OpenPhone</>
-                    )}
-                  </Button>
-                </div>
-
-                <div>
-                  <h5 style={{ marginBottom: '0.5rem', color: '#374151' }}>Sync from OpenPhone</h5>
-                  <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                    Import contacts from OpenPhone to CRM
-                  </p>
-                  <Button
-                    onClick={syncContactsFromOpenPhone}
-                    disabled={syncingFrom || !connectionStatus?.success}
-                    variant="secondary"
-                    size="sm"
-                    style={{ width: '100%' }}
-                  >
-                    {syncingFrom ? (
-                      <><Spinner size="sm" style={{ marginRight: '0.5rem' }} /> Syncing...</>
-                    ) : (
-                      <><FaSync style={{ marginRight: '0.5rem' }} /> Sync from OpenPhone</>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Webhook Setup */}
-            <div style={{
-              padding: '1.5rem',
-              backgroundColor: '#f9fafb',
-              borderRadius: theme.borderRadius.md,
-              border: '1px solid #e5e7eb',
-              marginBottom: '1.5rem'
-            }}>
-              <h4 style={{ marginBottom: '0.5rem', color: '#374151' }}>Automatic Call Logging</h4>
-              <p style={{ color: '#6b7280', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                Set up webhooks to automatically log calls from OpenPhone to your CRM. This enables real-time call tracking and post-call popups.
-              </p>
-
-              <Button
-                onClick={setupWebhooks}
-                disabled={setupingWebhooks || !connectionStatus?.success}
-                variant="primary"
-                size="sm"
-              >
-                {setupingWebhooks ? (
-                  <><Spinner size="sm" style={{ marginRight: '0.5rem' }} /> Setting up...</>
-                ) : (
-                  <><FaCog style={{ marginRight: '0.5rem' }} /> Setup Webhooks</>
-                )}
-              </Button>
-            </div>
-
-            {/* Available Features */}
-            <div style={{
-              padding: '1.5rem',
               backgroundColor: '#f9fafb',
               borderRadius: theme.borderRadius.md,
               border: '1px solid #e5e7eb'
             }}>
-              <h4 style={{ marginBottom: '1rem', color: '#374151' }}>Available Features</h4>
-              <div style={{ display: 'grid', gap: '0.75rem' }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.75rem',
-                  backgroundColor: '#ffffff',
-                  borderRadius: theme.borderRadius.sm,
-                  border: '1px solid #e5e7eb'
-                }}>
-                  <FaPhone color={theme.colors.brand.primary} />
-                  <span><strong>Click-to-Call:</strong> Call contacts directly from CRM contact records</span>
-                </div>
+              <h4 style={{ margin: '0 0 0.5rem 0', color: '#374151', fontSize: '0.9rem' }}>Contact Sync</h4>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <Button
+                  onClick={syncContactsToOpenPhone}
+                  disabled={syncingTo}
+                  variant="primary"
+                  size="sm"
+                  style={{ flex: 1 }}
+                >
+                  {syncingTo ? 'Syncing...' : 'To OpenPhone'}
+                </Button>
+                <Button
+                  onClick={syncContactsFromOpenPhone}
+                  disabled={syncingFrom}
+                  variant="secondary"
+                  size="sm"
+                  style={{ flex: 1 }}
+                >
+                  {syncingFrom ? 'Syncing...' : 'From OpenPhone'}
+                </Button>
+              </div>
+            </div>
 
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.75rem',
-                  backgroundColor: '#ffffff',
-                  borderRadius: theme.borderRadius.sm,
-                  border: '1px solid #e5e7eb'
-                }}>
-                  <FaSync color={theme.colors.brand.primary} />
-                  <span><strong>Automatic Call Logging:</strong> Calls are automatically logged to CRM with webhooks</span>
-                </div>
+            {/* Call Logging */}
+            <div style={{
+              padding: '1rem',
+              backgroundColor: '#f9fafb',
+              borderRadius: theme.borderRadius.md,
+              border: '1px solid #e5e7eb'
+            }}>
+              <h4 style={{ margin: '0 0 0.5rem 0', color: '#374151', fontSize: '0.9rem' }}>Call Logging</h4>
+              <Button
+                onClick={setupWebhooks}
+                disabled={setupingWebhooks}
+                variant="primary"
+                size="sm"
+                style={{ width: '100%' }}
+              >
+                {setupingWebhooks ? 'Setting up...' : 'Setup Webhooks'}
+              </Button>
+            </div>
+          </div>
+        )}
 
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.75rem',
-                  backgroundColor: '#ffffff',
-                  borderRadius: theme.borderRadius.sm,
-                  border: '1px solid #e5e7eb'
-                }}>
-                  <FaSms color={theme.colors.brand.primary} />
-                  <span><strong>SMS Integration:</strong> Send follow-up messages directly from call notes</span>
-                </div>
-
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.75rem',
-                  backgroundColor: '#ffffff',
-                  borderRadius: theme.borderRadius.sm,
-                  border: '1px solid #e5e7eb'
-                }}>
-                  <FaCheck color={theme.colors.brand.primary} />
-                  <span><strong>Post-Call Popups:</strong> Capture notes and update contact status after calls</span>
-                </div>
+        {/* Available Features - Compact */}
+        {apiKey && connectionStatus?.success && (
+          <div style={{
+            padding: '1rem',
+            backgroundColor: '#f9fafb',
+            borderRadius: theme.borderRadius.md,
+            border: '1px solid #e5e7eb'
+          }}>
+            <h4 style={{ margin: '0 0 0.75rem 0', color: '#374151', fontSize: '0.9rem' }}>Available Features</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.8rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6b7280' }}>
+                <FaPhone color={theme.colors.brand.primary} size={12} />
+                <span>Click-to-Call</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6b7280' }}>
+                <FaSync color={theme.colors.brand.primary} size={12} />
+                <span>Auto Call Logging</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6b7280' }}>
+                <FaSms color={theme.colors.brand.primary} size={12} />
+                <span>SMS Integration</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6b7280' }}>
+                <FaCheck color={theme.colors.brand.primary} size={12} />
+                <span>Post-Call Popups</span>
               </div>
             </div>
           </div>
@@ -1346,16 +1281,16 @@ const IntegrationsTab = () => {
 
       {/* Future Integrations Placeholder */}
       <div style={{
-        padding: '1.5rem',
+        padding: '1rem',
         backgroundColor: '#f9fafb',
         borderRadius: theme.borderRadius.md,
         border: '1px solid #e5e7eb',
         textAlign: 'center',
         color: '#6b7280'
       }}>
-        <h4 style={{ marginBottom: '0.5rem', color: '#374151' }}>More Integrations Coming Soon</h4>
-        <p style={{ fontSize: '0.9rem', margin: 0 }}>
-          We're working on integrations with Gmail, Outlook, Salesforce, and more. Stay tuned!
+        <h4 style={{ marginBottom: '0.25rem', color: '#374151', fontSize: '0.9rem' }}>More Integrations Coming Soon</h4>
+        <p style={{ fontSize: '0.8rem', margin: 0 }}>
+          Gmail, Outlook, Salesforce, and more integrations in development.
         </p>
       </div>
     </div>
