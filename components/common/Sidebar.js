@@ -617,36 +617,6 @@ export default function Sidebar({ isCollapsed, toggleSidebar, isMobile = false, 
               <span>Settings</span>
             </Link>
             
-            {/* Manage Users link for admins only */}
-            {user && user.role === 'admin' && (
-              <Link 
-                href="/admin/users"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: theme.spacing[3],
-                  padding: theme.spacing[3],
-                  color: theme.colors.neutral[700],
-                  textDecoration: 'none',
-                  borderRadius: theme.borderRadius.lg,
-                  transition: `all ${theme.animation.duration.fast} ${theme.animation.easing.inOut}`,
-                  fontSize: theme.typography.fontSize.sm,
-                  fontWeight: theme.typography.fontWeight.medium,
-                  minHeight: '44px',
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = theme.colors.neutral[100];
-                  e.target.style.color = theme.colors.neutral[900];
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.color = theme.colors.neutral[700];
-                }}
-              >
-                <FaUsersCog size={16} />
-                <span>Manage Users</span>
-              </Link>
-            )}
             
             <div 
               style={{

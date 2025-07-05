@@ -1363,7 +1363,7 @@ const TeamTab = () => {
         </div>
         <Button
           variant="primary"
-          onClick={() => window.location.href = '/admin/users/new'}
+          onClick={() => alert('User management functionality has been moved to the Team tab in Settings. You are already here! Full user creation/editing will be implemented in a future update.')}
         >
           <FaPlus style={{ marginRight: '0.5rem' }} />
           Add New User
@@ -1428,7 +1428,7 @@ const TeamTab = () => {
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => window.location.href = `/admin/users/${user.id}`}
+                      onClick={() => alert('Edit user functionality will be implemented in a future update. For now, users can edit their own profiles in the Account tab.')}
                     >
                       <FaEdit />
                     </Button>
