@@ -6,7 +6,7 @@ import CallTimeline from '../components/calls/CallTimeline';
 import TaskModal from '../components/tasks/TaskModal';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import Button from '../components/common/Button';
-import { FaSearch, FaFilter, FaListUl, FaStream } from 'react-icons/fa';
+import { FaSearch } from 'react-icons/fa';
 import theme from '../styles/theme';
 
 export default function Calls() {
@@ -442,65 +442,6 @@ export default function Calls() {
           </div>
         </div>
         
-        {/* View Mode Toggle */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '1rem',
-          padding: '1rem',
-          backgroundColor: 'white',
-          borderRadius: theme.borderRadius.lg,
-          border: `1px solid ${theme.colors.neutral[200]}`,
-          boxShadow: theme.shadows.sm,
-          flexWrap: 'wrap',
-          gap: '0.5rem'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            minWidth: '0',
-            flex: 1
-          }}>
-            <FaStream 
-              size={20} 
-              color={theme.colors.primary[600]} 
-            />
-            <div style={{ minWidth: '0', flex: 1 }}>
-              <h3 style={{
-                margin: 0,
-                fontSize: theme.typography.fontSize.lg,
-                fontWeight: theme.typography.fontWeight.semibold,
-                color: theme.colors.neutral[900],
-              }}>
-                Call Timeline
-              </h3>
-              <p style={{
-                margin: 0,
-                fontSize: theme.typography.fontSize.sm,
-                color: theme.colors.neutral[500],
-                wordBreak: 'break-word'
-              }}>
-                {filteredCalls.length} {filteredCalls.length === 1 ? 'call' : 'calls'} {searchTerm && 'matching your search'}
-              </p>
-            </div>
-          </div>
-          
-          {filteredCalls.length > 0 && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: theme.typography.fontSize.sm,
-              color: theme.colors.neutral[600],
-              flexShrink: 0
-            }}>
-              <FaListUl size={14} />
-              <span style={{ whiteSpace: 'nowrap' }}>Timeline View</span>
-            </div>
-          )}
-        </div>
 
         {/* Call Timeline */}
         <CallTimeline
