@@ -24,6 +24,9 @@ export default function Tasks() {
   useEffect(() => {
     async function fetchData() {
       try {
+        // Check if we're on the client side before accessing localStorage
+        if (typeof window === 'undefined') return;
+        
         const token = localStorage.getItem('token')
         
         // Fetch tasks
@@ -72,6 +75,9 @@ export default function Tasks() {
   // Handle task creation
   const handleCreateTask = async (formData) => {
     try {
+      // Check if we're on the client side before accessing localStorage
+      if (typeof window === 'undefined') return { success: false, message: 'Client-side only operation' };
+      
       const token = localStorage.getItem('token')
       const response = await fetch('/api/tasks', {
         method: 'POST',
@@ -109,6 +115,9 @@ export default function Tasks() {
   // Handle task update
   const handleUpdateTask = async (formData) => {
     try {
+      // Check if we're on the client side before accessing localStorage
+      if (typeof window === 'undefined') return { success: false, message: 'Client-side only operation' };
+      
       const token = localStorage.getItem('token')
       const response = await fetch(`/api/tasks/${formData.id}`, {
         method: 'PUT',
@@ -148,6 +157,9 @@ export default function Tasks() {
   // Handle task status change - updated for Active/Completed only
   const handleStatusChange = async (taskId, newStatus) => {
     try {
+      // Check if we're on the client side before accessing localStorage
+      if (typeof window === 'undefined') return;
+      
       const token = localStorage.getItem('token')
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: 'PUT',
@@ -184,6 +196,9 @@ export default function Tasks() {
   // Handle task deletion
   const handleDeleteTask = async (taskId) => {
     try {
+      // Check if we're on the client side before accessing localStorage
+      if (typeof window === 'undefined') return;
+      
       const token = localStorage.getItem('token')
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: 'DELETE',
@@ -234,6 +249,9 @@ export default function Tasks() {
     setPurging(true);
     
     try {
+      // Check if we're on the client side before accessing localStorage
+      if (typeof window === 'undefined') return;
+      
       const token = localStorage.getItem('token');
       const completedTasks = tasks.filter(task => task.status === 'Completed');
       
@@ -426,7 +444,7 @@ export default function Tasks() {
                 style={{ 
                   position: 'absolute', 
                   left: '1rem',
-                  color: theme.colors.gray[400]
+                  color: theme.colors.neutral[400]
                 }} 
               />
             </div>
@@ -466,7 +484,7 @@ export default function Tasks() {
               boxShadow: theme.shadows.sm
             }}>
               <div className="loader-spin" style={{ margin: '0 auto 1rem' }}></div>
-              <p style={{ color: theme.colors.gray[600], fontSize: '1.1rem' }}>Loading tasks...</p>
+              <p style={{ color: theme.colors.neutral[600], fontSize: '1.1rem' }}>Loading tasks...</p>
             </div>
           ) : filteredTasks.length > 0 ? (
             <div>
@@ -517,7 +535,7 @@ export default function Tasks() {
               </div>
               <h3 style={{ 
                 marginBottom: '1rem',
-                color: theme.colors.gray[700],
+                color: theme.colors.neutral[700],
                 fontSize: '1.25rem'
               }}>
                 {searchTerm 
@@ -528,7 +546,7 @@ export default function Tasks() {
               </h3>
               <p style={{ 
                 marginBottom: '2rem',
-                color: theme.colors.gray[500],
+                color: theme.colors.neutral[500],
                 fontSize: '1rem'
               }}>
                 {searchTerm 

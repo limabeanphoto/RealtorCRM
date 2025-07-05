@@ -111,8 +111,8 @@ const MiniTaskCard = ({ task, onEditTask, onStatusChange }) => {
                 width: '20px',
                 height: '20px',
                 borderRadius: '50%',
-                border: `2px solid ${task.status === 'Completed' ? theme.colors.brand.primary : '#ddd'}`,
-                backgroundColor: task.status === 'Completed' ? theme.colors.brand.primary : 'white',
+                border: `2px solid ${task.status === 'Completed' ? theme.colors.primary[500] : '#ddd'}`,
+                backgroundColor: task.status === 'Completed' ? theme.colors.primary[500] : 'white',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -127,7 +127,7 @@ const MiniTaskCard = ({ task, onEditTask, onStatusChange }) => {
             {/* Task Title */}
             <strong style={{ 
               textDecoration: task.status === 'Completed' ? 'line-through' : 'none',
-              color: task.status === 'Completed' ? theme.colors.brand.text : 'inherit'
+              color: task.status === 'Completed' ? theme.colors.neutral[600] : 'inherit'
             }}>
               {task.title}
             </strong>
@@ -139,7 +139,7 @@ const MiniTaskCard = ({ task, onEditTask, onStatusChange }) => {
             alignItems: 'center', 
             gap: '0.25rem', 
             fontSize: '0.9rem', 
-            color: theme.colors.brand.text,
+            color: theme.colors.neutral[600],
             marginBottom: '0.25rem'
           }}>
             <FaCalendarAlt size={12} />
@@ -214,7 +214,7 @@ const MiniTaskCard = ({ task, onEditTask, onStatusChange }) => {
             alignItems: 'center',
             justifyContent: 'center',
             minWidth: '28px',
-            backgroundColor: theme.colors.brand.secondary,
+            backgroundColor: theme.colors.secondary[500],
             color: 'white',
             border: 'none',
             borderRadius: '4px',
@@ -241,7 +241,7 @@ const MiniTaskCard = ({ task, onEditTask, onStatusChange }) => {
           backgroundColor: '#f8f9fa',
           padding: '0.5rem',
           borderRadius: theme.borderRadius.sm,
-          color: theme.colors.brand.text
+          color: theme.colors.neutral[600]
         }}>
           {task.description}
         </div>

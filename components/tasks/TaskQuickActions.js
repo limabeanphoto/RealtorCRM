@@ -35,7 +35,7 @@ export default function TaskQuickActions({
         e.stopPropagation();
         onStatusChange?.(task.id, isCompleted ? 'Active' : 'Completed');
       },
-      color: isCompleted ? theme.colors.brand.secondary : theme.colors.success[500],
+      color: isCompleted ? theme.colors.secondary[500] : theme.colors.success[500],
       visible: !!onStatusChange
     },
     {
@@ -57,7 +57,7 @@ export default function TaskQuickActions({
         e.stopPropagation();
         onEdit?.(task);
       },
-      color: theme.colors.brand.primary,
+      color: theme.colors.primary[500],
       visible: !!onEdit
     },
     {

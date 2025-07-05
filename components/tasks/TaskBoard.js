@@ -261,8 +261,8 @@ const TaskBoard = ({
         }
 
         .task-board-filter:hover {
-          border-color: ${theme.colors.brand.primary};
-          background: ${theme.colors.brand.primary}05;
+          border-color: ${theme.colors.primary[500]};
+          background: ${theme.colors.primary[500]}05;
         }
 
         .task-board-filter select {
@@ -310,7 +310,7 @@ const TaskBoard = ({
           width: 40px;
           height: 40px;
           border: 3px solid ${theme.colors.neutral[200]};
-          border-top: 3px solid ${theme.colors.brand.primary};
+          border-top: 3px solid ${theme.colors.primary[500]};
           border-radius: 50%;
           animation: spin 1s linear infinite;
           margin-bottom: 1rem;

@@ -21,7 +21,10 @@
       "Bash(npm install:*)",
       "Bash(npm run dev:*)",
       "Bash(npm run lint)",
-      "Bash(timeout 30s npm run dev)"
+      "Bash(timeout 30s npm run dev)",
+      "Bash(node:*)",
+      "Bash(npm run lint:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

@@ -78,8 +78,8 @@ const TaskViewToggle = ({
         }
 
         .task-view-toggle:hover {
-          border-color: ${variant !== 'minimal' ? theme.colors.brand.primary : 'transparent'};
-          box-shadow: ${variant === 'modern' ? `0 0 0 3px ${theme.colors.brand.primary}15` : 'none'};
+          border-color: ${variant !== 'minimal' ? theme.colors.primary[500] : 'transparent'};
+          box-shadow: ${variant === 'modern' ? `0 0 0 3px ${theme.colors.primary[500]}15` : 'none'};
         }
 
         .view-option {
@@ -107,10 +107,10 @@ const TaskViewToggle = ({
         }
 
         .view-option:hover {
-          color: ${disabled ? theme.colors.neutral[600] : theme.colors.brand.primary};
+          color: ${disabled ? theme.colors.neutral[600] : theme.colors.primary[500]};
           background: ${disabled ? 'transparent' : 
-                       variant === 'minimal' ? `${theme.colors.brand.primary}10` : 
-                       `${theme.colors.brand.primary}05`};
+                       variant === 'minimal' ? `${theme.colors.primary[500]}10` : 
+                       `${theme.colors.primary[500]}05`};
           transform: ${disabled ? 'none' : 'translateY(-1px)'};
         }
 
@@ -120,21 +120,21 @@ const TaskViewToggle = ({
         }
 
         .view-option:focus-visible {
-          outline: 2px solid ${theme.colors.brand.primary};
+          outline: 2px solid ${theme.colors.primary[500]};
           outline-offset: 2px;
         }
 
         .view-option.active {
-          color: ${variant === 'minimal' ? theme.colors.brand.primary : 'white'};
-          background: ${variant === 'minimal' ? `${theme.colors.brand.primary}15` : theme.colors.brand.primary};
-          box-shadow: ${variant === 'modern' ? `0 2px 8px ${theme.colors.brand.primary}30` : 'none'};
-          border-color: ${variant === 'minimal' ? theme.colors.brand.primary : 'transparent'};
+          color: ${variant === 'minimal' ? theme.colors.primary[500] : 'white'};
+          background: ${variant === 'minimal' ? `${theme.colors.primary[500]}15` : theme.colors.primary[500]};
+          box-shadow: ${variant === 'modern' ? `0 2px 8px ${theme.colors.primary[500]}30` : 'none'};
+          border-color: ${variant === 'minimal' ? theme.colors.primary[500] : 'transparent'};
           transform: ${variant === 'modern' ? 'translateY(-1px)' : 'none'};
         }
 
         .view-option.active:hover {
-          background: ${variant === 'minimal' ? `${theme.colors.brand.primary}25` : theme.colors.brand.primary};
-          color: ${variant === 'minimal' ? theme.colors.brand.primary : 'white'};
+          background: ${variant === 'minimal' ? `${theme.colors.primary[500]}25` : theme.colors.primary[500]};
+          color: ${variant === 'minimal' ? theme.colors.primary[500] : 'white'};
         }
 
         .view-icon {
@@ -166,8 +166,8 @@ const TaskViewToggle = ({
           left: 0;
           width: 50%;
           height: ${variant === 'minimal' ? '2px' : 'calc(100% - 0.5rem)'};
-          background: ${variant === 'minimal' ? theme.colors.brand.primary : 
-                       `linear-gradient(135deg, ${theme.colors.brand.primary}, ${theme.colors.brand.secondary})`};
+          background: ${variant === 'minimal' ? theme.colors.primary[500] : 
+                       `linear-gradient(135deg, ${theme.colors.primary[500]}, ${theme.colors.secondary[500]})`};
           border-radius: ${variant === 'minimal' ? '1px' : theme.borderRadius.lg};
           transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
           transform: translateX(${viewMode === 'board' ? '100%' : '0%'});
