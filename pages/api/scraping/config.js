@@ -66,9 +66,24 @@ async function handleGetConfig(req, res, startTime) {
     // Get configuration from environment or defaults
     const config = getCurrentConfig();
     
+    // Structure response to match frontend component expectations
+    const responseData = {
+      budgets: {
+        daily: config.budget.dailyBudget,
+        weekly: config.budget.dailyBudget * 7,
+        monthly: config.budget.monthlyBudget,
+        yearly: config.budget.monthlyBudget * 12
+      },
+      providers: config.providers,
+      orchestrator: config.orchestrator,
+      usageTracking: config.usageTracking,
+      progressReporting: config.progressReporting
+    };
+    
     return res.status(200).json({
       success: true,
-      data: config,
+      data: responseData,
+      config: config,
       metadata: {
         timestamp: new Date().toISOString(),
         duration: Date.now() - startTime,
@@ -145,14 +160,25 @@ async function handleUpdateConfig(req, res, startTime) {
     // Apply configuration (this would typically update environment variables or database)
     const applyResult = await applyConfiguration(updatedConfig);
     
+    // Structure response to match frontend expectations
+    const responseData = {
+      budgets: {
+        daily: updatedConfig.budget.dailyBudget,
+        weekly: updatedConfig.budget.dailyBudget * 7,
+        monthly: updatedConfig.budget.monthlyBudget,
+        yearly: updatedConfig.budget.monthlyBudget * 12
+      },
+      providers: updatedConfig.providers,
+      orchestrator: updatedConfig.orchestrator
+    };
+
     return res.status(200).json({
       success: true,
-      data: {
-        previousConfig: currentConfig,
-        updatedConfig: updatedConfig,
-        appliedChanges: Object.keys(updates),
-        requiresRestart: applyResult.requiresRestart
-      },
+      data: responseData,
+      previousConfig: currentConfig,
+      updatedConfig: updatedConfig,
+      appliedChanges: Object.keys(updates),
+      requiresRestart: applyResult.requiresRestart,
       metadata: {
         timestamp: new Date().toISOString(),
         duration: Date.now() - startTime,

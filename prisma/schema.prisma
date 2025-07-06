@@ -138,6 +138,10 @@ model User {
   
   // OpenPhone Integration
   openPhoneApiKey      String?   // OpenPhone API key for VOIP integration
+  
+  // Scraping Integration
+  scrapingSettings     String?   // JSON string for scraping provider settings
+  scrapingUsage        String?   // JSON string for scraping usage tracking
 
   @@index([role])
   @@index([email])

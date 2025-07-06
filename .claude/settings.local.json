@@ -26,7 +26,8 @@
       "Bash(npm run lint:*)",
       "Bash(cat:*)",
       "Bash(mkdir:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }

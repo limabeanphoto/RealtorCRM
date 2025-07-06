@@ -320,8 +320,8 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
                   </span>
                   <span style={{ 
                     padding: '0.25rem 0.5rem',
-                    backgroundColor: data.requests > 0 ? theme.colors.brand.primary : theme.colors.border,
-                    color: data.requests > 0 ? 'white' : theme.colors.text.secondary,
+                    backgroundColor: data.requests > 0 ? theme.colors.brand.primary : theme.colors.neutral[200],
+                    color: data.requests > 0 ? 'white' : theme.colors.neutral[600],
                     borderRadius: theme.borderRadius.sm,
                     fontSize: '0.75rem'
                   }}>

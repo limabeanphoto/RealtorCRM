@@ -277,7 +277,7 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
                   key={index}
                   style={{
                     padding: '0.75rem',
-                    borderBottom: index < 4 ? `1px solid ${theme.colors.border}` : 'none',
+                    borderBottom: index < 4 ? `1px solid ${theme.colors.neutral[200]}` : 'none',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center'
