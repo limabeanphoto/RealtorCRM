@@ -1,13 +1,18 @@
 import { useState, useEffect } from 'react';
 import { 
   FaUser, FaCog, FaUsers, FaPlug, FaPhone, FaSync, FaCheck, FaTimes, 
-  FaExclamationTriangle, FaSms, FaEye, FaEyeSlash, FaEdit, FaTrash, FaPlus 
+  FaExclamationTriangle, FaSms, FaEye, FaEyeSlash, FaEdit, FaTrash, FaPlus,
+  FaDatabase, FaChartLine, FaChart, FaDollarSign, FaInfoCircle
 } from 'react-icons/fa';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import theme from '../styles/theme';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import Spinner from '../components/common/Spinner';
+import ScrapingDashboard from '../components/scraping/ScrapingDashboard';
+import UsageTracker from '../components/scraping/UsageTracker';
+import QuotaManager from '../components/scraping/QuotaManager';
+import useScrapingUsage from '../hooks/useScrapingUsage';
 
 export default function Settings() {
   return (
@@ -44,6 +49,7 @@ const ModernSettingsInterface = () => {
     { id: 'account', label: 'Account', icon: FaUser },
     { id: 'preferences', label: 'Preferences', icon: FaCog },
     { id: 'integrations', label: 'Integrations', icon: FaPlug },
+    { id: 'scraping', label: 'Scraping', icon: FaDatabase },
     ...(user?.role === 'admin' ? [{ id: 'team', label: 'Team', icon: FaUsers }] : [])
   ];
 
@@ -125,6 +131,7 @@ const ModernSettingsInterface = () => {
         {activeTab === 'account' && <AccountTab />}
         {activeTab === 'preferences' && <PreferencesTab />}
         {activeTab === 'integrations' && <IntegrationsTab />}
+        {activeTab === 'scraping' && <ScrapingTab />}
         {activeTab === 'team' && user?.role === 'admin' && <TeamTab />}
       </div>
     </div>
@@ -1451,6 +1458,459 @@ const TeamTab = () => {
           <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
             No users found. Add your first team member to get started.
           </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Scraping Tab Component
+const ScrapingTab = () => {
+  const [activeSection, setActiveSection] = useState('dashboard');
+  const [providers, setProviders] = useState([]);
+  const [providersLoading, setProvidersLoading] = useState(true);
+  const [message, setMessage] = useState({ text: '', type: '' });
+  
+  const {
+    usage,
+    quotas,
+    loading: usageLoading,
+    error: usageError,
+    updateQuotas,
+    insights
+  } = useScrapingUsage({
+    autoRefresh: true,
+    refreshInterval: 30000,
+    onUsageUpdate: (data) => {
+      // Handle usage updates if needed
+    },
+    onQuotaExceeded: (quotaInfo) => {
+      setMessage({
+        text: `Quota exceeded: ${quotaInfo.type} limit of ${quotaInfo.limit} reached`,
+        type: 'error'
+      });
+    },
+    onAlert: (alert) => {
+      setMessage({
+        text: alert.message,
+        type: alert.type
+      });
+    }
+  });
+
+  // Fetch providers on mount
+  useEffect(() => {
+    const fetchProviders = async () => {
+      try {
+        const response = await fetch('/api/scraping/providers', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setProviders(data.data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching providers:', error);
+      } finally {
+        setProvidersLoading(false);
+      }
+    };
+
+    fetchProviders();
+  }, []);
+
+  const sections = [
+    { id: 'dashboard', label: 'Dashboard', icon: FaChartLine },
+    { id: 'providers', label: 'Providers', icon: FaCog },
+    { id: 'usage', label: 'Usage & Analytics', icon: FaChart },
+    { id: 'quotas', label: 'Budget & Quotas', icon: FaDollarSign }
+  ];
+
+  const handleQuotaUpdate = async (newQuotas) => {
+    try {
+      await updateQuotas(newQuotas);
+      setMessage({
+        text: 'Budget limits updated successfully!',
+        type: 'success'
+      });
+      // Clear success message after 3 seconds
+      setTimeout(() => setMessage({ text: '', type: '' }), 3000);
+    } catch (error) {
+      setMessage({
+        text: `Failed to update budget limits: ${error.message}`,
+        type: 'error'
+      });
+    }
+  };
+
+  return (
+    <div>
+      <div style={{ marginBottom: '2rem' }}>
+        <h2 style={{ color: theme.colors.brand.primary, marginBottom: '0.5rem' }}>
+          Scraping Services
+        </h2>
+        <p style={{ color: '#6b7280', margin: 0 }}>
+          Monitor and manage your intelligent contact scraping system
+        </p>
+      </div>
+
+      {/* Alert Messages */}
+      {message.text && (
+        <div style={{
+          padding: '0.75rem',
+          marginBottom: '1.5rem',
+          borderRadius: theme.borderRadius.md,
+          backgroundColor: message.type === 'error' ? '#fef2f2' : 
+                           message.type === 'success' ? '#f0fdf4' :
+                           message.type === 'warning' ? '#fffbeb' : '#eff6ff',
+          color: message.type === 'error' ? '#dc2626' : 
+                 message.type === 'success' ? '#16a34a' :
+                 message.type === 'warning' ? '#d97706' : '#2563eb',
+          border: `1px solid ${message.type === 'error' ? '#fecaca' : 
+                               message.type === 'success' ? '#bbf7d0' :
+                               message.type === 'warning' ? '#fed7aa' : '#bfdbfe'}`,
+          fontSize: '0.9rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem'
+        }}>
+          {message.type === 'error' && <FaExclamationTriangle />}
+          {message.type === 'success' && <FaCheck />}
+          {message.type === 'warning' && <FaExclamationTriangle />}
+          {message.type === 'info' && <FaInfoCircle />}
+          {message.text}
+        </div>
+      )}
+
+      {/* Insights Banner */}
+      {insights && (insights.budgetHealth === 'critical' || insights.quotaHealth === 'critical') && (
+        <div style={{
+          padding: '1rem',
+          marginBottom: '1.5rem',
+          borderRadius: theme.borderRadius.md,
+          backgroundColor: '#fef2f2',
+          border: '1px solid #fecaca',
+          color: '#dc2626'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <FaExclamationTriangle />
+            <strong>Action Required</strong>
+          </div>
+          <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
+            {insights.recommendations.map((rec, index) => (
+              <li key={index}>{rec}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Section Navigation */}
+      <div style={{
+        display: 'flex',
+        gap: '0.5rem',
+        marginBottom: '2rem',
+        borderBottom: '1px solid #e5e7eb',
+        paddingBottom: '1rem'
+      }}>
+        {sections.map(section => (
+          <button
+            key={section.id}
+            onClick={() => setActiveSection(section.id)}
+            style={{
+              padding: '0.5rem 1rem',
+              border: 'none',
+              borderRadius: theme.borderRadius.sm,
+              backgroundColor: activeSection === section.id ? theme.colors.brand.primary : 'transparent',
+              color: activeSection === section.id ? 'white' : theme.colors.text.secondary,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontSize: '0.875rem',
+              fontWeight: activeSection === section.id ? '600' : '400'
+            }}
+          >
+            <section.icon />
+            {section.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Section Content */}
+      {activeSection === 'dashboard' && (
+        <div>
+          <ScrapingDashboard 
+            compact={false}
+            showUsageTracker={false}
+          />
+          
+          {/* Quick Stats */}
+          {usage && (
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: '1fr 1fr 1fr', 
+              gap: '1rem',
+              marginTop: '2rem'
+            }}>
+              <div style={{
+                padding: '1rem',
+                border: `1px solid ${theme.colors.border}`,
+                borderRadius: theme.borderRadius.md,
+                backgroundColor: theme.colors.background,
+                textAlign: 'center'
+              }}>
+                <div style={{ 
+                  fontSize: '1.5rem', 
+                  fontWeight: 'bold', 
+                  color: theme.colors.brand.primary,
+                  marginBottom: '0.5rem'
+                }}>
+                  {usage.current?.totalRequests || 0}
+                </div>
+                <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+                  Requests This Month
+                </div>
+              </div>
+              
+              <div style={{
+                padding: '1rem',
+                border: `1px solid ${theme.colors.border}`,
+                borderRadius: theme.borderRadius.md,
+                backgroundColor: theme.colors.background,
+                textAlign: 'center'
+              }}>
+                <div style={{ 
+                  fontSize: '1.5rem', 
+                  fontWeight: 'bold', 
+                  color: theme.colors.brand.primary,
+                  marginBottom: '0.5rem'
+                }}>
+                  ${(usage.current?.totalCost || 0).toFixed(2)}
+                </div>
+                <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+                  Total Cost This Month
+                </div>
+              </div>
+              
+              <div style={{
+                padding: '1rem',
+                border: `1px solid ${theme.colors.border}`,
+                borderRadius: theme.borderRadius.md,
+                backgroundColor: theme.colors.background,
+                textAlign: 'center'
+              }}>
+                <div style={{ 
+                  fontSize: '1.5rem', 
+                  fontWeight: 'bold', 
+                  color: theme.colors.brand.primary,
+                  marginBottom: '0.5rem'
+                }}>
+                  {((usage.performance?.overallSuccessRate || 0) * 100).toFixed(1)}%
+                </div>
+                <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+                  Success Rate
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeSection === 'providers' && (
+        <div>
+          <ProviderManagement 
+            providers={providers}
+            loading={providersLoading}
+            onProvidersUpdate={setProviders}
+            onMessage={setMessage}
+          />
+        </div>
+      )}
+
+      {activeSection === 'usage' && (
+        <div>
+          <UsageTracker 
+            showHeader={true}
+            onUsageUpdate={(data) => {
+              // Handle usage updates
+            }}
+          />
+        </div>
+      )}
+
+      {activeSection === 'quotas' && (
+        <div>
+          <QuotaManager 
+            showAdvanced={true}
+            onQuotaUpdate={handleQuotaUpdate}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Provider Management Component
+const ProviderManagement = ({ providers, loading, onProvidersUpdate, onMessage }) => {
+  const [editingProvider, setEditingProvider] = useState(null);
+  const [testingProvider, setTestingProvider] = useState(null);
+  const [newProviderForm, setNewProviderForm] = useState({ show: false, type: '', config: {} });
+
+  const testProvider = async (providerId) => {
+    setTestingProvider(providerId);
+    try {
+      const response = await fetch(`/api/scraping/providers/${providerId}/test`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        onMessage({
+          text: `${providerId} connection test successful!`,
+          type: 'success'
+        });
+      } else {
+        onMessage({
+          text: `${providerId} test failed: ${result.message}`,
+          type: 'error'
+        });
+      }
+    } catch (error) {
+      onMessage({
+        text: `Failed to test ${providerId}: ${error.message}`,
+        type: 'error'
+      });
+    } finally {
+      setTestingProvider(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <Spinner />
+        <p>Loading providers...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        marginBottom: '2rem'
+      }}>
+        <h3 style={{ margin: 0, color: theme.colors.text.primary }}>
+          Provider Configuration
+        </h3>
+        <Button
+          variant="primary"
+          onClick={() => setNewProviderForm({ show: true, type: '', config: {} })}
+        >
+          <FaPlus style={{ marginRight: '0.5rem' }} />
+          Add Provider
+        </Button>
+      </div>
+
+      {/* Provider Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+        {providers.length === 0 ? (
+          <div style={{
+            padding: '2rem',
+            textAlign: 'center',
+            border: `1px solid ${theme.colors.border}`,
+            borderRadius: theme.borderRadius.md,
+            backgroundColor: theme.colors.background,
+            color: theme.colors.text.secondary
+          }}>
+            <FaCog style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.3 }} />
+            <h4>No Providers Configured</h4>
+            <p>Add your first scraping provider to get started</p>
+          </div>
+        ) : (
+          providers.map(provider => (
+            <div
+              key={provider.id}
+              style={{
+                padding: '1.5rem',
+                border: `1px solid ${theme.colors.border}`,
+                borderRadius: theme.borderRadius.md,
+                backgroundColor: theme.colors.background
+              }}
+            >
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                marginBottom: '1rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <h4 style={{ margin: 0, color: theme.colors.text.primary }}>
+                    {provider.name}
+                  </h4>
+                  <span style={{
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: theme.borderRadius.sm,
+                    fontSize: '0.75rem',
+                    backgroundColor: provider.enabled ? '#10b981' : '#6b7280',
+                    color: 'white'
+                  }}>
+                    {provider.enabled ? 'Enabled' : 'Disabled'}
+                  </span>
+                  {provider.priority && (
+                    <span style={{
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: theme.borderRadius.sm,
+                      fontSize: '0.75rem',
+                      backgroundColor: theme.colors.brand.primary,
+                      color: 'white'
+                    }}>
+                      Priority: {provider.priority}
+                    </span>
+                  )}
+                </div>
+                
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => testProvider(provider.id)}
+                    disabled={testingProvider === provider.id}
+                  >
+                    {testingProvider === provider.id ? 'Testing...' : 'Test'}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setEditingProvider(provider)}
+                  >
+                    <FaEdit />
+                  </Button>
+                </div>
+              </div>
+              
+              <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+                <div>Type: {provider.type}</div>
+                {provider.lastUsed && (
+                  <div>Last used: {new Date(provider.lastUsed).toLocaleString()}</div>
+                )}
+                {provider.metrics && (
+                  <div>
+                    Success rate: {(provider.metrics.successRate * 100).toFixed(1)}% | 
+                    Avg response: {(provider.metrics.avgResponseTime / 1000).toFixed(1)}s
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
         )}
       </div>
     </div>
