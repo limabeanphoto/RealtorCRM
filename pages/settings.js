@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { 
   FaUser, FaCog, FaUsers, FaPlug, FaPhone, FaSync, FaCheck, FaTimes, 
   FaExclamationTriangle, FaSms, FaEye, FaEyeSlash, FaEdit, FaTrash, FaPlus,
-  FaDatabase, FaChartLine, FaChart, FaDollarSign, FaInfoCircle
+  FaDatabase, FaChartLine, FaChartBar, FaDollarSign, FaInfoCircle
 } from 'react-icons/fa';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
 import theme from '../styles/theme';
@@ -1525,7 +1525,7 @@ const ScrapingTab = () => {
   const sections = [
     { id: 'dashboard', label: 'Dashboard', icon: FaChartLine },
     { id: 'providers', label: 'Providers', icon: FaCog },
-    { id: 'usage', label: 'Usage & Analytics', icon: FaChart },
+    { id: 'usage', label: 'Usage & Analytics', icon: FaChartBar },
     { id: 'quotas', label: 'Budget & Quotas', icon: FaDollarSign }
   ];
 
@@ -1552,7 +1552,7 @@ const ScrapingTab = () => {
         <h2 style={{ color: theme.colors.brand.primary, marginBottom: '0.5rem' }}>
           Scraping Services
         </h2>
-        <p style={{ color: '#6b7280', margin: 0 }}>
+        <p style={{ color: theme.colors.neutral[600], margin: 0 }}>
           Monitor and manage your intelligent contact scraping system
         </p>
       </div>
@@ -1612,7 +1612,7 @@ const ScrapingTab = () => {
         display: 'flex',
         gap: '0.5rem',
         marginBottom: '2rem',
-        borderBottom: '1px solid #e5e7eb',
+        borderBottom: `1px solid ${theme.colors.neutral[200]}`,
         paddingBottom: '1rem'
       }}>
         {sections.map(section => (
@@ -1624,7 +1624,7 @@ const ScrapingTab = () => {
               border: 'none',
               borderRadius: theme.borderRadius.sm,
               backgroundColor: activeSection === section.id ? theme.colors.brand.primary : 'transparent',
-              color: activeSection === section.id ? 'white' : theme.colors.text.secondary,
+              color: activeSection === section.id ? 'white' : theme.colors.neutral[600],
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -1657,9 +1657,9 @@ const ScrapingTab = () => {
             }}>
               <div style={{
                 padding: '1rem',
-                border: `1px solid ${theme.colors.border}`,
+                border: `1px solid ${theme.colors.neutral[200]}`,
                 borderRadius: theme.borderRadius.md,
-                backgroundColor: theme.colors.background,
+                backgroundColor: theme.colors.brand.background,
                 textAlign: 'center'
               }}>
                 <div style={{ 
@@ -1670,16 +1670,16 @@ const ScrapingTab = () => {
                 }}>
                   {usage.current?.totalRequests || 0}
                 </div>
-                <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+                <div style={{ fontSize: '0.875rem', color: theme.colors.neutral[600] }}>
                   Requests This Month
                 </div>
               </div>
               
               <div style={{
                 padding: '1rem',
-                border: `1px solid ${theme.colors.border}`,
+                border: `1px solid ${theme.colors.neutral[200]}`,
                 borderRadius: theme.borderRadius.md,
-                backgroundColor: theme.colors.background,
+                backgroundColor: theme.colors.brand.background,
                 textAlign: 'center'
               }}>
                 <div style={{ 
@@ -1690,16 +1690,16 @@ const ScrapingTab = () => {
                 }}>
                   ${(usage.current?.totalCost || 0).toFixed(2)}
                 </div>
-                <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+                <div style={{ fontSize: '0.875rem', color: theme.colors.neutral[600] }}>
                   Total Cost This Month
                 </div>
               </div>
               
               <div style={{
                 padding: '1rem',
-                border: `1px solid ${theme.colors.border}`,
+                border: `1px solid ${theme.colors.neutral[200]}`,
                 borderRadius: theme.borderRadius.md,
-                backgroundColor: theme.colors.background,
+                backgroundColor: theme.colors.brand.background,
                 textAlign: 'center'
               }}>
                 <div style={{ 
@@ -1710,7 +1710,7 @@ const ScrapingTab = () => {
                 }}>
                   {((usage.performance?.overallSuccessRate || 0) * 100).toFixed(1)}%
                 </div>
-                <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+                <div style={{ fontSize: '0.875rem', color: theme.colors.neutral[600] }}>
                   Success Rate
                 </div>
               </div>
@@ -1808,7 +1808,7 @@ const ProviderManagement = ({ providers, loading, onProvidersUpdate, onMessage }
         alignItems: 'center',
         marginBottom: '2rem'
       }}>
-        <h3 style={{ margin: 0, color: theme.colors.text.primary }}>
+        <h3 style={{ margin: 0, color: theme.colors.neutral[900] }}>
           Provider Configuration
         </h3>
         <Button
@@ -1826,10 +1826,10 @@ const ProviderManagement = ({ providers, loading, onProvidersUpdate, onMessage }
           <div style={{
             padding: '2rem',
             textAlign: 'center',
-            border: `1px solid ${theme.colors.border}`,
+            border: `1px solid ${theme.colors.neutral[200]}`,
             borderRadius: theme.borderRadius.md,
-            backgroundColor: theme.colors.background,
-            color: theme.colors.text.secondary
+            backgroundColor: theme.colors.brand.background,
+            color: theme.colors.neutral[600]
           }}>
             <FaCog style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.3 }} />
             <h4>No Providers Configured</h4>
@@ -1841,9 +1841,9 @@ const ProviderManagement = ({ providers, loading, onProvidersUpdate, onMessage }
               key={provider.id}
               style={{
                 padding: '1.5rem',
-                border: `1px solid ${theme.colors.border}`,
+                border: `1px solid ${theme.colors.neutral[200]}`,
                 borderRadius: theme.borderRadius.md,
-                backgroundColor: theme.colors.background
+                backgroundColor: theme.colors.brand.background
               }}
             >
               <div style={{ 
@@ -1853,7 +1853,7 @@ const ProviderManagement = ({ providers, loading, onProvidersUpdate, onMessage }
                 marginBottom: '1rem'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <h4 style={{ margin: 0, color: theme.colors.text.primary }}>
+                  <h4 style={{ margin: 0, color: theme.colors.neutral[900] }}>
                     {provider.name}
                   </h4>
                   <span style={{
@@ -1897,7 +1897,7 @@ const ProviderManagement = ({ providers, loading, onProvidersUpdate, onMessage }
                 </div>
               </div>
               
-              <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+              <div style={{ fontSize: '0.875rem', color: theme.colors.neutral[600] }}>
                 <div>Type: {provider.type}</div>
                 {provider.lastUsed && (
                   <div>Last used: {new Date(provider.lastUsed).toLocaleString()}</div>

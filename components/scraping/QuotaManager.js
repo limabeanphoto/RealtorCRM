@@ -133,9 +133,9 @@ const QuotaManager = ({ onQuotaUpdate, showAdvanced = false }) => {
       <div style={{ 
         padding: '2rem', 
         textAlign: 'center',
-        border: `1px solid ${theme.colors.border}`,
+        border: `1px solid ${theme.colors.neutral[200]}`,
         borderRadius: theme.borderRadius.md,
-        backgroundColor: theme.colors.background
+        backgroundColor: theme.colors.brand.background
       }}>
         <div style={{ 
           width: '40px', 
@@ -146,7 +146,7 @@ const QuotaManager = ({ onQuotaUpdate, showAdvanced = false }) => {
           animation: 'spin 1s linear infinite',
           margin: '0 auto'
         }}></div>
-        <p style={{ marginTop: '1rem', color: theme.colors.text.secondary }}>Loading quota settings...</p>
+        <p style={{ marginTop: '1rem', color: theme.colors.neutral[600] }}>Loading quota settings...</p>
       </div>
     );
   }
@@ -181,15 +181,15 @@ const QuotaManager = ({ onQuotaUpdate, showAdvanced = false }) => {
 
   return (
     <div style={{ 
-      border: `1px solid ${theme.colors.border}`,
+      border: `1px solid ${theme.colors.neutral[200]}`,
       borderRadius: theme.borderRadius.md,
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.brand.background,
       overflow: 'hidden'
     }}>
       {/* Header */}
       <div style={{ 
         padding: '1rem 1.5rem',
-        borderBottom: `1px solid ${theme.colors.border}`,
+        borderBottom: `1px solid ${theme.colors.neutral[200]}`,
         backgroundColor: theme.colors.brand.primary + '10',
         display: 'flex',
         justifyContent: 'space-between',
@@ -305,7 +305,7 @@ const QuotaManager = ({ onQuotaUpdate, showAdvanced = false }) => {
 
         {/* Budget Configuration */}
         <div style={{ marginBottom: '2rem' }}>
-          <h4 style={{ marginBottom: '1rem', color: theme.colors.text.primary }}>
+          <h4 style={{ marginBottom: '1rem', color: theme.colors.neutral[900] }}>
             Spending Limits
           </h4>
           
@@ -315,7 +315,7 @@ const QuotaManager = ({ onQuotaUpdate, showAdvanced = false }) => {
                 key={period}
                 style={{
                   padding: '1rem',
-                  border: `1px solid ${theme.colors.border}`,
+                  border: `1px solid ${theme.colors.neutral[200]}`,
                   borderRadius: theme.borderRadius.sm,
                   backgroundColor: editing ? '#f8f9fa' : theme.colors.background
                 }}
@@ -328,7 +328,7 @@ const QuotaManager = ({ onQuotaUpdate, showAdvanced = false }) => {
                 }}>
                   <span style={{ 
                     fontWeight: 'bold', 
-                    color: theme.colors.text.primary,
+                    color: theme.colors.neutral[900],
                     textTransform: 'capitalize'
                   }}>
                     {period} Budget
@@ -337,7 +337,7 @@ const QuotaManager = ({ onQuotaUpdate, showAdvanced = false }) => {
                 
                 {editing ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '1.25rem', color: theme.colors.text.primary }}>$</span>
+                    <span style={{ fontSize: '1.25rem', color: theme.colors.neutral[900] }}>$</span>
                     <input
                       type="number"
                       min="0"
@@ -347,7 +347,7 @@ const QuotaManager = ({ onQuotaUpdate, showAdvanced = false }) => {
                       style={{
                         width: '100%',
                         padding: '0.5rem',
-                        border: `1px solid ${theme.colors.border}`,
+                        border: `1px solid ${theme.colors.neutral[200]}`,
                         borderRadius: theme.borderRadius.sm,
                         fontSize: '1rem'
                       }}
@@ -379,7 +379,7 @@ const QuotaManager = ({ onQuotaUpdate, showAdvanced = false }) => {
             <h5 style={{ margin: '0 0 0.5rem 0', color: theme.colors.brand.primary }}>
               Budget Guidelines
             </h5>
-            <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+            <div style={{ fontSize: '0.875rem', color: theme.colors.neutral[600] }}>
               <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
                 <li>Daily budget should be less than weekly budget</li>
                 <li>Weekly budget should be less than monthly budget</li>
@@ -394,20 +394,20 @@ const QuotaManager = ({ onQuotaUpdate, showAdvanced = false }) => {
         {/* Cost Recommendations */}
         {showAdvanced && (
           <div>
-            <h4 style={{ marginBottom: '1rem', color: theme.colors.text.primary }}>
+            <h4 style={{ marginBottom: '1rem', color: theme.colors.neutral[900] }}>
               Cost Recommendations
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div style={{
                 padding: '1rem',
-                border: `1px solid ${theme.colors.border}`,
+                border: `1px solid ${theme.colors.neutral[200]}`,
                 borderRadius: theme.borderRadius.sm,
-                backgroundColor: theme.colors.background
+                backgroundColor: theme.colors.brand.background
               }}>
                 <h5 style={{ margin: '0 0 0.5rem 0', color: theme.colors.brand.primary }}>
                   Light Usage (1-50 scrapes/month)
                 </h5>
-                <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+                <div style={{ fontSize: '0.875rem', color: theme.colors.neutral[600] }}>
                   <div>Recommended monthly budget: $0-5</div>
                   <div>Primarily uses free ScraperAPI tier</div>
                   <div>Occasional AI fallbacks</div>
@@ -416,14 +416,14 @@ const QuotaManager = ({ onQuotaUpdate, showAdvanced = false }) => {
               
               <div style={{
                 padding: '1rem',
-                border: `1px solid ${theme.colors.border}`,
+                border: `1px solid ${theme.colors.neutral[200]}`,
                 borderRadius: theme.borderRadius.sm,
-                backgroundColor: theme.colors.background
+                backgroundColor: theme.colors.brand.background
               }}>
                 <h5 style={{ margin: '0 0 0.5rem 0', color: theme.colors.brand.primary }}>
                   Heavy Usage (500+ scrapes/month)
                 </h5>
-                <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+                <div style={{ fontSize: '0.875rem', color: theme.colors.neutral[600] }}>
                   <div>Recommended monthly budget: $20-50</div>
                   <div>May exceed ScraperAPI free tier</div>
                   <div>Regular AI fallback usage</div>

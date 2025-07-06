@@ -99,9 +99,9 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
       <div style={{ 
         padding: '2rem', 
         textAlign: 'center',
-        border: `1px solid ${theme.colors.border}`,
+        border: `1px solid ${theme.colors.neutral[200]}`,
         borderRadius: theme.borderRadius.md,
-        backgroundColor: theme.colors.background
+        backgroundColor: theme.colors.brand.background
       }}>
         <div style={{ 
           width: '40px', 
@@ -112,7 +112,7 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
           animation: 'spin 1s linear infinite',
           margin: '0 auto'
         }}></div>
-        <p style={{ marginTop: '1rem', color: theme.colors.text.secondary }}>Loading usage data...</p>
+        <p style={{ marginTop: '1rem', color: theme.colors.neutral[600] }}>Loading usage data...</p>
       </div>
     );
   }
@@ -151,15 +151,15 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
 
   return (
     <div style={{ 
-      border: `1px solid ${theme.colors.border}`,
+      border: `1px solid ${theme.colors.neutral[200]}`,
       borderRadius: theme.borderRadius.md,
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.brand.background,
       overflow: 'hidden'
     }}>
       {showHeader && (
         <div style={{ 
           padding: '1rem 1.5rem',
-          borderBottom: `1px solid ${theme.colors.border}`,
+          borderBottom: `1px solid ${theme.colors.neutral[200]}`,
           backgroundColor: theme.colors.brand.primary + '10',
           display: 'flex',
           justifyContent: 'space-between',
@@ -215,7 +215,7 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
                   <strong style={{ color: getAlertColor(alert.type) }}>
                     {alert.title}
                   </strong>
-                  <p style={{ margin: 0, color: theme.colors.text.secondary, fontSize: '0.875rem' }}>
+                  <p style={{ margin: 0, color: theme.colors.neutral[600], fontSize: '0.875rem' }}>
                     {alert.message}
                   </p>
                 </div>
@@ -226,7 +226,7 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
 
         {/* Current Month Usage */}
         <div style={{ marginBottom: '2rem' }}>
-          <h4 style={{ marginBottom: '1rem', color: theme.colors.text.primary }}>
+          <h4 style={{ marginBottom: '1rem', color: theme.colors.neutral[900] }}>
             Current Month Usage
           </h4>
           
@@ -238,16 +238,16 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
               alignItems: 'center',
               marginBottom: '0.5rem'
             }}>
-              <span style={{ fontWeight: 'bold', color: theme.colors.text.primary }}>
+              <span style={{ fontWeight: 'bold', color: theme.colors.neutral[900] }}>
                 Total Requests
               </span>
-              <span style={{ color: theme.colors.text.secondary }}>
+              <span style={{ color: theme.colors.neutral[600] }}>
                 {usage.current.totalRequests} / {usage.quotas.monthly.requests}
               </span>
             </div>
             <div style={{ 
               height: '8px', 
-              backgroundColor: theme.colors.border,
+              backgroundColor: theme.colors.neutral[200],
               borderRadius: '4px',
               overflow: 'hidden'
             }}>
@@ -269,16 +269,16 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
               alignItems: 'center',
               marginBottom: '0.5rem'
             }}>
-              <span style={{ fontWeight: 'bold', color: theme.colors.text.primary }}>
+              <span style={{ fontWeight: 'bold', color: theme.colors.neutral[900] }}>
                 Total Cost
               </span>
-              <span style={{ color: theme.colors.text.secondary }}>
+              <span style={{ color: theme.colors.neutral[600] }}>
                 ${usage.current.totalCost.toFixed(2)} / ${usage.budgets.monthly.toFixed(2)}
               </span>
             </div>
             <div style={{ 
               height: '8px', 
-              backgroundColor: theme.colors.border,
+              backgroundColor: theme.colors.neutral[200],
               borderRadius: '4px',
               overflow: 'hidden'
             }}>
@@ -295,7 +295,7 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
 
         {/* Provider Breakdown */}
         <div style={{ marginBottom: '2rem' }}>
-          <h4 style={{ marginBottom: '1rem', color: theme.colors.text.primary }}>
+          <h4 style={{ marginBottom: '1rem', color: theme.colors.neutral[900] }}>
             Provider Breakdown
           </h4>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -304,9 +304,9 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
                 key={provider}
                 style={{
                   padding: '1rem',
-                  border: `1px solid ${theme.colors.border}`,
+                  border: `1px solid ${theme.colors.neutral[200]}`,
                   borderRadius: theme.borderRadius.sm,
-                  backgroundColor: theme.colors.background
+                  backgroundColor: theme.colors.brand.background
                 }}
               >
                 <div style={{ 
@@ -315,7 +315,7 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
                   alignItems: 'center',
                   marginBottom: '0.5rem'
                 }}>
-                  <span style={{ fontWeight: 'bold', color: theme.colors.text.primary }}>
+                  <span style={{ fontWeight: 'bold', color: theme.colors.neutral[900] }}>
                     {provider}
                   </span>
                   <span style={{ 
@@ -328,7 +328,7 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
                     {data.requests > 0 ? 'Active' : 'Inactive'}
                   </span>
                 </div>
-                <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+                <div style={{ fontSize: '0.875rem', color: theme.colors.neutral[600] }}>
                   <div>Requests: {data.requests}</div>
                   <div>Cost: ${data.cost.toFixed(2)}</div>
                   <div>Success Rate: {(data.successRate * 100).toFixed(1)}%</div>
@@ -340,7 +340,7 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
 
         {/* Performance Metrics */}
         <div style={{ marginBottom: '2rem' }}>
-          <h4 style={{ marginBottom: '1rem', color: theme.colors.text.primary }}>
+          <h4 style={{ marginBottom: '1rem', color: theme.colors.neutral[900] }}>
             Performance Metrics
           </h4>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
@@ -352,7 +352,7 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
               }}>
                 {(usage.performance.avgResponseTime / 1000).toFixed(1)}s
               </div>
-              <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+              <div style={{ fontSize: '0.875rem', color: theme.colors.neutral[600] }}>
                 Avg Response Time
               </div>
             </div>
@@ -364,7 +364,7 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
               }}>
                 {(usage.performance.overallSuccessRate * 100).toFixed(1)}%
               </div>
-              <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+              <div style={{ fontSize: '0.875rem', color: theme.colors.neutral[600] }}>
                 Success Rate
               </div>
             </div>
@@ -376,7 +376,7 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
               }}>
                 {usage.performance.avgConfidence.toFixed(1)}%
               </div>
-              <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+              <div style={{ fontSize: '0.875rem', color: theme.colors.neutral[600] }}>
                 Avg Confidence
               </div>
             </div>
@@ -386,7 +386,7 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
         {/* Usage Forecast */}
         {usage.forecast && (
           <div>
-            <h4 style={{ marginBottom: '1rem', color: theme.colors.text.primary }}>
+            <h4 style={{ marginBottom: '1rem', color: theme.colors.neutral[900] }}>
               Usage Forecast
             </h4>
             <div style={{ 
@@ -395,7 +395,7 @@ const UsageTracker = ({ userId, onUsageUpdate, showHeader = true }) => {
               borderRadius: theme.borderRadius.sm,
               border: `1px solid ${theme.colors.brand.primary}30`
             }}>
-              <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+              <div style={{ fontSize: '0.875rem', color: theme.colors.neutral[600] }}>
                 <div style={{ marginBottom: '0.5rem' }}>
                   <strong>Projected Monthly Usage:</strong> {usage.forecast.projectedRequests} requests
                 </div>

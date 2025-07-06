@@ -74,9 +74,9 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
       <div style={{ 
         padding: compact ? '1rem' : '2rem', 
         textAlign: 'center',
-        border: `1px solid ${theme.colors.border}`,
+        border: `1px solid ${theme.colors.neutral[200]}`,
         borderRadius: theme.borderRadius.md,
-        backgroundColor: theme.colors.background
+        backgroundColor: theme.colors.brand.background
       }}>
         <div style={{ 
           width: '40px', 
@@ -87,7 +87,7 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
           animation: 'spin 1s linear infinite',
           margin: '0 auto'
         }}></div>
-        <p style={{ marginTop: '1rem', color: theme.colors.text.secondary }}>
+        <p style={{ marginTop: '1rem', color: theme.colors.neutral[600] }}>
           Loading dashboard...
         </p>
       </div>
@@ -126,15 +126,15 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
 
   return (
     <div style={{ 
-      border: `1px solid ${theme.colors.border}`,
+      border: `1px solid ${theme.colors.neutral[200]}`,
       borderRadius: theme.borderRadius.md,
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.brand.background,
       overflow: 'hidden'
     }}>
       {/* Header */}
       <div style={{ 
         padding: compact ? '0.75rem 1rem' : '1rem 1.5rem',
-        borderBottom: `1px solid ${theme.colors.border}`,
+        borderBottom: `1px solid ${theme.colors.neutral[200]}`,
         backgroundColor: theme.colors.brand.primary + '10',
         display: 'flex',
         justifyContent: 'space-between',
@@ -146,7 +146,7 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
         </h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {lastUpdate && (
-            <span style={{ fontSize: '0.75rem', color: theme.colors.text.secondary }}>
+            <span style={{ fontSize: '0.75rem', color: theme.colors.neutral[600] }}>
               Updated {formatDuration(Date.now() - lastUpdate.getTime())} ago
             </span>
           )}
@@ -191,7 +191,7 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
             }}>
               {healthStatus}
             </div>
-            <div style={{ fontSize: compact ? '0.75rem' : '0.875rem', color: theme.colors.text.secondary }}>
+            <div style={{ fontSize: compact ? '0.75rem' : '0.875rem', color: theme.colors.neutral[600] }}>
               System Health
             </div>
           </div>
@@ -199,9 +199,9 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
           {/* Success Rate */}
           <div style={{
             padding: compact ? '0.75rem' : '1rem',
-            border: `1px solid ${theme.colors.border}`,
+            border: `1px solid ${theme.colors.neutral[200]}`,
             borderRadius: theme.borderRadius.sm,
-            backgroundColor: theme.colors.background,
+            backgroundColor: theme.colors.brand.background,
             textAlign: 'center'
           }}>
             <div style={{ 
@@ -211,7 +211,7 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
             }}>
               {((dashboardData?.performance?.overallSuccessRate || 0) * 100).toFixed(1)}%
             </div>
-            <div style={{ fontSize: compact ? '0.75rem' : '0.875rem', color: theme.colors.text.secondary }}>
+            <div style={{ fontSize: compact ? '0.75rem' : '0.875rem', color: theme.colors.neutral[600] }}>
               Success Rate
             </div>
           </div>
@@ -220,9 +220,9 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
           {!compact && (
             <div style={{
               padding: '1rem',
-              border: `1px solid ${theme.colors.border}`,
+              border: `1px solid ${theme.colors.neutral[200]}`,
               borderRadius: theme.borderRadius.sm,
-              backgroundColor: theme.colors.background,
+              backgroundColor: theme.colors.brand.background,
               textAlign: 'center'
             }}>
               <div style={{ 
@@ -232,7 +232,7 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
               }}>
                 {((dashboardData?.performance?.avgResponseTime || 0) / 1000).toFixed(1)}s
               </div>
-              <div style={{ fontSize: '0.875rem', color: theme.colors.text.secondary }}>
+              <div style={{ fontSize: '0.875rem', color: theme.colors.neutral[600] }}>
                 <FaClock style={{ marginRight: '0.25rem' }} />
                 Avg Time
               </div>
@@ -242,9 +242,9 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
           {/* Budget Usage */}
           <div style={{
             padding: compact ? '0.75rem' : '1rem',
-            border: `1px solid ${theme.colors.border}`,
+            border: `1px solid ${theme.colors.neutral[200]}`,
             borderRadius: theme.borderRadius.sm,
-            backgroundColor: theme.colors.background,
+            backgroundColor: theme.colors.brand.background,
             textAlign: 'center'
           }}>
             <div style={{ 
@@ -254,7 +254,7 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
             }}>
               ${(dashboardData?.current?.totalCost || 0).toFixed(2)}
             </div>
-            <div style={{ fontSize: compact ? '0.75rem' : '0.875rem', color: theme.colors.text.secondary }}>
+            <div style={{ fontSize: compact ? '0.75rem' : '0.875rem', color: theme.colors.neutral[600] }}>
               This Month
             </div>
           </div>
@@ -263,13 +263,13 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
         {/* Recent Activity */}
         {!compact && dashboardData?.recentActivity && (
           <div style={{ marginBottom: '2rem' }}>
-            <h4 style={{ marginBottom: '1rem', color: theme.colors.text.primary }}>
+            <h4 style={{ marginBottom: '1rem', color: theme.colors.neutral[900] }}>
               Recent Activity
             </h4>
             <div style={{ 
               maxHeight: '200px', 
               overflowY: 'auto',
-              border: `1px solid ${theme.colors.border}`,
+              border: `1px solid ${theme.colors.neutral[200]}`,
               borderRadius: theme.borderRadius.sm
             }}>
               {dashboardData.recentActivity.slice(0, 5).map((activity, index) => (
@@ -284,10 +284,10 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
                   }}
                 >
                   <div>
-                    <div style={{ fontSize: '0.875rem', fontWeight: 'bold', color: theme.colors.text.primary }}>
+                    <div style={{ fontSize: '0.875rem', fontWeight: 'bold', color: theme.colors.neutral[900] }}>
                       {activity.url ? new URL(activity.url).hostname : 'Unknown URL'}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: theme.colors.text.secondary }}>
+                    <div style={{ fontSize: '0.75rem', color: theme.colors.neutral[600] }}>
                       {activity.method} • {activity.confidence}% confidence
                     </div>
                   </div>
@@ -299,7 +299,7 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
                     }}>
                       {activity.success ? 'Success' : 'Failed'}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: theme.colors.text.secondary }}>
+                    <div style={{ fontSize: '0.75rem', color: theme.colors.neutral[600] }}>
                       {new Date(activity.timestamp).toLocaleTimeString()}
                     </div>
                   </div>
@@ -312,7 +312,7 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
         {/* Provider Status */}
         {!compact && dashboardData?.providers && (
           <div style={{ marginBottom: '2rem' }}>
-            <h4 style={{ marginBottom: '1rem', color: theme.colors.text.primary }}>
+            <h4 style={{ marginBottom: '1rem', color: theme.colors.neutral[900] }}>
               Provider Status
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
@@ -321,9 +321,9 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
                   key={provider}
                   style={{
                     padding: '0.75rem',
-                    border: `1px solid ${theme.colors.border}`,
+                    border: `1px solid ${theme.colors.neutral[200]}`,
                     borderRadius: theme.borderRadius.sm,
-                    backgroundColor: theme.colors.background
+                    backgroundColor: theme.colors.brand.background
                   }}
                 >
                   <div style={{ 
@@ -332,7 +332,7 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
                     alignItems: 'center',
                     marginBottom: '0.25rem'
                   }}>
-                    <span style={{ fontWeight: 'bold', color: theme.colors.text.primary, fontSize: '0.875rem' }}>
+                    <span style={{ fontWeight: 'bold', color: theme.colors.neutral[900], fontSize: '0.875rem' }}>
                       {provider}
                     </span>
                     <span style={{ 
@@ -345,7 +345,7 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
                       {data.requests > 0 ? 'Active' : 'Idle'}
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: theme.colors.text.secondary }}>
+                  <div style={{ fontSize: '0.75rem', color: theme.colors.neutral[600] }}>
                     <div>{data.requests} requests</div>
                     <div>{(data.successRate * 100).toFixed(0)}% success</div>
                   </div>
@@ -358,7 +358,7 @@ const ScrapingDashboard = ({ compact = false, showUsageTracker = true }) => {
         {/* Quick Actions */}
         {!compact && (
           <div style={{ marginBottom: '1rem' }}>
-            <h4 style={{ marginBottom: '1rem', color: theme.colors.text.primary }}>
+            <h4 style={{ marginBottom: '1rem', color: theme.colors.neutral[900] }}>
               Quick Actions
             </h4>
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
