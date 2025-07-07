@@ -1,6 +1,6 @@
 // Updated prisma/schema.prisma with daily contact goal field
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 

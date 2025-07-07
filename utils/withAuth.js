@@ -41,9 +41,10 @@ export default function withAuth(handler, options = {}) {
         });
       }
       
-      // Find user
+      // Find user (handle both userId and id formats)
+      const userId = decoded.userId || decoded.id;
       const user = await prisma.user.findUnique({
-        where: { id: decoded.userId }
+        where: { id: userId }
       });
       
       if (!user) {

@@ -65,7 +65,7 @@ async function handler(req, res) {
 
     // Create token payload (don't include sensitive info)
     const tokenPayload = {
-      userId: user.id,
+      id: user.id,
       email: user.email,
       role: user.role
     }
